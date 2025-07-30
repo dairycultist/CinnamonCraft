@@ -1,6 +1,6 @@
 Transform *camera;
-Mesh *mesh1;
-Mesh *mesh2;
+Model *mesh1;
+Model *mesh2;
 
 int left     = FALSE;
 int right    = FALSE;
@@ -23,8 +23,8 @@ void on_start() {
 
 	camera = calloc(sizeof(Transform), 1);
 
-	mesh1 = import_mesh("../res/miku.obj", tex, 16, 16);
-	mesh2 = import_mesh("../res/block.obj", tex, 16, 16);
+	mesh1 = create_model("../res/miku.obj", tex, 16, 16);
+	mesh2 = create_model("../res/block.obj", tex, 16, 16);
 
 	mesh1->transform.z = -2.0;
 	mesh1->transform.yaw = M_PI * -0.2;
@@ -64,8 +64,8 @@ void process_tick() {
 		camera->y -= 0.1;
 	}
 
-	draw_mesh(camera, mesh1);
-	draw_mesh(camera, mesh2);
+	draw_model(camera, mesh1);
+	draw_model(camera, mesh2);
 }
 
 void process_event(SDL_Event event) {

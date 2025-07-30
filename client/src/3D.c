@@ -2,7 +2,7 @@
 
 // all 3D objects use the same shader (same for 2D with their own unique shader) for simplicity
 
-// must implement a system for converting an array of bytes representing blockstates into a chunk mesh!
+// must implement a system for converting an array of bytes representing blockstates into a model (representing a chunk)!
 
 static char *vertex =
 "#version 150 core\n"
@@ -52,10 +52,10 @@ typedef struct {
 	uint vertex_count;
 	GLuint texture;
 
-} Mesh;
+} Model;
 
 // returns NULL on error
-Mesh *import_mesh(const char *obj_path, const unsigned char *tex, const int tex_width, const int tex_height) {
+Model *create_model(const char *obj_path, const unsigned char *tex, const int tex_width, const int tex_height) {
 
 	// read obj file
 	FILE *file = fopen(obj_path, "r");
@@ -187,18 +187,18 @@ Mesh *import_mesh(const char *obj_path, const unsigned char *tex, const int tex_
 	// write texture data
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_width, tex_height, 0, GL_RGB, GL_UNSIGNED_BYTE, tex);
 
-	// create final mesh object to return
-	Mesh *mesh = malloc(sizeof(Mesh));
-	mesh->transform.x 		= 0.0f;
-	mesh->transform.y 		= 0.0f;
-	mesh->transform.z 		= 0.0f;
-	mesh->transform.pitch 	= 0.0f;
-	mesh->transform.yaw 	= 0.0f;
-	mesh->vertex_array = vertex_array;
-	mesh->vertex_count = vertex_count;
-	mesh->texture = texture;
+	// create final model object to return
+	Model *model = malloc(sizeof(Model));
+	model->transform.x 		= 0.0f;
+	model->transform.y 		= 0.0f;
+	model->transform.z 		= 0.0f;
+	model->transform.pitch 	= 0.0f;
+	model->transform.yaw 	= 0.0f;
+	model->vertex_array = vertex_array;
+	model->vertex_count = vertex_count;
+	model->texture = texture;
 
-	return mesh;
+	return model;
 }
 
 void mat4_mult(const GLfloat b[4][4], const GLfloat a[4][4], GLfloat out[4][4]) {
@@ -284,7 +284,7 @@ void generate_rotation_matrices(GLfloat pitch_matrix[4][4], float pitch, GLfloat
 	yaw_matrix[3][3] = 1;
 }
 
-void draw_mesh(const Transform *camera, const Mesh *mesh) {
+void draw_model(const Transform *camera, const Model *model) {
 
 	// shared buffers
 	GLfloat pitch_matrix[4][4];
@@ -292,23 +292,23 @@ void draw_mesh(const Transform *camera, const Mesh *mesh) {
 
 	GLfloat position_matrix[4][4];
 
-	// bind the mesh and its texture
-	glBindVertexArray(mesh->vertex_array);
-	glBindTexture(GL_TEXTURE_2D, mesh->texture);
+	// bind the model's vertex mesh and texture
+	glBindVertexArray(model->vertex_array);
+	glBindTexture(GL_TEXTURE_2D, model->texture);
 
 	// model matrix (converts from model space to world space)
 	generate_rotation_matrices(
-		pitch_matrix, mesh->transform.pitch,
-		yaw_matrix, mesh->transform.yaw
+		pitch_matrix, model->transform.pitch,
+		yaw_matrix, model->transform.yaw
 	);
 
 	GLfloat model_matrix[4][4];
 
 	mat4_mult(yaw_matrix, pitch_matrix, model_matrix); // rotation
 
-	model_matrix[3][0] = mesh->transform.x; // translation
-	model_matrix[3][1] = mesh->transform.y;
-	model_matrix[3][2] = mesh->transform.z;
+	model_matrix[3][0] = model->transform.x; // translation
+	model_matrix[3][1] = model->transform.y;
+	model_matrix[3][2] = model->transform.z;
 
 	// view matrix (converts from world space to view space, aka accounts for camera transformations)
 	// must apply translations before rotations this time, unlike model matrix!
@@ -335,8 +335,8 @@ void draw_mesh(const Transform *camera, const Mesh *mesh) {
 	GLfloat normal_matrix[4][4];
 
 	generate_rotation_matrices(
-		pitch_matrix, -mesh->transform.pitch,
-		yaw_matrix, -mesh->transform.yaw
+		pitch_matrix, -model->transform.pitch,
+		yaw_matrix, -model->transform.yaw
 	);
 
 	mat4_mult(yaw_matrix, pitch_matrix, normal_matrix);
@@ -347,7 +347,7 @@ void draw_mesh(const Transform *camera, const Mesh *mesh) {
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, "normal_matrix"), 1, GL_FALSE, &normal_matrix[0][0]);
 
 	// draw
-	glDrawArrays(GL_TRIANGLES, 0, mesh->vertex_count);
+	glDrawArrays(GL_TRIANGLES, 0, model->vertex_count);
 }
 
 void initialize_3D_static_values() {

@@ -2,6 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+// this script is a utility, since must include data object files (images, etc.) in program by formatting the object as C sourcecode (most portable/least effort)
+
 typedef struct {
 
 	char data[65536 * 64];
@@ -15,9 +17,7 @@ void append_ezarray(EZArray *array, void *data, int data_length) {
 	array->bytecount += data_length;
 }
 
-// must include data object files (images, etc.) in program by formatting the object as C sourcecode (most portable/least effort), ex:
-
-void ppm_to_binary(const char *ppm_path) {
+void print_ppm_to_binary(const char *ppm_path) {
 
 	// by default, OpenGL reads texture data with a 4-byte row alignment: https://stackoverflow.com/questions/72177553/why-is-gl-unpack-alignment-default-4
 	// it's more efficient, but means this function cannot properly read images whose dimensions aren't a multiple of 4 (fix is simple tho)
@@ -47,15 +47,14 @@ void ppm_to_binary(const char *ppm_path) {
 
 	fclose(file);
 
-	printf("{");
+	printf("unsigned char tex[] = {");
 	for (i = 0; i < width * height * 3; i++) {
 		printf("%#x,", *(pixels + i));
 	}
-	printf("}\n");
+	printf("};\n");
 }
 
-// returns NULL on error
-// Mesh *obj_to_binary(const char *obj_path, const char *ppm_path) {
+// void print_obj_to_binary(const char *obj_path) {
 
 // 	// read obj file
 // 	FILE *file = fopen(obj_path, "r");
@@ -209,8 +208,7 @@ int main() {
 	// mesh1 = import_mesh("res/miku.obj", "res/miku.ppm");
 	// mesh2 = import_mesh("res/block.obj", "res/block.ppm");
 
-	// ppm_to_binary("miku.ppm");
-	ppm_to_binary("block.ppm");
+	print_ppm_to_binary("block.ppm");
 
 	return 0;
 }
