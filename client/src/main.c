@@ -1,6 +1,6 @@
 #define GLEW_STATIC
 #include "../GLEW/glew.h"
-#include "../SDL2/SDL.h"
+#include "SDL2/SDL.h"
 
 #include "util.c"
 #include "3D.c"
