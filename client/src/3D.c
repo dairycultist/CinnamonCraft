@@ -127,12 +127,24 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, int block_x, int blo
 
 		block_x, block_y + 1, block_z,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f
+		1.0f, 1.0f,
+
+		block_x, block_y + 1, block_z + 1,
+		0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f,
+
+		block_x, block_y + 1, block_z,
+		0.0f, 0.0f, 0.0f,
+		1.0f, 1.0f,
+
+		block_x, block_y, block_z + 1,
+		0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f
 	};
 
-	append_ezarray(mesh, data, sizeof(float) * 8 * 3);
+	append_ezarray(mesh, data, sizeof(float) * 8 * 6);
 
-	*vertex_count += 3;
+	*vertex_count += 6;
 }
 
 // converts an array of bytes representing blockstates into a model (representing a chunk)!
