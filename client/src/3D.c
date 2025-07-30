@@ -114,14 +114,40 @@ Model *create_model(const unsigned char *mesh, const int mesh_bytecount, const i
 	return model;
 }
 
+void append_block_to_mesh(EZArray *mesh, int *vertex_count, int block_x, int block_y, int block_z) {
+
+	float data[] = {
+		0.0f + block_x, 0.0f + block_y, 0.0f + block_z,
+		0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f + block_x, 0.0f + block_y, 1.0f + block_z,
+		0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		0.0f + block_x, 1.0f + block_y, 1.0f + block_z,
+		0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f
+	};
+
+	append_ezarray(mesh, data, sizeof(float) * 8 * 3);
+
+	*vertex_count += 3;
+}
+
 // converts an array of bytes representing blockstates into a model (representing a chunk)!
 Model *create_chunk_model(const unsigned char chunk_data[16][16][16], const unsigned char *tex, const int tex_width, const int tex_height) {
 
-	EZArray mesh_data = {0};
+	EZArray mesh = {0};
 
 	int vertex_count = 0;
 
-	return create_model(mesh_data.data, mesh_data.bytecount, vertex_count, tex, tex_width, tex_height);
+	for (int x = 0; x < 16; x++)
+		for (int y = 0; y < 16; y++)
+			for (int z = 0; z < 16; z++)
+		append_block_to_mesh(&mesh, &vertex_count, x, y, z);
+
+	return create_model(mesh.data, mesh.bytecount, vertex_count, tex, tex_width, tex_height);
 }
 
 void mat4_mult(const GLfloat b[4][4], const GLfloat a[4][4], GLfloat out[4][4]) {
