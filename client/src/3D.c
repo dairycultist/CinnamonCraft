@@ -117,29 +117,13 @@ Model *create_model(const unsigned char *mesh, const int mesh_bytecount, const i
 void append_block_to_mesh(EZArray *mesh, int *vertex_count, int block_x, int block_y, int block_z) {
 
 	float data[] = {
-		block_x, block_y, block_z,
-		0.0f, 0.0f, 0.0f,
-		1.0f, 0.0f,
-
-		block_x, block_y, block_z + 1,
-		0.0f, 0.0f, 0.0f,
-		0.0f, 0.0f,
-
-		block_x, block_y + 1, block_z,
-		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f,
-
-		block_x, block_y + 1, block_z + 1,
-		0.0f, 0.0f, 0.0f,
-		0.0f, 1.0f,
-
-		block_x, block_y + 1, block_z,
-		0.0f, 0.0f, 0.0f,
-		1.0f, 1.0f,
-
-		block_x, block_y, block_z + 1,
-		0.0f, 0.0f, 0.0f,
-		0.0f, 0.0f
+		// +x face
+		block_x, block_y, block_z,			1, 0, 0,	1, 0,
+		block_x, block_y, block_z + 1,		1, 0, 0,	0, 0,
+		block_x, block_y + 1, block_z,		1, 0, 0,	1, 1,
+		block_x, block_y + 1, block_z + 1,	1, 0, 0,	0, 1,
+		block_x, block_y + 1, block_z,		1, 0, 0,	1, 1,
+		block_x, block_y, block_z + 1,		1, 0, 0,	0, 0
 	};
 
 	append_ezarray(mesh, data, sizeof(float) * 8 * 6);
