@@ -1,5 +1,31 @@
 #include "util.c"
 
+static char *vertex =
+"#version 150 core\n"
+"uniform mat4 position_matrix;\n"
+"uniform mat4 normal_matrix;\n"
+"in vec3 position;\n"
+"in vec3 normal;\n"
+"in vec2 UV;\n"
+"out vec3 normal_camera;\n"
+"out vec2 frag_UV;\n"
+"void main() {\n"
+    "gl_Position = position_matrix * vec4(position.xy, -position.z, 1.0);\n" // get final position
+    "normal_camera = (normal_matrix * vec4(normal, 1.0)).xyz;\n" // get final normal
+    "frag_UV = UV;\n" // pass along UV
+"}";
+
+static char *fragment =
+"#version 150 core\n"
+"uniform sampler2D tex;\n"
+"in vec3 normal_camera;\n"
+"in vec2 frag_UV;\n"
+"out vec4 outColor;\n"
+"void main() {\n"
+	"float c = dot(normal_camera, vec3(0.7, 0.7, 0)) * 0.5 + 0.5;\n"
+	"outColor = texture(tex, frag_UV) * vec4(c, c, c, 1.0);\n"
+"}";
+
 static GLuint shader_program_shaded;
 static GLfloat proj_matrix[4][4] = {0};
 
@@ -25,39 +51,9 @@ typedef struct {
 } Mesh;
 
 // returns -1 on error
-static GLuint load_shader(const char* path, GLenum shader_type) {
-
-	FILE *file = fopen(path, "r");
-	if (file == NULL) {
-		return -1; // file IO error
-	}
-  
-	// determine file size
-	fseek(file, 0, SEEK_END);
-	long file_size = ftell(file);
-	fseek(file, 0, SEEK_SET);
-  
-	// allocate memory for the string (+1 for null terminator)
-	char *shadercode = (char *) malloc(file_size + 1);
-	if (shadercode == NULL) {
-		fclose(file);
-		return -1; // memory allocation error
-	}
-	
-	// read file content
-	size_t bytes_read = fread(shadercode, 1, file_size, file);
-	if (bytes_read != file_size) {
-		fclose(file);
-		free(shadercode);
-		return -1; // read error or incomplete read
-	}
-	
-	shadercode[file_size] = '\0';
-  
-	fclose(file);
+static GLuint load_shader(const char* const_shadercode, GLenum shader_type) {
 
 	// use shadercode to create shader
-	const char *const_shadercode = shadercode;
 
 	GLuint shader = glCreateShader(shader_type);
 	glShaderSource(shader, 1, &const_shadercode, NULL);
@@ -68,7 +64,7 @@ static GLuint load_shader(const char* path, GLenum shader_type) {
     glGetShaderInfoLog(shader, 512, NULL, compile_log);
 
     if (compile_log[0] != '\0') {
-        printf("'%s' provided a compilation log: %s\n", path, compile_log);
+        printf("Compilation log: %s\n", compile_log);
     }
 
     // check if it compiled successfully
@@ -83,15 +79,12 @@ static GLuint load_shader(const char* path, GLenum shader_type) {
 	return shader;
 }
 
-static GLuint load_shader_program(const char *vertex_path, const char *fragment_path) {
+static GLuint load_shader_program() {
 	
 	GLuint shader_program = glCreateProgram();
-	glAttachShader(shader_program, load_shader(vertex_path, GL_VERTEX_SHADER)); // does not catch errors load_shader makes lol
-	glAttachShader(shader_program, load_shader(fragment_path, GL_FRAGMENT_SHADER));
+	glAttachShader(shader_program, load_shader(vertex, GL_VERTEX_SHADER));
+	glAttachShader(shader_program, load_shader(fragment, GL_FRAGMENT_SHADER));
 	glLinkProgram(shader_program); // apply changes to shader program, not gonna call "glUseProgram" yet bc not drawing
-
-	// IF you want to have arbitrary shaders allowed, you should stop using glGetAttribLocation/glGetUniformLocation, but I don't so I won't
-	// https://stackoverflow.com/questions/15639957/glgetattriblocation-returns-1-when-retrieving-existing-shader-attribute
 
 	return shader_program;
 }
@@ -429,7 +422,7 @@ void draw_mesh(const Transform *camera, const Mesh *mesh) {
 void initialize_3D_static_values() {
 
 	// shader programs
-	shader_program_shaded = load_shader_program("res/shaded.vert", "res/shaded.frag");
+	shader_program_shaded = load_shader_program();
 
 	// perspective projection matrix (converts from view space to clip space)
 	const float fovY = 90;
