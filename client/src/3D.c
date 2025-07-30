@@ -1,5 +1,7 @@
 #include "util.c"
 
+// all 3D objects use the same shader (same for 2D with their own unique shader) for simplicity
+
 static char *vertex =
 "#version 150 core\n"
 "uniform mat4 position_matrix;\n"
@@ -49,45 +51,6 @@ typedef struct {
 	GLuint texture;
 
 } Mesh;
-
-// returns -1 on error
-static GLuint load_shader(const char* const_shadercode, GLenum shader_type) {
-
-	// use shadercode to create shader
-
-	GLuint shader = glCreateShader(shader_type);
-	glShaderSource(shader, 1, &const_shadercode, NULL);
-	glCompileShader(shader);
-
-    // check for compilation log
-    char compile_log[512];
-    glGetShaderInfoLog(shader, 512, NULL, compile_log);
-
-    if (compile_log[0] != '\0') {
-        printf("Compilation log: %s\n", compile_log);
-    }
-
-    // check if it compiled successfully
-    GLint status;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-
-    if (status != GL_TRUE) {
-        log_error("A shader failed to compile");
-		return -1;
-    }
-
-	return shader;
-}
-
-static GLuint load_shader_program() {
-	
-	GLuint shader_program = glCreateProgram();
-	glAttachShader(shader_program, load_shader(vertex, GL_VERTEX_SHADER));
-	glAttachShader(shader_program, load_shader(fragment, GL_FRAGMENT_SHADER));
-	glLinkProgram(shader_program); // apply changes to shader program, not gonna call "glUseProgram" yet bc not drawing
-
-	return shader_program;
-}
 
 void load_ppm(GLenum target, const char *ppm_path) {
 
@@ -422,7 +385,19 @@ void draw_mesh(const Transform *camera, const Mesh *mesh) {
 void initialize_3D_static_values() {
 
 	// shader programs
-	shader_program_shaded = load_shader_program();
+	shader_program_shaded = glCreateProgram();
+
+	GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertex_shader, 1, (const char *const *) &vertex, NULL);
+	glCompileShader(vertex_shader);
+	glAttachShader(shader_program_shaded, vertex_shader);
+
+	GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragment_shader, 1, (const char *const *) &fragment, NULL);
+	glCompileShader(fragment_shader);
+	glAttachShader(shader_program_shaded, fragment_shader);
+
+	glLinkProgram(shader_program_shaded); // apply changes to shader program, not gonna call "glUseProgram" yet bc not drawing
 
 	// perspective projection matrix (converts from view space to clip space)
 	const float fovY = 90;
