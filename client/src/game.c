@@ -1,7 +1,6 @@
 Transform *camera;
 Mesh *mesh1;
 Mesh *mesh2;
-Mesh *sky;
 
 int left     = FALSE;
 int right    = FALSE;
@@ -12,7 +11,7 @@ int down     = FALSE;
 
 char *get_title() {
 
-	return "Boobcraft";
+	return "CinnamonCraft";
 }
 
 void on_start() {
@@ -22,9 +21,8 @@ void on_start() {
 
 	camera = calloc(sizeof(Transform), 1);
 
-	mesh1 = import_mesh("res/miku.obj", "res/miku.ppm", MESH_SHADED);
-	mesh2 = import_mesh("res/block.obj", "res/block.ppm", MESH_SHADED);
-	sky = import_mesh("res/sky.obj", "res/sky.ppm", MESH_SKY);
+	mesh1 = import_mesh("res/miku.obj", "res/miku.ppm");
+	mesh2 = import_mesh("res/block.obj", "res/block.ppm");
 
 	mesh1->transform.z = -2.0;
 	mesh1->transform.yaw = M_PI * -0.2;
@@ -38,7 +36,6 @@ void on_terminate() {
 	free(camera);
 	free(mesh1);
 	free(mesh2);
-	free(sky);
 }
 
 void process_tick() {
@@ -65,7 +62,6 @@ void process_tick() {
 		camera->y -= 0.1;
 	}
 
-	draw_mesh(camera, sky);
 	draw_mesh(camera, mesh1);
 	draw_mesh(camera, mesh2);
 }

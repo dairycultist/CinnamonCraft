@@ -1,4 +1,4 @@
-1 world, no dimensions
+1 world, no dimensions. the world, and syncing clients, is all the server handles at all times (i.e. not menus)
 
 void on_client_connect(all_clients, client)
 
