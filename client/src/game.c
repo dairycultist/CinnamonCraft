@@ -9,6 +9,17 @@ int backward = FALSE;
 int up       = FALSE;
 int down     = FALSE;
 
+char tex[] = {
+	0, 255, 0,   255, 0, 0,
+	0, 0, 255,   255, 255, 255,
+	0, 255, 0,   255, 0, 0,
+	0, 0, 255,   255, 255, 255,
+	0, 255, 0,   255, 0, 0,
+	0, 0, 255,   255, 255, 255,
+	0, 255, 0,   255, 0, 0,
+	0, 0, 255,   255, 255, 255
+};
+
 char *get_title() {
 
 	return "CinnamonCraft";
@@ -21,8 +32,8 @@ void on_start() {
 
 	camera = calloc(sizeof(Transform), 1);
 
-	mesh1 = import_mesh("res/miku.obj", "res/miku.ppm");
-	mesh2 = import_mesh("res/block.obj", "res/block.ppm");
+	mesh1 = import_mesh("../res/miku.obj", tex, 4, 4);
+	mesh2 = import_mesh("../res/block.obj", tex, 4, 4);
 
 	mesh1->transform.z = -2.0;
 	mesh1->transform.yaw = M_PI * -0.2;

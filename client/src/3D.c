@@ -2,6 +2,8 @@
 
 // all 3D objects use the same shader (same for 2D with their own unique shader) for simplicity
 
+// must implement a system for converting an array of bytes representing blockstates into a chunk mesh!
+
 static char *vertex =
 "#version 150 core\n"
 "uniform mat4 position_matrix;\n"
@@ -28,7 +30,7 @@ static char *fragment =
 	"outColor = texture(tex, frag_UV) * vec4(c, c, c, 1.0);\n"
 "}";
 
-static GLuint shader_program_shaded;
+static GLuint shader_program;
 static GLfloat proj_matrix[4][4] = {0};
 
 typedef struct {
@@ -52,42 +54,8 @@ typedef struct {
 
 } Mesh;
 
-void load_ppm(GLenum target, const char *ppm_path) {
-
-	// by default, OpenGL reads texture data with a 4-byte row alignment: https://stackoverflow.com/questions/72177553/why-is-gl-unpack-alignment-default-4
-	// it's more efficient, but means this function cannot properly read images whose dimensions aren't a multiple of 4 correctly (fix is simple tho)
-
-	int width, height;
-
-	FILE *file = fopen(ppm_path, "r");
-
-	// read header
-	{
-		char line[1024];
-
-		fgets(line, 1024, file); // not gonna verify header because I'm lazy and just wanna get this working right now
-		fgets(line, 1024, file);
-		sscanf(line, "%d %d", &width, &height);
-		fgets(line, 1024, file);
-	}
-
-	unsigned char *pixels = malloc(width * height * 3);
-
-	// ppms store pixels starting from the top left, but opengl wants them starting from the bottom left, so you need to flip the "layers"
-	int i;
-
-	for (i = (width - 1) * height * 3; i > 0; i -= width * 3) {
-		fread(pixels + i, 3, width, file);
-	}
-
-	fclose(file);
-
-	// write texture data to target buffer
-	glTexImage2D(target, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels);
-}
-
 // returns NULL on error
-Mesh *import_mesh(const char *obj_path, const char *ppm_path) {
+Mesh *import_mesh(const char *obj_path, const char *tex, const int tex_width, const int tex_height) {
 
 	// read obj file
 	FILE *file = fopen(obj_path, "r");
@@ -186,15 +154,15 @@ Mesh *import_mesh(const char *obj_path, const char *ppm_path) {
 	glBufferData(GL_ARRAY_BUFFER, composite_data.bytecount, composite_data.data, GL_STATIC_DRAW);	// copy vertex data into the active buffer
 
 	// link active vertex data and shader attributes
-	GLint pos_attrib = glGetAttribLocation(shader_program_shaded, "position");
+	GLint pos_attrib = glGetAttribLocation(shader_program, "position");
 	glVertexAttribPointer(pos_attrib, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, 0);
 	glEnableVertexAttribArray(pos_attrib); // requires a VAO to be bound
 
-	GLint normal_attrib = glGetAttribLocation(shader_program_shaded, "normal");
+	GLint normal_attrib = glGetAttribLocation(shader_program, "normal");
 	glVertexAttribPointer(normal_attrib, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (GLvoid *) (sizeof(float) * 3));
 	glEnableVertexAttribArray(normal_attrib);
 
-	GLint uv_attrib = glGetAttribLocation(shader_program_shaded, "UV");
+	GLint uv_attrib = glGetAttribLocation(shader_program, "UV");
 	glVertexAttribPointer(uv_attrib, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (GLvoid *) (sizeof(float) * 6));
 	glEnableVertexAttribArray(uv_attrib);
 
@@ -217,7 +185,7 @@ Mesh *import_mesh(const char *obj_path, const char *ppm_path) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	// write texture data
-	load_ppm(GL_TEXTURE_2D, ppm_path);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_width, tex_height, 0, GL_RGB, GL_UNSIGNED_BYTE, tex);
 
 	// create final mesh object to return
 	Mesh *mesh = malloc(sizeof(Mesh));
@@ -374,9 +342,9 @@ void draw_mesh(const Transform *camera, const Mesh *mesh) {
 	mat4_mult(yaw_matrix, pitch_matrix, normal_matrix);
 
 	// load the shader program and the uniforms we just calculated
-	glUseProgram(shader_program_shaded);
-	glUniformMatrix4fv(glGetUniformLocation(shader_program_shaded, "position_matrix"), 1, GL_FALSE, &position_matrix[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(shader_program_shaded, "normal_matrix"), 1, GL_FALSE, &normal_matrix[0][0]);
+	glUseProgram(shader_program);
+	glUniformMatrix4fv(glGetUniformLocation(shader_program, "position_matrix"), 1, GL_FALSE, &position_matrix[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(shader_program, "normal_matrix"), 1, GL_FALSE, &normal_matrix[0][0]);
 
 	// draw
 	glDrawArrays(GL_TRIANGLES, 0, mesh->vertex_count);
@@ -385,19 +353,19 @@ void draw_mesh(const Transform *camera, const Mesh *mesh) {
 void initialize_3D_static_values() {
 
 	// shader programs
-	shader_program_shaded = glCreateProgram();
+	shader_program = glCreateProgram();
 
 	GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertex_shader, 1, (const char *const *) &vertex, NULL);
 	glCompileShader(vertex_shader);
-	glAttachShader(shader_program_shaded, vertex_shader);
+	glAttachShader(shader_program, vertex_shader);
 
 	GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragment_shader, 1, (const char *const *) &fragment, NULL);
 	glCompileShader(fragment_shader);
-	glAttachShader(shader_program_shaded, fragment_shader);
+	glAttachShader(shader_program, fragment_shader);
 
-	glLinkProgram(shader_program_shaded); // apply changes to shader program, not gonna call "glUseProgram" yet bc not drawing
+	glLinkProgram(shader_program); // apply changes to shader program, not gonna call "glUseProgram" yet bc not drawing
 
 	// perspective projection matrix (converts from view space to clip space)
 	const float fovY = 90;
