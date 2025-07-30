@@ -55,7 +55,7 @@ typedef struct {
 } Model;
 
 // returns NULL on error
-Model *create_model(const unsigned char *mesh, const int mesh_bytecount, const unsigned char *tex, const int tex_width, const int tex_height) {
+Model *create_model(const unsigned char *mesh, const int mesh_bytecount, const int mesh_vertcount, const unsigned char *tex, const int tex_width, const int tex_height) {
 
 	// make vertex array
 	GLuint vertex_array;
@@ -110,7 +110,7 @@ Model *create_model(const unsigned char *mesh, const int mesh_bytecount, const u
 	model->transform.pitch 	= 0.0f;
 	model->transform.yaw 	= 0.0f;
 	model->vertex_array = vertex_array;
-	model->vertex_count = vertex_count;
+	model->vertex_count = mesh_vertcount;
 	model->texture = texture;
 
 	return model;

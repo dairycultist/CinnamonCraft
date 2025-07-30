@@ -149,7 +149,7 @@ void print_obj_to_binary(const char *obj_path) {
 	fclose(file);
 
 	// print composite_data
-	printf("%d bytes\n\n", composite_data.bytecount);
+	printf("%d bytes, %d vertex count\n\n", composite_data.bytecount, vertex_count);
 	print_binary(composite_data.data, composite_data.bytecount, "mesh");
 }
 
