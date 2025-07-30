@@ -1,5 +1,3 @@
-// isolation/abstraction is good :)
-
 #ifndef UTIL_DEFINED
 
 #define UTIL_DEFINED
@@ -19,6 +17,11 @@ uint random_uint(uint bound) {
     return rng_state % bound;
 }
 
+unsigned char random_unsigned_char() {
+
+	return (unsigned char) random_uint(256);
+}
+
 void log_error(const char *msg) {
 	
 	if (strlen(SDL_GetError()) == 0) {
@@ -28,10 +31,9 @@ void log_error(const char *msg) {
 	}
 }
 
-// we can remove this once we've delegated obj loading to the resloader
 typedef struct {
 
-	char data[65536 * 64];
+	unsigned char data[65536];
 	int bytecount;
 
 } EZArray;
