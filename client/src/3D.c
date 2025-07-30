@@ -55,92 +55,7 @@ typedef struct {
 } Model;
 
 // returns NULL on error
-Model *create_model(const char *obj_path, const unsigned char *tex, const int tex_width, const int tex_height) {
-
-	// read obj file
-	FILE *file = fopen(obj_path, "r");
-
-	if (file == NULL) {
-		return NULL;
-	}
-
-	char line[1024];
-
-	EZArray position_data  = {0};
-	EZArray normal_data    = {0};
-	EZArray texture_data   = {0};
-	EZArray composite_data = {0}; // stores combined vertex position, normal, and texture data
-
-	int vertex_count;
-
-	while (fgets(line, 1024, file)) {
-
-		char prefix[8];
-
-		sscanf(line, "%s", prefix);
-
-		if (!strcmp(prefix, "v")) {
-
-			float v[3];
-			
-			sscanf(line, "v %f %f %f", &v[0], &v[1], &v[2]);
-
-			// obj vertices have reverse xz
-			v[0] = -v[0];
-			v[2] = -v[2];
-
-			append_ezarray(&position_data, v, sizeof(float) * 3);
-		}
-
-		else if (!strcmp(prefix, "vn")) {
-
-			float n[3];
-			
-			sscanf(line, "vn %f %f %f", &n[0], &n[1], &n[2]);
-
-			append_ezarray(&normal_data, n, sizeof(float) * 3);
-		}
-
-		else if (!strcmp(prefix, "vt")) {
-
-			float n[2];
-			
-			sscanf(line, "vt %f %f", &n[0], &n[1]);
-
-			append_ezarray(&texture_data, n, sizeof(float) * 2);
-		}
-
-		else if (!strcmp(prefix, "f")) {
-
-			// only works with tris right now (no quads or ngons)
-
-			GLuint p[3]; // vertex position indices
-			GLuint t[3]; // vertex texture coordinate indices
-			GLuint n[3]; // vertex normal indices
-			
-			sscanf(line, "f %u/%u/%u %u/%u/%u %u/%u/%u",
-				&p[0], &t[0], &n[0],
-				&p[1], &t[1], &n[1],
-				&p[2], &t[2], &n[2]);
-
-			// convert vertex indices to vertex positions (indices start at 1 for some reason)
-			append_ezarray(&composite_data, position_data.data + ((p[0] - 1) * sizeof(float) * 3), sizeof(float) * 3);
-			append_ezarray(&composite_data, normal_data.data +   ((n[0] - 1) * sizeof(float) * 3), sizeof(float) * 3);
-			append_ezarray(&composite_data, texture_data.data +  ((t[0] - 1) * sizeof(float) * 2), sizeof(float) * 2);
-
-			append_ezarray(&composite_data, position_data.data + ((p[1] - 1) * sizeof(float) * 3), sizeof(float) * 3);
-			append_ezarray(&composite_data, normal_data.data +   ((n[1] - 1) * sizeof(float) * 3), sizeof(float) * 3);
-			append_ezarray(&composite_data, texture_data.data +  ((t[1] - 1) * sizeof(float) * 2), sizeof(float) * 2);
-
-			append_ezarray(&composite_data, position_data.data + ((p[2] - 1) * sizeof(float) * 3), sizeof(float) * 3);
-			append_ezarray(&composite_data, normal_data.data +   ((n[2] - 1) * sizeof(float) * 3), sizeof(float) * 3);
-			append_ezarray(&composite_data, texture_data.data +  ((t[2] - 1) * sizeof(float) * 2), sizeof(float) * 2);
-			
-			vertex_count += 3;
-		}
-	}
-
-	fclose(file);
+Model *create_model(const unsigned char *mesh, const int mesh_bytecount, const unsigned char *tex, const int tex_width, const int tex_height) {
 
 	// make vertex array
 	GLuint vertex_array;
@@ -150,8 +65,8 @@ Model *create_model(const char *obj_path, const unsigned char *tex, const int te
 	// make vertex buffer (stored by vertex_array)
 	GLuint vertexBuffer;
 	glGenBuffers(1, &vertexBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);													// make it the active buffer
-	glBufferData(GL_ARRAY_BUFFER, composite_data.bytecount, composite_data.data, GL_STATIC_DRAW);	// copy vertex data into the active buffer
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);							// make it the active buffer
+	glBufferData(GL_ARRAY_BUFFER, mesh_bytecount, mesh, GL_STATIC_DRAW);	// copy vertex data into the active buffer
 
 	// link active vertex data and shader attributes
 	GLint pos_attrib = glGetAttribLocation(shader_program, "position");
