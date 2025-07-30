@@ -1,0 +1,11 @@
+1 world, no dimensions
+
+void on_client_connect(all_clients, client)
+
+void on_client_disconnect(all_clients, client)
+
+void on_client_message(all_clients, client, message)
+
+void on_server_tick(all_clients, client)
+
+utility for send_to_client(client, char[])
