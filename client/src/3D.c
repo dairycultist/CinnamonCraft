@@ -55,7 +55,7 @@ typedef struct {
 } Mesh;
 
 // returns NULL on error
-Mesh *import_mesh(const char *obj_path, const char *tex, const int tex_width, const int tex_height) {
+Mesh *import_mesh(const char *obj_path, const unsigned char *tex, const int tex_width, const int tex_height) {
 
 	// read obj file
 	FILE *file = fopen(obj_path, "r");

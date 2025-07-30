@@ -28,6 +28,7 @@ void log_error(const char *msg) {
 	}
 }
 
+// we can remove this once we've delegated obj loading to the resloader
 typedef struct {
 
 	char data[65536 * 64];
