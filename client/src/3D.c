@@ -2,8 +2,6 @@
 
 // all 3D objects use the same shader (same for 2D with their own unique shader) for simplicity
 
-// must implement a system for converting an array of bytes representing blockstates into a model (representing a chunk)!
-
 static char *vertex =
 "#version 150 core\n"
 "uniform mat4 position_matrix;\n"
@@ -114,6 +112,12 @@ Model *create_model(const unsigned char *mesh, const int mesh_bytecount, const i
 	model->texture = texture;
 
 	return model;
+}
+
+// converts an array of bytes representing blockstates into a model (representing a chunk)!
+Model *create_chunk_model(const unsigned char chunk_data[16][16][16], const unsigned char *tex, const int tex_width, const int tex_height) {
+
+	return create_model(mesh, mesh_bytecount, mesh_vertcount, tex, tex_width, tex_height);
 }
 
 void mat4_mult(const GLfloat b[4][4], const GLfloat a[4][4], GLfloat out[4][4]) {

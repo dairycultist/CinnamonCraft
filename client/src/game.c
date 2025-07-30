@@ -1,6 +1,7 @@
 Transform *camera;
-Model *mesh1;
-Model *mesh2;
+
+Model *model_test;
+Model *chunk_test;
 
 int left     = FALSE;
 int right    = FALSE;
@@ -24,21 +25,28 @@ void on_start() {
 
 	camera = calloc(sizeof(Transform), 1);
 
-	mesh1 = create_model(mesh, 1152, 36, tex, 16, 16);
-	mesh2 = create_model(mesh, 1152, 36, tex, 16, 16);
+	// create a model for testing
+	model_test = create_model(mesh, 1152, 36, tex, 16, 16);
+	model_test->transform.z = -2.0;
 
-	mesh1->transform.z = -2.0;
-	mesh1->transform.yaw = M_PI * -0.2;
+	// create a chunk for testing
+	unsigned char chunk_data[16 * 16 * 16];
 
-	mesh2->transform.z = -2.0;
-	mesh2->transform.y = -2.3;
+	for (int i = 0; i < 16 * 16 * 16; i++) {
+
+		chunk_data[i] = (unsigned char) random_uint(256);
+	}
+
+	chunk_test = create_chunk_model((const unsigned char (*)[16][16]) chunk_data, tex, 16, 16);
+	chunk_test->transform.z = -2.0;
+	chunk_test->transform.y = 2.3;
 }
 
 void on_terminate() {
 
 	free(camera);
-	free(mesh1);
-	free(mesh2);
+	free(model_test);
+	free(chunk_test);
 }
 
 void process_tick() {
@@ -65,8 +73,10 @@ void process_tick() {
 		camera->y -= 0.1;
 	}
 
-	draw_model(camera, mesh1);
-	draw_model(camera, mesh2);
+	model_test->transform.yaw += 0.01;
+
+	draw_model(camera, model_test);
+	draw_model(camera, chunk_test);
 }
 
 void process_event(SDL_Event event) {
