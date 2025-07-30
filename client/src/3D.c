@@ -123,12 +123,28 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, int block_x, int blo
 		block_x, block_y + 1, block_z,		1, 0, 0,	1, 1,
 		block_x, block_y + 1, block_z + 1,	1, 0, 0,	0, 1,
 		block_x, block_y + 1, block_z,		1, 0, 0,	1, 1,
-		block_x, block_y, block_z + 1,		1, 0, 0,	0, 0
+		block_x, block_y, block_z + 1,		1, 0, 0,	0, 0,
+
+		// +y face
+		block_x, block_y + 1, block_z,			0, 1, 0,	1, 0,
+		block_x, block_y + 1, block_z + 1,		0, 1, 0,	0, 0,
+		block_x + 1, block_y + 1, block_z,		0, 1, 0,	1, 1,
+		block_x + 1, block_y + 1, block_z + 1,	0, 1, 0,	0, 1,
+		block_x + 1, block_y + 1, block_z,		0, 1, 0,	1, 1,
+		block_x, block_y + 1, block_z + 1,		0, 1, 0,	0, 0,
+
+		// +z face
+		block_x, block_y, block_z,			0, 0, 1,	1, 0,
+		block_x, block_y + 1, block_z,		0, 0, 1,	1, 1,
+		block_x + 1, block_y, block_z,		0, 0, 1,	0, 0,
+		block_x + 1, block_y + 1, block_z,	0, 0, 1,	0, 1,
+		block_x + 1, block_y, block_z,		0, 0, 1,	0, 0,
+		block_x, block_y + 1, block_z,		0, 0, 1,	1, 1,
 	};
 
-	append_ezarray(mesh, data, sizeof(float) * 8 * 6);
+	append_ezarray(mesh, data, sizeof(float) * 8 * 18);
 
-	*vertex_count += 6;
+	*vertex_count += 18;
 }
 
 // converts an array of bytes representing blockstates into a model (representing a chunk)!
