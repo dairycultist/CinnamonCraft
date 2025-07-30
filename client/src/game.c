@@ -34,7 +34,7 @@ void on_start() {
 
 	for (int i = 0; i < 16 * 16 * 16; i++) {
 
-		chunk_data[i] = random_unsigned_char();
+		chunk_data[i] = (unsigned char) random_uint(2);
 	}
 
 	chunk_test = create_chunk_model((const unsigned char (*)[16][16]) chunk_data, tex, 16, 16);
