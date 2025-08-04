@@ -33,7 +33,7 @@ void log_error(const char *msg) {
 
 typedef struct {
 
-	unsigned char data[65536 * 64];
+	unsigned char data[65536 * 64 * 8];
 	int bytecount;
 
 } EZArray;

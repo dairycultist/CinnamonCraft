@@ -123,11 +123,11 @@ Model *create_model(const unsigned char *mesh, const int mesh_bytecount, const i
 	return model;
 }
 
-void append_block_to_mesh(EZArray *mesh, char block, int *vertex_count, int block_x, int block_y, int block_z) {
+void append_block_to_mesh(EZArray *mesh, unsigned char block, int *vertex_count, int block_x, int block_y, int block_z) {
 
 	if (block == 0) { return; }
 
-	unsigned char spritemap_index = 32;
+	unsigned char spritemap_index = 242 + (block % 7);
 
 	float u_sml = (spritemap_index % 16) / 16.;
 	float v_sml = (spritemap_index / 16) / 16.;
