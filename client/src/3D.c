@@ -125,14 +125,21 @@ Model *create_model(const unsigned char *mesh, const int mesh_bytecount, const i
 
 void append_block_to_mesh(EZArray *mesh, int *vertex_count, int block_x, int block_y, int block_z) {
 
+	unsigned char spritemap_index = 32;
+
+	float u_sml = (spritemap_index % 16) / 16.;
+	float v_sml = (spritemap_index / 16) / 16.;
+	float u_big = ((spritemap_index + 1) % 16) / 16.;
+	float v_big = (spritemap_index / 16 + 1) / 16.;
+
 	float data[] = {
 		// +x face
-		block_x, block_y, block_z,			1, 0, 0,	1, 0,
-		block_x, block_y, block_z + 1,		1, 0, 0,	0, 0,
-		block_x, block_y + 1, block_z,		1, 0, 0,	1, 1,
-		block_x, block_y + 1, block_z + 1,	1, 0, 0,	0, 1,
-		block_x, block_y + 1, block_z,		1, 0, 0,	1, 1,
-		block_x, block_y, block_z + 1,		1, 0, 0,	0, 0,
+		block_x, block_y, block_z,			1, 0, 0,	u_big, v_sml,
+		block_x, block_y, block_z + 1,		1, 0, 0,	u_sml, v_sml,
+		block_x, block_y + 1, block_z,		1, 0, 0,	u_big, v_big,
+		block_x, block_y + 1, block_z + 1,	1, 0, 0,	u_sml, v_big,
+		block_x, block_y + 1, block_z,		1, 0, 0,	u_big, v_big,
+		block_x, block_y, block_z + 1,		1, 0, 0,	u_sml, v_sml,
 
 		// -x face
 		block_x + 1, block_y, block_z,			-1, 0, 0,	0, 0,
