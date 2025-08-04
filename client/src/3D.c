@@ -147,6 +147,8 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, int block_x, int blo
 	*vertex_count += 18;
 }
 
+// probably need a [ChunkModel *create_empty_chunk()] and [void remesh_chunk()] which remeshes based on the model's internal chunk_data
+
 // converts an array of bytes representing blockstates into a model (representing a chunk)!
 Model *create_chunk_model(const unsigned char chunk_data[16][16][16], const unsigned char *tex, const int tex_width, const int tex_height) {
 
