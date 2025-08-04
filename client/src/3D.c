@@ -1,4 +1,4 @@
-#include "util.c"
+#include "../../util.c"
 
 // all 3D objects use the same shader (same for 2D with their own unique shader) for simplicity
 

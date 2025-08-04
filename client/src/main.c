@@ -3,9 +3,18 @@
 #include "SDL2/SDL.h"
 
 #include "resources.c" // binary, automatically updated with new resources on Make
-#include "util.c"
+#include "../../util.c"
 #include "3D.c"
 #include "game.c"
+
+void log_error(const char *msg) {
+	
+	if (strlen(SDL_GetError()) == 0) {
+		fprintf(stderr, "\n%s: <No error given>\n\n", msg);
+	} else {
+		fprintf(stderr, "\n%s: %s\n\n", msg, SDL_GetError());
+	}
+}
 
 int main() {
 
