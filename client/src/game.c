@@ -36,7 +36,7 @@ void on_start() {
 			for (int z = 0; z < 16; z++)
 				chunk.blocks[x][y][z] = (unsigned char) random_uint(2);
 
-	remesh_chunk(&chunk, tex, 16, 16);
+	remesh_chunk(&chunk);
 
 	chunk.model.transform.z = -2.0;
 	chunk.model.transform.y = 2.3;

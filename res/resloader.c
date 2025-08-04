@@ -156,8 +156,8 @@ void print_obj_to_binary(const char *obj_path) {
 int main() {
 
 	// print_obj_to_binary("miku.obj");
-	print_obj_to_binary("block.obj");
-	// print_ppm_to_binary("block.ppm");
+	// print_obj_to_binary("block.obj");
+	print_ppm_to_binary("minecraft_block_spritemap.ppm");
 
 	return 0;
 }
