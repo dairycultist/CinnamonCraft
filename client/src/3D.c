@@ -125,6 +125,14 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, int block_x, int blo
 		block_x, block_y + 1, block_z,		1, 0, 0,	1, 1,
 		block_x, block_y, block_z + 1,		1, 0, 0,	0, 0,
 
+		// -x face
+		block_x + 1, block_y, block_z,			-1, 0, 0,	1, 0,
+		block_x + 1, block_y + 1, block_z,		-1, 0, 0,	1, 1,
+		block_x + 1, block_y, block_z + 1,		-1, 0, 0,	0, 0,
+		block_x + 1, block_y + 1, block_z + 1,	-1, 0, 0,	0, 1,
+		block_x + 1, block_y, block_z + 1,		-1, 0, 0,	0, 0,
+		block_x + 1, block_y + 1, block_z,		-1, 0, 0,	1, 1,
+
 		// +y face
 		block_x, block_y + 1, block_z,			0, 1, 0,	1, 0,
 		block_x, block_y + 1, block_z + 1,		0, 1, 0,	0, 0,
@@ -133,6 +141,14 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, int block_x, int blo
 		block_x + 1, block_y + 1, block_z,		0, 1, 0,	1, 1,
 		block_x, block_y + 1, block_z + 1,		0, 1, 0,	0, 0,
 
+		// -y face
+		block_x, block_y, block_z,			0, -1, 0,	1, 0,
+		block_x + 1, block_y, block_z,		0, -1, 0,	1, 1,
+		block_x, block_y, block_z + 1,		0, -1, 0,	0, 0,
+		block_x + 1, block_y, block_z + 1,	0, -1, 0,	0, 1,
+		block_x, block_y, block_z + 1,		0, -1, 0,	0, 0,
+		block_x + 1, block_y, block_z,		0, -1, 0,	1, 1,
+
 		// +z face
 		block_x, block_y, block_z,			0, 0, 1,	1, 0,
 		block_x, block_y + 1, block_z,		0, 0, 1,	1, 1,
@@ -140,11 +156,19 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, int block_x, int blo
 		block_x + 1, block_y + 1, block_z,	0, 0, 1,	0, 1,
 		block_x + 1, block_y, block_z,		0, 0, 1,	0, 0,
 		block_x, block_y + 1, block_z,		0, 0, 1,	1, 1,
+
+		// -z face
+		block_x, block_y, block_z + 1,			0, 0, -1,	1, 0,
+		block_x + 1, block_y, block_z + 1,		0, 0, -1,	0, 0,
+		block_x, block_y + 1, block_z + 1,		0, 0, -1,	1, 1,
+		block_x + 1, block_y + 1, block_z + 1,	0, 0, -1,	0, 1,
+		block_x, block_y + 1, block_z + 1,		0, 0, -1,	1, 1,
+		block_x + 1, block_y, block_z + 1,		0, 0, -1,	0, 0,
 	};
 
-	append_ezarray(mesh, data, sizeof(float) * 8 * 18);
+	append_ezarray(mesh, data, sizeof(float) * 288); // float size * floats/vertex (8) * vertices/face (6) * faces (6)
 
-	*vertex_count += 18;
+	*vertex_count += 36; // vertices/face (6) * faces (6)
 }
 
 // probably need a [ChunkModel *create_empty_chunk()] and [void remesh_chunk()] which remeshes based on the model's internal chunk_data
