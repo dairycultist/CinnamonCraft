@@ -1,7 +1,8 @@
 Transform *camera;
 
 Model *model_test;
-Model *chunk_test;
+
+ChunkModel chunk;
 
 int left     = FALSE;
 int right    = FALSE;
@@ -30,23 +31,21 @@ void on_start() {
 	model_test->transform.z = -2.0;
 
 	// create a chunk for testing
-	unsigned char chunk_data[16 * 16 * 16];
+	for (int x = 0; x < 16; x++)
+		for (int y = 0; y < 16; y++)
+			for (int z = 0; z < 16; z++)
+				chunk.blocks[x][y][z] = (unsigned char) random_uint(2);
 
-	for (int i = 0; i < 16 * 16 * 16; i++) {
+	remesh_chunk(&chunk, tex, 16, 16);
 
-		chunk_data[i] = (unsigned char) random_uint(2);
-	}
-
-	chunk_test = create_chunk_model((const unsigned char (*)[16][16]) chunk_data, tex, 16, 16);
-	chunk_test->transform.z = -2.0;
-	chunk_test->transform.y = 2.3;
+	chunk.model.transform.z = -2.0;
+	chunk.model.transform.y = 2.3;
 }
 
 void on_terminate() {
 
 	free(camera);
 	free(model_test);
-	free(chunk_test);
 }
 
 void process_tick() {
@@ -76,7 +75,7 @@ void process_tick() {
 	model_test->transform.yaw += 0.01;
 
 	draw_model(camera, model_test);
-	draw_model(camera, chunk_test);
+	draw_model(camera, &chunk.model);
 }
 
 void process_event(SDL_Event event) {

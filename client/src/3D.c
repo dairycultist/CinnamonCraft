@@ -52,6 +52,13 @@ typedef struct {
 
 } Model;
 
+typedef struct {
+
+	Model model;
+	unsigned char blocks[16][16][16]; // array of bytes representing blockstates
+
+} ChunkModel;
+
 // returns NULL on error
 Model *create_model(const unsigned char *mesh, const int mesh_bytecount, const int mesh_vertcount, const unsigned char *tex, const int tex_width, const int tex_height) {
 
@@ -171,10 +178,8 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, int block_x, int blo
 	*vertex_count += 36; // vertices/face (6) * faces (6)
 }
 
-// probably need a [ChunkModel *create_empty_chunk()] and [void remesh_chunk()] which remeshes based on the model's internal chunk_data
-
-// converts an array of bytes representing blockstates into a model (representing a chunk)!
-Model *create_chunk_model(const unsigned char chunk_data[16][16][16], const unsigned char *tex, const int tex_width, const int tex_height) {
+// remeshes based on the model's internal chunk_data
+void remesh_chunk(const ChunkModel *chunk, const unsigned char *tex, const int tex_width, const int tex_height) {
 
 	EZArray mesh = {0};
 
@@ -183,10 +188,13 @@ Model *create_chunk_model(const unsigned char chunk_data[16][16][16], const unsi
 	for (int x = 0; x < 16; x++)
 		for (int y = 0; y < 16; y++)
 			for (int z = 0; z < 16; z++)
-				if (chunk_data[x][y][z] == 1)
+				if (chunk->blocks[x][y][z] == 1)
 					append_block_to_mesh(&mesh, &vertex_count, x, y, z);
 
-	return create_model(mesh.data, mesh.bytecount, vertex_count, tex, tex_width, tex_height);
+	Model *model = create_model(mesh.data, mesh.bytecount, vertex_count, tex, tex_width, tex_height);
+
+	memcpy((void *) &chunk->model, model, sizeof(Model));
+	free(model);
 }
 
 void mat4_mult(const GLfloat b[4][4], const GLfloat a[4][4], GLfloat out[4][4]) {
