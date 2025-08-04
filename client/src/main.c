@@ -2,6 +2,7 @@
 #include "../GLEW/glew.h"
 #include "SDL2/SDL.h"
 
+#include "resources.c" // binary, automatically updated with new resources on Make
 #include "util.c"
 #include "3D.c"
 #include "game.c"

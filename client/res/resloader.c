@@ -23,10 +23,10 @@ void print_binary(const unsigned char *binary, const int binary_length, const ch
 	for (int i = 0; i < binary_length; i++) {
 		printf("%#x,", *(binary + i));
 	}
-	printf("};\n");
+	printf("};\n\n");
 }
 
-void print_ppm_to_binary(const char *ppm_path) {
+void print_ppm_to_binary(const char *ppm_path, const char *var_name) {
 
 	// by default, OpenGL reads texture data with a 4-byte row alignment: https://stackoverflow.com/questions/72177553/why-is-gl-unpack-alignment-default-4
 	// it's more efficient, but means this function cannot properly read images whose dimensions aren't a multiple of 4 (fix is simple tho)
@@ -56,8 +56,7 @@ void print_ppm_to_binary(const char *ppm_path) {
 
 	fclose(file);
 
-	printf("%d x %d\n\n", width, height);
-	print_binary(pixels, width * height * 3, "tex");
+	print_binary(pixels, width * height * 3, var_name);
 }
 
 void print_obj_to_binary(const char *obj_path) {
@@ -155,9 +154,11 @@ void print_obj_to_binary(const char *obj_path) {
 
 int main() {
 
+	freopen("../src/resources.c", "w", stdout);
+
 	// print_obj_to_binary("miku.obj");
 	// print_obj_to_binary("block.obj");
-	print_ppm_to_binary("minecraft_block_spritemap.ppm");
+	print_ppm_to_binary("minecraft_block_spritemap.ppm", "block_spritemap");
 
 	return 0;
 }
