@@ -123,7 +123,9 @@ Model *create_model(const unsigned char *mesh, const int mesh_bytecount, const i
 	return model;
 }
 
-void append_block_to_mesh(EZArray *mesh, int *vertex_count, int block_x, int block_y, int block_z) {
+void append_block_to_mesh(EZArray *mesh, char block, int *vertex_count, int block_x, int block_y, int block_z) {
+
+	if (block == 0) { return; }
 
 	unsigned char spritemap_index = 32;
 
@@ -142,44 +144,44 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, int block_x, int blo
 		block_x, block_y, block_z + 1,		1, 0, 0,	u_sml, v_sml,
 
 		// -x face
-		block_x + 1, block_y, block_z,			-1, 0, 0,	0, 0,
-		block_x + 1, block_y + 1, block_z,		-1, 0, 0,	0, 1,
-		block_x + 1, block_y, block_z + 1,		-1, 0, 0,	1, 0,
-		block_x + 1, block_y + 1, block_z + 1,	-1, 0, 0,	1, 1,
-		block_x + 1, block_y, block_z + 1,		-1, 0, 0,	1, 0,
-		block_x + 1, block_y + 1, block_z,		-1, 0, 0,	0, 1,
+		block_x + 1, block_y, block_z,			-1, 0, 0,	u_sml, v_sml,
+		block_x + 1, block_y + 1, block_z,		-1, 0, 0,	u_sml, v_big,
+		block_x + 1, block_y, block_z + 1,		-1, 0, 0,	u_big, v_sml,
+		block_x + 1, block_y + 1, block_z + 1,	-1, 0, 0,	u_big, v_big,
+		block_x + 1, block_y, block_z + 1,		-1, 0, 0,	u_big, v_sml,
+		block_x + 1, block_y + 1, block_z,		-1, 0, 0,	u_sml, v_big,
 
 		// +y face
-		block_x, block_y + 1, block_z,			0, 1, 0,	1, 0,
-		block_x, block_y + 1, block_z + 1,		0, 1, 0,	0, 0,
-		block_x + 1, block_y + 1, block_z,		0, 1, 0,	1, 1,
-		block_x + 1, block_y + 1, block_z + 1,	0, 1, 0,	0, 1,
-		block_x + 1, block_y + 1, block_z,		0, 1, 0,	1, 1,
-		block_x, block_y + 1, block_z + 1,		0, 1, 0,	0, 0,
+		block_x, block_y + 1, block_z,			0, 1, 0,	u_big, v_sml,
+		block_x, block_y + 1, block_z + 1,		0, 1, 0,	u_sml, v_sml,
+		block_x + 1, block_y + 1, block_z,		0, 1, 0,	u_big, v_big,
+		block_x + 1, block_y + 1, block_z + 1,	0, 1, 0,	u_sml, v_big,
+		block_x + 1, block_y + 1, block_z,		0, 1, 0,	u_big, v_big,
+		block_x, block_y + 1, block_z + 1,		0, 1, 0,	u_sml, v_sml,
 
 		// -y face
-		block_x, block_y, block_z,			0, -1, 0,	0, 0,
-		block_x + 1, block_y, block_z,		0, -1, 0,	0, 1,
-		block_x, block_y, block_z + 1,		0, -1, 0,	1, 0,
-		block_x + 1, block_y, block_z + 1,	0, -1, 0,	1, 1,
-		block_x, block_y, block_z + 1,		0, -1, 0,	1, 0,
-		block_x + 1, block_y, block_z,		0, -1, 0,	0, 1,
+		block_x, block_y, block_z,			0, -1, 0,	u_sml, v_sml,
+		block_x + 1, block_y, block_z,		0, -1, 0,	u_sml, v_big,
+		block_x, block_y, block_z + 1,		0, -1, 0,	u_big, v_sml,
+		block_x + 1, block_y, block_z + 1,	0, -1, 0,	u_big, v_big,
+		block_x, block_y, block_z + 1,		0, -1, 0,	u_big, v_sml,
+		block_x + 1, block_y, block_z,		0, -1, 0,	u_sml, v_big,
 
 		// +z face
-		block_x, block_y, block_z,			0, 0, 1,	0, 0,
-		block_x, block_y + 1, block_z,		0, 0, 1,	0, 1,
-		block_x + 1, block_y, block_z,		0, 0, 1,	1, 0,
-		block_x + 1, block_y + 1, block_z,	0, 0, 1,	1, 1,
-		block_x + 1, block_y, block_z,		0, 0, 1,	1, 0,
-		block_x, block_y + 1, block_z,		0, 0, 1,	0, 1,
+		block_x, block_y, block_z,			0, 0, 1,	u_sml, v_sml,
+		block_x, block_y + 1, block_z,		0, 0, 1,	u_sml, v_big,
+		block_x + 1, block_y, block_z,		0, 0, 1,	u_big, v_sml,
+		block_x + 1, block_y + 1, block_z,	0, 0, 1,	u_big, v_big,
+		block_x + 1, block_y, block_z,		0, 0, 1,	u_big, v_sml,
+		block_x, block_y + 1, block_z,		0, 0, 1,	u_sml, v_big,
 
 		// -z face
-		block_x, block_y, block_z + 1,			0, 0, -1,	1, 0,
-		block_x + 1, block_y, block_z + 1,		0, 0, -1,	0, 0,
-		block_x, block_y + 1, block_z + 1,		0, 0, -1,	1, 1,
-		block_x + 1, block_y + 1, block_z + 1,	0, 0, -1,	0, 1,
-		block_x, block_y + 1, block_z + 1,		0, 0, -1,	1, 1,
-		block_x + 1, block_y, block_z + 1,		0, 0, -1,	0, 0,
+		block_x, block_y, block_z + 1,			0, 0, -1,	u_big, v_sml,
+		block_x + 1, block_y, block_z + 1,		0, 0, -1,	u_sml, v_sml,
+		block_x, block_y + 1, block_z + 1,		0, 0, -1,	u_big, v_big,
+		block_x + 1, block_y + 1, block_z + 1,	0, 0, -1,	u_sml, v_big,
+		block_x, block_y + 1, block_z + 1,		0, 0, -1,	u_big, v_big,
+		block_x + 1, block_y, block_z + 1,		0, 0, -1,	u_sml, v_sml,
 	};
 
 	append_ezarray(mesh, data, sizeof(float) * 288); // float size * floats/vertex (8) * vertices/face (6) * faces (6)
@@ -197,8 +199,7 @@ void remesh_chunk(const ChunkModel *chunk) {
 	for (int x = 0; x < 16; x++)
 		for (int y = 0; y < 16; y++)
 			for (int z = 0; z < 16; z++)
-				if (chunk->blocks[x][y][z] == 1)
-					append_block_to_mesh(&mesh, &vertex_count, x, y, z);
+				append_block_to_mesh(&mesh, chunk->blocks[x][y][z], &vertex_count, x, y, z);
 
 	Model *model = create_model(mesh.data, mesh.bytecount, vertex_count, block_spritemap, 256, 256);
 
