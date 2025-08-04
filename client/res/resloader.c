@@ -66,7 +66,7 @@ void print_obj_to_binary(const char *obj_path, const char *var_name) {
 
 	int vertex_count;
 
-	while (fgets(line, 1024, file) && vertex_count < 500) {
+	while (fgets(line, 1024, file)) {
 
 		char prefix[8];
 

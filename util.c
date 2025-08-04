@@ -17,7 +17,7 @@ unsigned int random_uint(unsigned int bound) {
     return rng_state % bound;
 }
 
-unsigned char random_unsigned_char() {
+unsigned char random_uchar() {
 
 	return (unsigned char) random_uint(256);
 }
