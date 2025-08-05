@@ -59,7 +59,8 @@ typedef struct {
 
 } ChunkModel;
 
-#define BLOCK_HAS_PASSTHROUGH(block) ((block) == 0) // air has "passthrough" because adjacent blocks aren't able to cull the faces that touch it
+#define BLOCK_IS_AIR(block) ((block) == 0 || (block) > 4)
+#define BLOCK_HAS_PASSTHROUGH(block) (BLOCK_IS_AIR(block)) // air has "passthrough" because adjacent blocks aren't able to cull the faces that touch it
 
 #define GET_SPRITEMAP_UV(index, u_sml, v_sml, u_big, v_big) u_sml = ((index) % 16) / 16.; v_sml = ((index) / 16) / 16.; u_big = (((index) + 1) % 16) / 16.; v_big = ((index) / 16 + 1) / 16.;
 
@@ -133,7 +134,7 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 
 	unsigned char block = blocks[block_x][block_y][block_z];
 
-	if (block == 0) { return; }
+	if (BLOCK_IS_AIR(block)) { return; }
 
 	float u_sml, v_sml, u_big, v_big;
 
