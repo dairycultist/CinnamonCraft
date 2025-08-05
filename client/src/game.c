@@ -31,7 +31,7 @@ void on_start() {
 	for (int x = 0; x < 16; x++)
 		for (int y = 0; y < 16; y++)
 			for (int z = 0; z < 16; z++)
-				chunk.blocks[x][y][z] = random_uint(2) == 0 ? 0 : random_uchar();
+				chunk.blocks[x][y][z] = random_uint(4) == 0 ? 0 : random_uchar();
 
 	remesh_chunk(&chunk);
 

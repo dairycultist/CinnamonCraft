@@ -138,8 +138,10 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 	float u_big = ((spritemap_index + 1) % 16) / 16.;
 	float v_big = (spritemap_index / 16 + 1) / 16.;
 
+	// pretty sure I have normals' polarity for x,z backwards in rendering
+
 	float full_block_data[] = {
-		// +x face
+		// -x face
 		block_x, block_y, block_z,			1, 0, 0,	u_big, v_sml,
 		block_x, block_y, block_z + 1,		1, 0, 0,	u_sml, v_sml,
 		block_x, block_y + 1, block_z,		1, 0, 0,	u_big, v_big,
@@ -147,7 +149,7 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 		block_x, block_y + 1, block_z,		1, 0, 0,	u_big, v_big,
 		block_x, block_y, block_z + 1,		1, 0, 0,	u_sml, v_sml,
 
-		// -x face
+		// +x face
 		block_x + 1, block_y, block_z,			-1, 0, 0,	u_sml, v_sml,
 		block_x + 1, block_y + 1, block_z,		-1, 0, 0,	u_sml, v_big,
 		block_x + 1, block_y, block_z + 1,		-1, 0, 0,	u_big, v_sml,
@@ -171,7 +173,7 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 		block_x, block_y, block_z + 1,		0, -1, 0,	u_big, v_sml,
 		block_x + 1, block_y, block_z,		0, -1, 0,	u_sml, v_big,
 
-		// +z face
+		// -z face
 		block_x, block_y, block_z,			0, 0, 1,	u_sml, v_sml,
 		block_x, block_y + 1, block_z,		0, 0, 1,	u_sml, v_big,
 		block_x + 1, block_y, block_z,		0, 0, 1,	u_big, v_sml,
@@ -179,7 +181,7 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 		block_x + 1, block_y, block_z,		0, 0, 1,	u_big, v_sml,
 		block_x, block_y + 1, block_z,		0, 0, 1,	u_sml, v_big,
 
-		// -z face
+		// +z face
 		block_x, block_y, block_z + 1,			0, 0, -1,	u_big, v_sml,
 		block_x + 1, block_y, block_z + 1,		0, 0, -1,	u_sml, v_sml,
 		block_x, block_y + 1, block_z + 1,		0, 0, -1,	u_big, v_big,
@@ -188,11 +190,19 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 		block_x + 1, block_y, block_z + 1,		0, 0, -1,	u_sml, v_sml,
 	};
 
-	append_ezarray(mesh, full_block_data, sizeof(float) * 8 * 6);
-	*vertex_count += 6;
+	// -x
+	if (block_x == 0 || BLOCK_HAS_PASSTHROUGH(blocks[block_x-1][block_y][block_z])) {
 
-	append_ezarray(mesh, full_block_data + 8 * 6, sizeof(float) * 8 * 6);
-	*vertex_count += 6;
+		append_ezarray(mesh, full_block_data, sizeof(float) * 8 * 6);
+		*vertex_count += 6;
+	}
+
+	// +x
+	if (block_x == 15 || BLOCK_HAS_PASSTHROUGH(blocks[block_x+1][block_y][block_z])) {
+
+		append_ezarray(mesh, full_block_data + 8 * 6, sizeof(float) * 8 * 6);
+		*vertex_count += 6;
+	}
 
 	// +y
 	if (block_y == 15 || BLOCK_HAS_PASSTHROUGH(blocks[block_x][block_y+1][block_z])) {
@@ -208,11 +218,19 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 		*vertex_count += 6;
 	}
 
-	append_ezarray(mesh, full_block_data + 8 * 6 * 4, sizeof(float) * 8 * 6);
-	*vertex_count += 6;
+	// -z
+	if (block_z == 0 || BLOCK_HAS_PASSTHROUGH(blocks[block_x][block_y][block_z-1])) {
 
-	append_ezarray(mesh, full_block_data + 8 * 6 * 5, sizeof(float) * 8 * 6);
-	*vertex_count += 6;
+		append_ezarray(mesh, full_block_data + 8 * 6 * 4, sizeof(float) * 8 * 6);
+		*vertex_count += 6;
+	}
+
+	// +z
+	if (block_z == 15 || BLOCK_HAS_PASSTHROUGH(blocks[block_x][block_y][block_z+1])) {
+
+		append_ezarray(mesh, full_block_data + 8 * 6 * 5, sizeof(float) * 8 * 6);
+		*vertex_count += 6;
+	}
 }
 
 // remeshes based on the model's internal chunk_data
