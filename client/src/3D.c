@@ -121,7 +121,12 @@ Model *create_model(const unsigned char *mesh, const int mesh_bytecount, const i
 	return model;
 }
 
-void append_block_to_mesh(EZArray *mesh, unsigned char block, int *vertex_count, int block_x, int block_y, int block_z) {
+void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char blocks[16][16][16], int block_x, int block_y, int block_z) {
+
+	// this function has all information about blocks
+	// - if they're full blocks (aka allowing adjacent blocks to cull their faces, what their mesh is, etc)
+
+	unsigned char block = blocks[block_x][block_y][block_z];
 
 	if (block == 0) { return; }
 
@@ -132,7 +137,7 @@ void append_block_to_mesh(EZArray *mesh, unsigned char block, int *vertex_count,
 	float u_big = ((spritemap_index + 1) % 16) / 16.;
 	float v_big = (spritemap_index / 16 + 1) / 16.;
 
-	float data[] = {
+	float full_block_data[] = {
 		// +x face
 		block_x, block_y, block_z,			1, 0, 0,	u_big, v_sml,
 		block_x, block_y, block_z + 1,		1, 0, 0,	u_sml, v_sml,
@@ -182,9 +187,23 @@ void append_block_to_mesh(EZArray *mesh, unsigned char block, int *vertex_count,
 		block_x + 1, block_y, block_z + 1,		0, 0, -1,	u_sml, v_sml,
 	};
 
-	append_ezarray(mesh, data, sizeof(float) * 288); // float size * floats/vertex (8) * vertices/face (6) * faces (6)
+	append_ezarray(mesh, full_block_data, sizeof(float) * 8 * 6);
+	*vertex_count += 6;
 
-	*vertex_count += 36; // vertices/face (6) * faces (6)
+	append_ezarray(mesh, full_block_data + 8 * 6, sizeof(float) * 8 * 6);
+	*vertex_count += 6;
+
+	append_ezarray(mesh, full_block_data + 8 * 6 * 2, sizeof(float) * 8 * 6);
+	*vertex_count += 6;
+
+	append_ezarray(mesh, full_block_data + 8 * 6 * 3, sizeof(float) * 8 * 6);
+	*vertex_count += 6;
+
+	append_ezarray(mesh, full_block_data + 8 * 6 * 4, sizeof(float) * 8 * 6);
+	*vertex_count += 6;
+
+	append_ezarray(mesh, full_block_data + 8 * 6 * 5, sizeof(float) * 8 * 6);
+	*vertex_count += 6;
 }
 
 // remeshes based on the model's internal chunk_data
@@ -197,7 +216,7 @@ void remesh_chunk(const ChunkModel *chunk) {
 	for (int x = 0; x < 16; x++)
 		for (int y = 0; y < 16; y++)
 			for (int z = 0; z < 16; z++)
-				append_block_to_mesh(&mesh, chunk->blocks[x][y][z], &vertex_count, x, y, z);
+				append_block_to_mesh(&mesh, &vertex_count, chunk->blocks, x, y, z);
 
 	Model *model = create_model(mesh.data, mesh.bytecount, vertex_count, block_spritemap, 256, 256);
 
@@ -356,7 +375,7 @@ void draw_model(const Transform *camera, const Model *model) {
 
 void initialize_shader() {
 
-	// shader programs
+	// create shader program
 	shader_program = glCreateProgram();
 
 	GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -369,8 +388,8 @@ void initialize_shader() {
 	glCompileShader(fragment_shader);
 	glAttachShader(shader_program, fragment_shader);
 
-	glLinkProgram(shader_program); // apply changes to shader program, not gonna call "glUseProgram" yet bc not drawing
-
+	// apply changes to shader program (not gonna call "glUseProgram" yet bc not drawing)
+	glLinkProgram(shader_program);
 }
 
 void initialize_perspective(const float aspectRatio) {
