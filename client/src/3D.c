@@ -354,7 +354,7 @@ void draw_model(const Transform *camera, const Model *model) {
 	glDrawArrays(GL_TRIANGLES, 0, model->vertex_count);
 }
 
-void initialize_3D_static_values() {
+void initialize_shader() {
 
 	// shader programs
 	shader_program = glCreateProgram();
@@ -371,9 +371,12 @@ void initialize_3D_static_values() {
 
 	glLinkProgram(shader_program); // apply changes to shader program, not gonna call "glUseProgram" yet bc not drawing
 
+}
+
+void initialize_perspective(const float aspectRatio) {
+
 	// perspective projection matrix (converts from view space to clip space)
 	const float fovY = 90;
-	const float aspectRatio = 2.0;
 	const float front = 0.01; // near plane
 	const float back = 100;   // far plane
 

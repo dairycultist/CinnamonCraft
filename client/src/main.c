@@ -51,8 +51,9 @@ int main() {
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CW);
 
-	// initialize static values used by 3D.c
-	initialize_3D_static_values();
+	// initialize 3D
+	initialize_shader();
+	initialize_perspective(2.0);
 	
 	// let programmer initialize stuff
 	on_start();
@@ -69,7 +70,8 @@ int main() {
 				running = FALSE;
 			} else if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED) {
 
-				printf("Window has been resized to %dx%d\n", event.window.data1, event.window.data2);
+				glViewport(0, 0, event.window.data1, event.window.data2);
+				initialize_perspective(event.window.data1 / (float) event.window.data2);
 			
 			} else {
 				process_event(event);
