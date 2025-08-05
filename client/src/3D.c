@@ -59,6 +59,8 @@ typedef struct {
 
 } ChunkModel;
 
+#define BLOCK_HAS_PASSTHROUGH(block) ((block) == 0) // air has "passthrough" because adjacent blocks aren't able to cull the faces that touch it
+
 // returns NULL on error
 Model *create_model(const unsigned char *mesh, const int mesh_bytecount, const int mesh_vertcount, const unsigned char *tex, const int tex_width, const int tex_height) {
 
@@ -123,8 +125,7 @@ Model *create_model(const unsigned char *mesh, const int mesh_bytecount, const i
 
 void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char blocks[16][16][16], int block_x, int block_y, int block_z) {
 
-	// this function has all information about blocks
-	// - if they're full blocks (aka allowing adjacent blocks to cull their faces, what their mesh is, etc)
+	// this function determines what mesh/UV a block gets (including considering its environment)
 
 	unsigned char block = blocks[block_x][block_y][block_z];
 
@@ -193,11 +194,19 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 	append_ezarray(mesh, full_block_data + 8 * 6, sizeof(float) * 8 * 6);
 	*vertex_count += 6;
 
-	append_ezarray(mesh, full_block_data + 8 * 6 * 2, sizeof(float) * 8 * 6);
-	*vertex_count += 6;
+	// +y
+	if (block_y == 15 || BLOCK_HAS_PASSTHROUGH(blocks[block_x][block_y+1][block_z])) {
 
-	append_ezarray(mesh, full_block_data + 8 * 6 * 3, sizeof(float) * 8 * 6);
-	*vertex_count += 6;
+		append_ezarray(mesh, full_block_data + 8 * 6 * 2, sizeof(float) * 8 * 6);
+		*vertex_count += 6;
+	}
+
+	// -y
+	if (block_y == 0 || BLOCK_HAS_PASSTHROUGH(blocks[block_x][block_y-1][block_z])) {
+
+		append_ezarray(mesh, full_block_data + 8 * 6 * 3, sizeof(float) * 8 * 6);
+		*vertex_count += 6;
+	}
 
 	append_ezarray(mesh, full_block_data + 8 * 6 * 4, sizeof(float) * 8 * 6);
 	*vertex_count += 6;
