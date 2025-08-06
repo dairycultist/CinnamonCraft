@@ -40,9 +40,14 @@ void on_terminate() {
 	free(model_test);
 }
 
-int is_colliding_with_blocks() {
+int is_colliding_with_blocks() { // should really take in a position for future raycasting, and an AABB for padding size
 
-	return camera.z < 0.3;
+	static float padding = 0.2;
+
+	if (camera.x + padding < 0 || camera.y + padding < 0 || camera.z - padding > 0 || camera.x - padding > 16 || camera.y - padding > 16 || camera.z + padding < -16)
+		return FALSE;
+
+	return TRUE;
 }
 
 void process_tick() {
