@@ -231,9 +231,11 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 	// +y face
 	if (block_y == 15 || BLOCK_HAS_PASSTHROUGH(blocks[block_x][block_y+1][block_z])) {
 
-		// get UV for top (if different from sides/bottom)
+		// get UV for top (if different from sides)
 		if (block == 2) {
 			GET_SPRITEMAP_UV(98, u_sml, v_sml, u_big, v_big)
+		} else if (block == 4) {
+			GET_SPRITEMAP_UV(246, u_sml, v_sml, u_big, v_big)
 		}
 
 		float full_block_data[] = {
