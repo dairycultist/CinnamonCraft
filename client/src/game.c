@@ -21,7 +21,7 @@ void on_start() {
 	glClearColor(0.2f, 0.2f, 0.23f, 1.0f);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 
-	camera.y = 2;
+	camera.z = 2;
 
 	// create a model for testing
 	model_test = create_model(miku_mesh, miku_mesh_bytecount, miku_mesh_vertcount, dirt_texture, 16, 16);
@@ -30,11 +30,9 @@ void on_start() {
 	for (int x = 0; x < 16; x++)
 		for (int y = 0; y < 16; y++)
 			for (int z = 0; z < 16; z++)
-				chunk.blocks[x][y][z] = random_uint(4) == 0 ? 0 : random_uint(5);
+				chunk.blocks[x][y][z] = random_uint(4) + 1;
 
 	remesh_chunk(&chunk);
-
-	chunk.model.transform.y = -16;
 }
 
 void on_terminate() {
@@ -42,28 +40,97 @@ void on_terminate() {
 	free(model_test);
 }
 
+int is_colliding_with_blocks() {
+
+	return camera.z < 0.3;
+}
+
 void process_tick() {
 
+	// move in direction of input
+	// if colliding, step in opposite direction in small increments (10) until no longer collision (or completely undid movement)
+
 	if (left) {
+
 		camera.z -= sin(camera.yaw) * 0.1;
 		camera.x -= cos(camera.yaw) * 0.1;
+
+		if (is_colliding_with_blocks()) {
+
+			for (int i=0; i<10 && is_colliding_with_blocks(); i++) {
+
+				camera.z += sin(camera.yaw) * 0.01;
+				camera.x += cos(camera.yaw) * 0.01;
+			}
+		}
+
 	} else if (right) {
+
 		camera.z += sin(camera.yaw) * 0.1;
 		camera.x += cos(camera.yaw) * 0.1;
+
+		if (is_colliding_with_blocks()) {
+
+			for (int i=0; i<10 && is_colliding_with_blocks(); i++) {
+
+				camera.z -= sin(camera.yaw) * 0.01;
+				camera.x -= cos(camera.yaw) * 0.01;
+			}
+		}
 	}
 
 	if (forward) {
+
 		camera.z -= cos(camera.yaw) * 0.1;
 		camera.x += sin(camera.yaw) * 0.1;
+
+		if (is_colliding_with_blocks()) {
+
+			for (int i=0; i<10 && is_colliding_with_blocks(); i++) {
+
+				camera.z += cos(camera.yaw) * 0.01;
+				camera.x -= sin(camera.yaw) * 0.01;
+			}
+		}
+
 	} else if (backward) {
+
 		camera.z += cos(camera.yaw) * 0.1;
 		camera.x -= sin(camera.yaw) * 0.1;
+
+		if (is_colliding_with_blocks()) {
+
+			for (int i=0; i<10 && is_colliding_with_blocks(); i++) {
+
+				camera.z -= cos(camera.yaw) * 0.01;
+				camera.x += sin(camera.yaw) * 0.01;
+			}
+		}
 	}
 
 	if (up) {
+
 		camera.y += 0.1;
+
+		if (is_colliding_with_blocks()) {
+
+			for (int i=0; i<10 && is_colliding_with_blocks(); i++) {
+
+				camera.y -= 0.01;
+			}
+		}
+
 	} else if (down) {
+
 		camera.y -= 0.1;
+
+		if (is_colliding_with_blocks()) {
+
+			for (int i=0; i<10 && is_colliding_with_blocks(); i++) {
+
+				camera.y += 0.01;
+			}
+		}
 	}
 
 	model_test->transform.yaw += 0.01;
