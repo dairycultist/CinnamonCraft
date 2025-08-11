@@ -11,11 +11,6 @@ int backward = FALSE;
 int up       = FALSE;
 int down     = FALSE;
 
-char *get_title() {
-
-	return "CinnamonCraft";
-}
-
 void on_start() {
 	
 	glClearColor(0.2f, 0.2f, 0.23f, 1.0f);
@@ -30,7 +25,7 @@ void on_start() {
 	for (int x = 0; x < 16; x++)
 		for (int y = 0; y < 16; y++)
 			for (int z = 0; z < 16; z++)
-				chunk.blocks[x][y][z] = random_uint(4) + 1;
+				chunk.blocks[x][y][z] = random_uint(2);
 
 	remesh_chunk(&chunk);
 }

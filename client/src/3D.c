@@ -1,7 +1,6 @@
 #include "../../util.c"
 
-// all 3D objects use the same shader (same for 2D with their own unique shader) for simplicity
-
+// all 3D objects use the same hardcoded shader for simplicity
 static char *vertex =
 "#version 150 core\n"
 "uniform mat4 position_matrix;\n"
@@ -59,8 +58,19 @@ typedef struct {
 
 } ChunkModel;
 
-#define BLOCK_IS_AIR(block) ((block) == 0 || (block) > 4)
-#define BLOCK_HAS_PASSTHROUGH(block) (BLOCK_IS_AIR(block)) // air has "passthrough" because adjacent blocks aren't able to cull the faces that touch it
+static unsigned char block_types[256 * 4] = { // 4 bytes: block model (0:empty,1:cube) | top texture index | side texture index | bottom texture index
+	0, 0, 0, 0,
+	1, 242, 242, 242
+};
+
+#define BLOCK_MESH_EMPTY 0
+#define BLOCK_MESH_CUBE 1
+
+#define BLOCK_GET_MESH_TYPE(block) (block_types[block * 4])
+#define BLOCK_GET_TOP(block) (block_types[block * 4 + 1])
+#define BLOCK_GET_SIDE(block) (block_types[block * 4 + 2])
+#define BLOCK_GET_BOTTOM(block) (block_types[block * 4 + 3])
+#define BLOCK_HAS_PASSTHROUGH(block) (BLOCK_GET_MESH_TYPE(block) == 0) // "passthrough" means adjacent blocks aren't able to cull the faces that touch it
 
 #define GET_SPRITEMAP_UV(index, u_sml, v_sml, u_big, v_big) u_sml = ((index) % 16) / 16.; v_sml = ((index) / 16) / 16.; u_big = (((index) + 1) % 16) / 16.; v_big = ((index) / 16 + 1) / 16.;
 
@@ -134,12 +144,12 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 
 	unsigned char block = blocks[block_x][block_y][block_z];
 
-	if (BLOCK_IS_AIR(block)) { return; }
+	if (BLOCK_GET_MESH_TYPE(block) == BLOCK_MESH_EMPTY) { return; }
 
 	float u_sml, v_sml, u_big, v_big;
 
 	// get UV for sides
-	GET_SPRITEMAP_UV(241 + block, u_sml, v_sml, u_big, v_big)
+	GET_SPRITEMAP_UV(BLOCK_GET_SIDE(block), u_sml, v_sml, u_big, v_big)
 
 	// -x face
 	if (block_x == 0 || BLOCK_HAS_PASSTHROUGH(blocks[block_x-1][block_y][block_z])) {
@@ -208,12 +218,8 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 	// -y face
 	if (block_y == 0 || BLOCK_HAS_PASSTHROUGH(blocks[block_x][block_y-1][block_z])) {
 
-		// get UV for button (if different from sides)
-		if (block == 2) {
-			GET_SPRITEMAP_UV(242, u_sml, v_sml, u_big, v_big)
-		} else if (block == 4) {
-			GET_SPRITEMAP_UV(246, u_sml, v_sml, u_big, v_big)
-		}
+		// get UV for bottom
+		GET_SPRITEMAP_UV(BLOCK_GET_BOTTOM(block), u_sml, v_sml, u_big, v_big)
 
 		float full_block_data[] = {
 			block_x, block_y, block_z,			0, -1, 0,	u_sml, v_sml,
@@ -231,12 +237,8 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 	// +y face
 	if (block_y == 15 || BLOCK_HAS_PASSTHROUGH(blocks[block_x][block_y+1][block_z])) {
 
-		// get UV for top (if different from sides)
-		if (block == 2) {
-			GET_SPRITEMAP_UV(98, u_sml, v_sml, u_big, v_big)
-		} else if (block == 4) {
-			GET_SPRITEMAP_UV(246, u_sml, v_sml, u_big, v_big)
-		}
+		// get UV for top
+		GET_SPRITEMAP_UV(BLOCK_GET_TOP(block), u_sml, v_sml, u_big, v_big)
 
 		float full_block_data[] = {
 			block_x, block_y + 1, block_z,			0, 1, 0,	u_big, v_sml,
