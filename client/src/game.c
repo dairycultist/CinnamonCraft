@@ -27,7 +27,7 @@ void on_start() {
 	for (int x = 0; x < 16; x++)
 		for (int y = 0; y < 16; y++)
 			for (int z = 0; z < 16; z++)
-				chunk.blocks[x][y][z] = y > 8 ? 0 : 1;
+				chunk.blocks[x][y][z] = random_uint(5) ? 0 : 1;
 
 	remesh_chunk(&chunk);
 }
@@ -42,7 +42,7 @@ int is_point_inside_block(float x, float y, float z) {
 	if (x < 0 || y < 0 || z > 0 || x > 16 || y > 16 || z < -16)
 		return FALSE;
 
-	return chunk.blocks[(int) floor(x)][(int) floor(y)][(int) floor(z)];
+	return chunk.blocks[(int) floor(x)][(int) floor(y)][(int) floor(-z)];
 }
 
 int is_aabb_cube_inside_block(float x, float y, float z, float size) {
