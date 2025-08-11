@@ -1,3 +1,5 @@
+#include <math.h>
+
 Transform camera;
 
 Model *model_test;
@@ -25,7 +27,7 @@ void on_start() {
 	for (int x = 0; x < 16; x++)
 		for (int y = 0; y < 16; y++)
 			for (int z = 0; z < 16; z++)
-				chunk.blocks[x][y][z] = random_uint(2);
+				chunk.blocks[x][y][z] = y > 8 ? 0 : 1;
 
 	remesh_chunk(&chunk);
 }
@@ -40,12 +42,21 @@ int is_point_inside_block(float x, float y, float z) {
 	if (x < 0 || y < 0 || z > 0 || x > 16 || y > 16 || z < -16)
 		return FALSE;
 
-	return chunk.blocks[(int) x][(int) y][(int) z];
+	return chunk.blocks[(int) floor(x)][(int) floor(y)][(int) floor(z)];
 }
 
-// int is_aabb_inside_block() {
+int is_aabb_cube_inside_block(float x, float y, float z, float size) {
 
-// }
+	// gonna use unit aabb for now
+	return is_point_inside_block(x - size, y - size, z - size)
+	    || is_point_inside_block(x - size, y - size, z + size)
+		|| is_point_inside_block(x - size, y + size, z - size)
+		|| is_point_inside_block(x - size, y + size, z + size)
+		|| is_point_inside_block(x + size, y - size, z - size)
+		|| is_point_inside_block(x + size, y - size, z + size)
+		|| is_point_inside_block(x + size, y + size, z - size)
+		|| is_point_inside_block(x + size, y + size, z + size);
+}
 
 void process_tick() {
 
@@ -53,14 +64,16 @@ void process_tick() {
 	// if colliding, step in opposite direction in small increments (10) until no longer collision (or completely undid movement)
 	// doesn't allow sliding against walls ugh
 
+	const float size = 0.2;
+
 	if (left) {
 
 		camera.z -= sin(camera.yaw) * 0.1;
 		camera.x -= cos(camera.yaw) * 0.1;
 
-		if (is_point_inside_block(camera.x, camera.y, camera.z)) {
+		if (is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size)) {
 
-			for (int i=0; i<10 && is_point_inside_block(camera.x, camera.y, camera.z); i++) {
+			for (int i=0; i<10 && is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size); i++) {
 
 				camera.z += sin(camera.yaw) * 0.01;
 				camera.x += cos(camera.yaw) * 0.01;
@@ -72,9 +85,9 @@ void process_tick() {
 		camera.z += sin(camera.yaw) * 0.1;
 		camera.x += cos(camera.yaw) * 0.1;
 
-		if (is_point_inside_block(camera.x, camera.y, camera.z)) {
+		if (is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size)) {
 
-			for (int i=0; i<10 && is_point_inside_block(camera.x, camera.y, camera.z); i++) {
+			for (int i=0; i<10 && is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size); i++) {
 
 				camera.z -= sin(camera.yaw) * 0.01;
 				camera.x -= cos(camera.yaw) * 0.01;
@@ -87,9 +100,9 @@ void process_tick() {
 		camera.z -= cos(camera.yaw) * 0.1;
 		camera.x += sin(camera.yaw) * 0.1;
 
-		if (is_point_inside_block(camera.x, camera.y, camera.z)) {
+		if (is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size)) {
 
-			for (int i=0; i<10 && is_point_inside_block(camera.x, camera.y, camera.z); i++) {
+			for (int i=0; i<10 && is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size); i++) {
 
 				camera.z += cos(camera.yaw) * 0.01;
 				camera.x -= sin(camera.yaw) * 0.01;
@@ -101,9 +114,9 @@ void process_tick() {
 		camera.z += cos(camera.yaw) * 0.1;
 		camera.x -= sin(camera.yaw) * 0.1;
 
-		if (is_point_inside_block(camera.x, camera.y, camera.z)) {
+		if (is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size)) {
 
-			for (int i=0; i<10 && is_point_inside_block(camera.x, camera.y, camera.z); i++) {
+			for (int i=0; i<10 && is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size); i++) {
 
 				camera.z -= cos(camera.yaw) * 0.01;
 				camera.x += sin(camera.yaw) * 0.01;
@@ -115,9 +128,9 @@ void process_tick() {
 
 		camera.y += 0.1;
 
-		if (is_point_inside_block(camera.x, camera.y, camera.z)) {
+		if (is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size)) {
 
-			for (int i=0; i<10 && is_point_inside_block(camera.x, camera.y, camera.z); i++) {
+			for (int i=0; i<10 && is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size); i++) {
 
 				camera.y -= 0.01;
 			}
@@ -127,9 +140,9 @@ void process_tick() {
 
 		camera.y -= 0.1;
 
-		if (is_point_inside_block(camera.x, camera.y, camera.z)) {
+		if (is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size)) {
 
-			for (int i=0; i<10 && is_point_inside_block(camera.x, camera.y, camera.z); i++) {
+			for (int i=0; i<10 && is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size); i++) {
 
 				camera.y += 0.01;
 			}
