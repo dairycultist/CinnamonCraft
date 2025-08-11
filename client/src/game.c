@@ -1,5 +1,3 @@
-#include <math.h>
-
 Transform camera;
 
 Model *model_test;
@@ -42,7 +40,7 @@ int is_point_inside_block(float x, float y, float z) {
 	if (x < 0 || y < 0 || z > 0 || x > 16 || y > 16 || z < -16)
 		return FALSE;
 
-	return chunk.blocks[(int) floor(x)][(int) floor(y)][(int) floor(-z)];
+	return chunk.blocks[(int) x][(int) y][(int) -z];
 }
 
 int is_aabb_cube_inside_block(float x, float y, float z, float size) {
