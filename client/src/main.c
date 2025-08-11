@@ -1,6 +1,5 @@
-#define GLEW_STATIC
-#include "../GLEW/glew.h"
-#include "SDL2/SDL.h"
+#include <GL/glew.h>
+#include <SDL2/SDL.h>
 
 #include "resources.c" // binary, automatically updated with new resources on Make
 #include "../../util.c"
