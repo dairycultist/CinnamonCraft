@@ -35,29 +35,32 @@ void on_terminate() {
 	free(model_test);
 }
 
-int is_colliding_with_blocks() { // should really take in a position for future raycasting, and an AABB for padding size
+int is_point_inside_block(float x, float y, float z) {
 
-	static float padding = 0.2;
-
-	if (camera.x + padding < 0 || camera.y + padding < 0 || camera.z - padding > 0 || camera.x - padding > 16 || camera.y - padding > 16 || camera.z + padding < -16)
+	if (x < 0 || y < 0 || z > 0 || x > 16 || y > 16 || z < -16)
 		return FALSE;
 
-	return TRUE;
+	return chunk.blocks[(int) x][(int) y][(int) z];
 }
+
+// int is_aabb_inside_block() {
+
+// }
 
 void process_tick() {
 
 	// move in direction of input
 	// if colliding, step in opposite direction in small increments (10) until no longer collision (or completely undid movement)
+	// doesn't allow sliding against walls ugh
 
 	if (left) {
 
 		camera.z -= sin(camera.yaw) * 0.1;
 		camera.x -= cos(camera.yaw) * 0.1;
 
-		if (is_colliding_with_blocks()) {
+		if (is_point_inside_block(camera.x, camera.y, camera.z)) {
 
-			for (int i=0; i<10 && is_colliding_with_blocks(); i++) {
+			for (int i=0; i<10 && is_point_inside_block(camera.x, camera.y, camera.z); i++) {
 
 				camera.z += sin(camera.yaw) * 0.01;
 				camera.x += cos(camera.yaw) * 0.01;
@@ -69,9 +72,9 @@ void process_tick() {
 		camera.z += sin(camera.yaw) * 0.1;
 		camera.x += cos(camera.yaw) * 0.1;
 
-		if (is_colliding_with_blocks()) {
+		if (is_point_inside_block(camera.x, camera.y, camera.z)) {
 
-			for (int i=0; i<10 && is_colliding_with_blocks(); i++) {
+			for (int i=0; i<10 && is_point_inside_block(camera.x, camera.y, camera.z); i++) {
 
 				camera.z -= sin(camera.yaw) * 0.01;
 				camera.x -= cos(camera.yaw) * 0.01;
@@ -84,9 +87,9 @@ void process_tick() {
 		camera.z -= cos(camera.yaw) * 0.1;
 		camera.x += sin(camera.yaw) * 0.1;
 
-		if (is_colliding_with_blocks()) {
+		if (is_point_inside_block(camera.x, camera.y, camera.z)) {
 
-			for (int i=0; i<10 && is_colliding_with_blocks(); i++) {
+			for (int i=0; i<10 && is_point_inside_block(camera.x, camera.y, camera.z); i++) {
 
 				camera.z += cos(camera.yaw) * 0.01;
 				camera.x -= sin(camera.yaw) * 0.01;
@@ -98,9 +101,9 @@ void process_tick() {
 		camera.z += cos(camera.yaw) * 0.1;
 		camera.x -= sin(camera.yaw) * 0.1;
 
-		if (is_colliding_with_blocks()) {
+		if (is_point_inside_block(camera.x, camera.y, camera.z)) {
 
-			for (int i=0; i<10 && is_colliding_with_blocks(); i++) {
+			for (int i=0; i<10 && is_point_inside_block(camera.x, camera.y, camera.z); i++) {
 
 				camera.z -= cos(camera.yaw) * 0.01;
 				camera.x += sin(camera.yaw) * 0.01;
@@ -112,9 +115,9 @@ void process_tick() {
 
 		camera.y += 0.1;
 
-		if (is_colliding_with_blocks()) {
+		if (is_point_inside_block(camera.x, camera.y, camera.z)) {
 
-			for (int i=0; i<10 && is_colliding_with_blocks(); i++) {
+			for (int i=0; i<10 && is_point_inside_block(camera.x, camera.y, camera.z); i++) {
 
 				camera.y -= 0.01;
 			}
@@ -124,9 +127,9 @@ void process_tick() {
 
 		camera.y -= 0.1;
 
-		if (is_colliding_with_blocks()) {
+		if (is_point_inside_block(camera.x, camera.y, camera.z)) {
 
-			for (int i=0; i<10 && is_colliding_with_blocks(); i++) {
+			for (int i=0; i<10 && is_point_inside_block(camera.x, camera.y, camera.z); i++) {
 
 				camera.y += 0.01;
 			}
