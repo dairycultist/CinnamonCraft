@@ -22,10 +22,13 @@ void on_start() {
 	model_test = create_model(miku_mesh, miku_mesh_bytecount, miku_mesh_vertcount, dirt_texture, 16, 16);
 
 	// create a chunk for testing
+	float heightmap[16][16];
+	populate_2D_noise(16, 16, 20, (float *) heightmap);
+
 	for (int x = 0; x < 16; x++)
 		for (int y = 0; y < 16; y++)
 			for (int z = 0; z < 16; z++)
-				chunk.blocks[x][y][z] = random_uint(5) ? 0 : 1;
+				chunk.blocks[x][y][z] = heightmap[x][z] > (1 - y / 16.) ? 0 : 1;
 
 	remesh_chunk(&chunk);
 }
