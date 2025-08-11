@@ -60,7 +60,7 @@ typedef struct {
 
 static unsigned char block_types[256 * 4] = { // 4 bytes: block model (0:empty,1:cube) | top texture index | side texture index | bottom texture index
 	0, 0, 0, 0,
-	1, 242, 242, 242
+	1, 98, 243, 242
 };
 
 #define BLOCK_MESH_EMPTY 0
@@ -140,8 +140,6 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 
 	// this function determines what mesh/UV a block gets (including considering its environment)
 
-	// pretty sure I have normals' polarity for x,z backwards in rendering (as is reflected in the block data)
-
 	unsigned char block = blocks[block_x][block_y][block_z];
 
 	if (BLOCK_GET_MESH_TYPE(block) == BLOCK_MESH_EMPTY) { return; }
@@ -155,12 +153,12 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 	if (block_x == 0 || BLOCK_HAS_PASSTHROUGH(blocks[block_x-1][block_y][block_z])) {
 
 		float full_block_data[] = {
-			block_x, block_y, block_z,			1, 0, 0,	u_big, v_sml,
-			block_x, block_y, block_z + 1,		1, 0, 0,	u_sml, v_sml,
-			block_x, block_y + 1, block_z,		1, 0, 0,	u_big, v_big,
-			block_x, block_y + 1, block_z + 1,	1, 0, 0,	u_sml, v_big,
-			block_x, block_y + 1, block_z,		1, 0, 0,	u_big, v_big,
-			block_x, block_y, block_z + 1,		1, 0, 0,	u_sml, v_sml,
+			block_x, block_y, block_z,			-1, 0, 0,	u_big, v_sml,
+			block_x, block_y, block_z + 1,		-1, 0, 0,	u_sml, v_sml,
+			block_x, block_y + 1, block_z,		-1, 0, 0,	u_big, v_big,
+			block_x, block_y + 1, block_z + 1,	-1, 0, 0,	u_sml, v_big,
+			block_x, block_y + 1, block_z,		-1, 0, 0,	u_big, v_big,
+			block_x, block_y, block_z + 1,		-1, 0, 0,	u_sml, v_sml,
 		};
 
 		append_ezarray(mesh, full_block_data, sizeof(float) * 8 * 6);
@@ -171,12 +169,12 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 	if (block_x == 15 || BLOCK_HAS_PASSTHROUGH(blocks[block_x+1][block_y][block_z])) {
 
 		float full_block_data[] = {
-			block_x + 1, block_y, block_z,			-1, 0, 0,	u_sml, v_sml,
-			block_x + 1, block_y + 1, block_z,		-1, 0, 0,	u_sml, v_big,
-			block_x + 1, block_y, block_z + 1,		-1, 0, 0,	u_big, v_sml,
-			block_x + 1, block_y + 1, block_z + 1,	-1, 0, 0,	u_big, v_big,
-			block_x + 1, block_y, block_z + 1,		-1, 0, 0,	u_big, v_sml,
-			block_x + 1, block_y + 1, block_z,		-1, 0, 0,	u_sml, v_big,
+			block_x + 1, block_y, block_z,			1, 0, 0,	u_sml, v_sml,
+			block_x + 1, block_y + 1, block_z,		1, 0, 0,	u_sml, v_big,
+			block_x + 1, block_y, block_z + 1,		1, 0, 0,	u_big, v_sml,
+			block_x + 1, block_y + 1, block_z + 1,	1, 0, 0,	u_big, v_big,
+			block_x + 1, block_y, block_z + 1,		1, 0, 0,	u_big, v_sml,
+			block_x + 1, block_y + 1, block_z,		1, 0, 0,	u_sml, v_big,
 		};
 
 		append_ezarray(mesh, full_block_data, sizeof(float) * 8 * 6);
@@ -187,12 +185,12 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 	if (block_z == 0 || BLOCK_HAS_PASSTHROUGH(blocks[block_x][block_y][block_z-1])) {
 
 		float full_block_data[] = {
-			block_x, block_y, block_z,			0, 0, 1,	u_sml, v_sml,
-			block_x, block_y + 1, block_z,		0, 0, 1,	u_sml, v_big,
-			block_x + 1, block_y, block_z,		0, 0, 1,	u_big, v_sml,
-			block_x + 1, block_y + 1, block_z,	0, 0, 1,	u_big, v_big,
-			block_x + 1, block_y, block_z,		0, 0, 1,	u_big, v_sml,
-			block_x, block_y + 1, block_z,		0, 0, 1,	u_sml, v_big,
+			block_x, block_y, block_z,			0, 0, -1,	u_sml, v_sml,
+			block_x, block_y + 1, block_z,		0, 0, -1,	u_sml, v_big,
+			block_x + 1, block_y, block_z,		0, 0, -1,	u_big, v_sml,
+			block_x + 1, block_y + 1, block_z,	0, 0, -1,	u_big, v_big,
+			block_x + 1, block_y, block_z,		0, 0, -1,	u_big, v_sml,
+			block_x, block_y + 1, block_z,		0, 0, -1,	u_sml, v_big,
 		};
 
 		append_ezarray(mesh, full_block_data, sizeof(float) * 8 * 6);
@@ -203,12 +201,12 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 	if (block_z == 15 || BLOCK_HAS_PASSTHROUGH(blocks[block_x][block_y][block_z+1])) {
 
 		float full_block_data[] = {
-			block_x, block_y, block_z + 1,			0, 0, -1,	u_big, v_sml,
-			block_x + 1, block_y, block_z + 1,		0, 0, -1,	u_sml, v_sml,
-			block_x, block_y + 1, block_z + 1,		0, 0, -1,	u_big, v_big,
-			block_x + 1, block_y + 1, block_z + 1,	0, 0, -1,	u_sml, v_big,
-			block_x, block_y + 1, block_z + 1,		0, 0, -1,	u_big, v_big,
-			block_x + 1, block_y, block_z + 1,		0, 0, -1,	u_sml, v_sml,
+			block_x, block_y, block_z + 1,			0, 0, 1,	u_big, v_sml,
+			block_x + 1, block_y, block_z + 1,		0, 0, 1,	u_sml, v_sml,
+			block_x, block_y + 1, block_z + 1,		0, 0, 1,	u_big, v_big,
+			block_x + 1, block_y + 1, block_z + 1,	0, 0, 1,	u_sml, v_big,
+			block_x, block_y + 1, block_z + 1,		0, 0, 1,	u_big, v_big,
+			block_x + 1, block_y, block_z + 1,		0, 0, 1,	u_sml, v_sml,
 		};
 
 		append_ezarray(mesh, full_block_data, sizeof(float) * 8 * 6);

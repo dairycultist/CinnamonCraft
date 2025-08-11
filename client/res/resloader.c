@@ -91,6 +91,10 @@ void print_obj_to_binary(const char *obj_path, const char *var_name) {
 			
 			sscanf(line, "vn %f %f %f", &n[0], &n[1], &n[2]);
 
+			// obj vertices have reverse xz
+			n[0] = -n[0];
+			n[2] = -n[2];
+
 			append_ezarray(&normal_data, n, sizeof(float) * 3);
 		}
 
