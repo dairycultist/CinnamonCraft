@@ -6,6 +6,8 @@
 #include "3D.c"
 #include "game.c"
 
+// TODO separate engine code from mod code (and add mod.h)
+
 void log_error(const char *msg) {
 	
 	if (strlen(SDL_GetError()) == 0) {
