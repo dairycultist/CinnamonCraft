@@ -1,9 +1,10 @@
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
 
-#include "resources.c" // binary, automatically updated with new resources on Make (might replace with external loading since modding fun yay)
+#include "resources.c" // binary, automatically updated with new resources on Make (ought to replace with external loading since better for modding + more intuitive)
 #include "../../util.c"
-#include "3D.c"
+#include "mesh.c"
+#include "chunk.c"
 #include "game.c"
 
 // TODO separate engine code from mod code (and add mod.h)

@@ -40,27 +40,6 @@ void on_terminate() {
 	free(miku);
 }
 
-int is_point_inside_block(float x, float y, float z) {
-
-	if (x < 0 || y < 0 || z > 0 || x > 16 || y > 16 || z < -16)
-		return FALSE;
-
-	return chunk.blocks[(int) x][(int) y][(int) -z];
-}
-
-int is_aabb_cube_inside_block(float x, float y, float z, float size) {
-
-	// gonna use unit aabb for now
-	return is_point_inside_block(x - size, y - size, z - size)
-	    || is_point_inside_block(x - size, y - size, z + size)
-		|| is_point_inside_block(x - size, y + size, z - size)
-		|| is_point_inside_block(x - size, y + size, z + size)
-		|| is_point_inside_block(x + size, y - size, z - size)
-		|| is_point_inside_block(x + size, y - size, z + size)
-		|| is_point_inside_block(x + size, y + size, z - size)
-		|| is_point_inside_block(x + size, y + size, z + size);
-}
-
 void process_tick() {
 
 	// move in direction of input
@@ -74,9 +53,9 @@ void process_tick() {
 		camera.z -= sin(camera.yaw) * 0.1;
 		camera.x -= cos(camera.yaw) * 0.1;
 
-		if (is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size)) {
+		if (is_aabb_cube_intersecting(&chunk, camera.x, camera.y, camera.z, size)) {
 
-			for (int i=0; i<10 && is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size); i++) {
+			for (int i=0; i<10 && is_aabb_cube_intersecting(&chunk, camera.x, camera.y, camera.z, size); i++) {
 
 				camera.z += sin(camera.yaw) * 0.01;
 				camera.x += cos(camera.yaw) * 0.01;
@@ -88,9 +67,9 @@ void process_tick() {
 		camera.z += sin(camera.yaw) * 0.1;
 		camera.x += cos(camera.yaw) * 0.1;
 
-		if (is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size)) {
+		if (is_aabb_cube_intersecting(&chunk, camera.x, camera.y, camera.z, size)) {
 
-			for (int i=0; i<10 && is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size); i++) {
+			for (int i=0; i<10 && is_aabb_cube_intersecting(&chunk, camera.x, camera.y, camera.z, size); i++) {
 
 				camera.z -= sin(camera.yaw) * 0.01;
 				camera.x -= cos(camera.yaw) * 0.01;
@@ -103,9 +82,9 @@ void process_tick() {
 		camera.z -= cos(camera.yaw) * 0.1;
 		camera.x += sin(camera.yaw) * 0.1;
 
-		if (is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size)) {
+		if (is_aabb_cube_intersecting(&chunk, camera.x, camera.y, camera.z, size)) {
 
-			for (int i=0; i<10 && is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size); i++) {
+			for (int i=0; i<10 && is_aabb_cube_intersecting(&chunk, camera.x, camera.y, camera.z, size); i++) {
 
 				camera.z += cos(camera.yaw) * 0.01;
 				camera.x -= sin(camera.yaw) * 0.01;
@@ -117,9 +96,9 @@ void process_tick() {
 		camera.z += cos(camera.yaw) * 0.1;
 		camera.x -= sin(camera.yaw) * 0.1;
 
-		if (is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size)) {
+		if (is_aabb_cube_intersecting(&chunk, camera.x, camera.y, camera.z, size)) {
 
-			for (int i=0; i<10 && is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size); i++) {
+			for (int i=0; i<10 && is_aabb_cube_intersecting(&chunk, camera.x, camera.y, camera.z, size); i++) {
 
 				camera.z -= cos(camera.yaw) * 0.01;
 				camera.x += sin(camera.yaw) * 0.01;
@@ -131,9 +110,9 @@ void process_tick() {
 
 		camera.y += 0.1;
 
-		if (is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size)) {
+		if (is_aabb_cube_intersecting(&chunk, camera.x, camera.y, camera.z, size)) {
 
-			for (int i=0; i<10 && is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size); i++) {
+			for (int i=0; i<10 && is_aabb_cube_intersecting(&chunk, camera.x, camera.y, camera.z, size); i++) {
 
 				camera.y -= 0.01;
 			}
@@ -143,9 +122,9 @@ void process_tick() {
 
 		camera.y -= 0.1;
 
-		if (is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size)) {
+		if (is_aabb_cube_intersecting(&chunk, camera.x, camera.y, camera.z, size)) {
 
-			for (int i=0; i<10 && is_aabb_cube_inside_block(camera.x, camera.y, camera.z, size); i++) {
+			for (int i=0; i<10 && is_aabb_cube_intersecting(&chunk, camera.x, camera.y, camera.z, size); i++) {
 
 				camera.y += 0.01;
 			}
