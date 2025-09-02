@@ -43,8 +43,6 @@ typedef struct {
 
 typedef struct {
 
-	Transform transform;
-
 	GLuint vertex_array; // "VAO"
 	uint vertex_count;
 	GLuint texture;
@@ -55,6 +53,10 @@ typedef struct {
 
 	Model model;
 	unsigned char blocks[16][16][16]; // array of bytes representing blockstates
+	
+	// int chunk_x;
+	// int chunk_y;
+	// int chunk_z;
 
 } ChunkModel;
 
@@ -124,11 +126,6 @@ Model *create_model(const unsigned char *mesh, const int mesh_bytecount, const i
 
 	// create final model object to return
 	Model *model = malloc(sizeof(Model));
-	model->transform.x 		= 0.0f;
-	model->transform.y 		= 0.0f;
-	model->transform.z 		= 0.0f;
-	model->transform.pitch 	= 0.0f;
-	model->transform.yaw 	= 0.0f;
 	model->vertex_array = vertex_array;
 	model->vertex_count = mesh_vertcount;
 	model->texture = texture;
@@ -353,7 +350,7 @@ void generate_rotation_matrices(GLfloat pitch_matrix[4][4], float pitch, GLfloat
 	yaw_matrix[3][3] = 1;
 }
 
-void draw_model(const Transform *camera, const Model *model) {
+void draw_model(const Transform *camera, const Transform *transform, const Model *model) { // rename model to mesh
 
 	// shared buffers
 	GLfloat pitch_matrix[4][4];
@@ -367,17 +364,17 @@ void draw_model(const Transform *camera, const Model *model) {
 
 	// model matrix (converts from model space to world space)
 	generate_rotation_matrices(
-		pitch_matrix, model->transform.pitch,
-		yaw_matrix, model->transform.yaw
+		pitch_matrix, transform->pitch,
+		yaw_matrix, transform->yaw
 	);
 
 	GLfloat model_matrix[4][4];
 
 	mat4_mult(yaw_matrix, pitch_matrix, model_matrix); // rotation
 
-	model_matrix[3][0] = model->transform.x; // translation
-	model_matrix[3][1] = model->transform.y;
-	model_matrix[3][2] = model->transform.z;
+	model_matrix[3][0] = transform->x; // translation
+	model_matrix[3][1] = transform->y;
+	model_matrix[3][2] = transform->z;
 
 	// view matrix (converts from world space to view space, aka accounts for camera transformations)
 	// must apply translations before rotations this time, unlike model matrix!
@@ -404,8 +401,8 @@ void draw_model(const Transform *camera, const Model *model) {
 	GLfloat normal_matrix[4][4];
 
 	generate_rotation_matrices(
-		pitch_matrix, -model->transform.pitch,
-		yaw_matrix, -model->transform.yaw
+		pitch_matrix, -transform->pitch,
+		yaw_matrix, -transform->yaw
 	);
 
 	mat4_mult(yaw_matrix, pitch_matrix, normal_matrix);

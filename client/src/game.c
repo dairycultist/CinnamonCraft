@@ -1,4 +1,6 @@
 Transform camera;
+Transform chunk_transform;
+Transform model_transform;
 
 Model *model_test;
 
@@ -150,10 +152,10 @@ void process_tick() {
 		}
 	}
 
-	model_test->transform.yaw += 0.01;
+	model_transform.yaw += 0.01;
 
-	draw_model(&camera, model_test);
-	draw_model(&camera, &chunk.model);
+	draw_model(&camera, &model_transform, model_test);
+	draw_model(&camera, &chunk_transform, &chunk.model);
 }
 
 void process_event(SDL_Event event) {
