@@ -1,10 +1,10 @@
 Transform camera;
 Transform chunk_transform;
-Transform model_transform;
+Transform mesh_transform;
 
-Model *model_test;
+Mesh *miku;
 
-ChunkModel chunk;
+Chunk chunk;
 
 int left     = FALSE;
 int right    = FALSE;
@@ -20,8 +20,8 @@ void on_start() {
 
 	camera.z = 2;
 
-	// create a model for testing
-	model_test = create_model(miku_mesh, miku_mesh_bytecount, miku_mesh_vertcount, dirt_texture, 16, 16);
+	// create a mesh for testing
+	miku = create_mesh(miku_mesh_data, miku_mesh_bytecount, miku_mesh_vertcount, dirt_texture_data, 16, 16);
 
 	// create a chunk for testing
 	float heightmap[16][16];
@@ -37,7 +37,7 @@ void on_start() {
 
 void on_terminate() {
 
-	free(model_test);
+	free(miku);
 }
 
 int is_point_inside_block(float x, float y, float z) {
@@ -152,10 +152,10 @@ void process_tick() {
 		}
 	}
 
-	model_transform.yaw += 0.01;
+	mesh_transform.yaw += 0.01;
 
-	draw_model(&camera, &model_transform, model_test);
-	draw_model(&camera, &chunk_transform, &chunk.model);
+	draw_mesh(&camera, &mesh_transform, miku);
+	draw_mesh(&camera, &chunk_transform, &chunk.mesh);
 }
 
 void process_event(SDL_Event event) {

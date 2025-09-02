@@ -47,20 +47,20 @@ typedef struct {
 	uint vertex_count;
 	GLuint texture;
 
-} Model;
+} Mesh;
 
 typedef struct {
 
-	Model model;
+	Mesh mesh;
 	unsigned char blocks[16][16][16]; // array of bytes representing blockstates
 	
 	// int chunk_x;
 	// int chunk_y;
 	// int chunk_z;
 
-} ChunkModel;
+} Chunk;
 
-static unsigned char block_types[256 * 4] = { // 4 bytes: block model (0:empty,1:cube) | top texture index | side texture index | bottom texture index
+static unsigned char block_types[256 * 4] = { // 4 bytes: block mesh (0:empty,1:cube,...slope?) | top texture index | side texture index | bottom texture index
 	0, 0, 0, 0,
 	1, 98, 243, 242
 };
@@ -77,7 +77,7 @@ static unsigned char block_types[256 * 4] = { // 4 bytes: block model (0:empty,1
 #define GET_SPRITEMAP_UV(index, u_sml, v_sml, u_big, v_big) u_sml = ((index) % 16) / 16.; v_sml = ((index) / 16) / 16.; u_big = (((index) + 1) % 16) / 16.; v_big = ((index) / 16 + 1) / 16.;
 
 // returns NULL on error
-Model *create_model(const unsigned char *mesh, const int mesh_bytecount, const int mesh_vertcount, const unsigned char *tex, const int tex_width, const int tex_height) {
+Mesh *create_mesh(const unsigned char *mesh_data, const int mesh_bytecount, const int mesh_vertcount, const unsigned char *tex, const int tex_width, const int tex_height) {
 
 	// make vertex array
 	GLuint vertex_array;
@@ -87,8 +87,8 @@ Model *create_model(const unsigned char *mesh, const int mesh_bytecount, const i
 	// make vertex buffer (stored by vertex_array)
 	GLuint vertexBuffer;
 	glGenBuffers(1, &vertexBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);							// make it the active buffer
-	glBufferData(GL_ARRAY_BUFFER, mesh_bytecount, mesh, GL_STATIC_DRAW);	// copy vertex data into the active buffer
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);								// make it the active buffer
+	glBufferData(GL_ARRAY_BUFFER, mesh_bytecount, mesh_data, GL_STATIC_DRAW);	// copy vertex data into the active buffer
 
 	// link active vertex data and shader attributes
 	GLint pos_attrib = glGetAttribLocation(shader_program, "position");
@@ -124,16 +124,16 @@ Model *create_model(const unsigned char *mesh, const int mesh_bytecount, const i
 	// write texture data
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_width, tex_height, 0, GL_RGB, GL_UNSIGNED_BYTE, tex);
 
-	// create final model object to return
-	Model *model = malloc(sizeof(Model));
-	model->vertex_array = vertex_array;
-	model->vertex_count = mesh_vertcount;
-	model->texture = texture;
+	// create final mesh object to return
+	Mesh *mesh = malloc(sizeof(Mesh));
+	mesh->vertex_array = vertex_array;
+	mesh->vertex_count = mesh_vertcount;
+	mesh->texture = texture;
 
-	return model;
+	return mesh;
 }
 
-void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char blocks[16][16][16], int block_x, int block_y, int block_z) {
+void append_block_to_mesh(EZArray *mesh_data, int *vertex_count, const unsigned char blocks[16][16][16], int block_x, int block_y, int block_z) {
 
 	// this function determines what mesh/UV a block gets (including considering its environment)
 
@@ -158,7 +158,7 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 			block_x, block_y, block_z + 1,		-1, 0, 0,	u_sml, v_sml,
 		};
 
-		append_ezarray(mesh, full_block_data, sizeof(float) * 8 * 6);
+		append_ezarray(mesh_data, full_block_data, sizeof(float) * 8 * 6);
 		*vertex_count += 6;
 	}
 
@@ -174,7 +174,7 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 			block_x + 1, block_y + 1, block_z,		1, 0, 0,	u_sml, v_big,
 		};
 
-		append_ezarray(mesh, full_block_data, sizeof(float) * 8 * 6);
+		append_ezarray(mesh_data, full_block_data, sizeof(float) * 8 * 6);
 		*vertex_count += 6;
 	}
 
@@ -190,7 +190,7 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 			block_x, block_y + 1, block_z,		0, 0, -1,	u_sml, v_big,
 		};
 
-		append_ezarray(mesh, full_block_data, sizeof(float) * 8 * 6);
+		append_ezarray(mesh_data, full_block_data, sizeof(float) * 8 * 6);
 		*vertex_count += 6;
 	}
 
@@ -206,7 +206,7 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 			block_x + 1, block_y, block_z + 1,		0, 0, 1,	u_sml, v_sml,
 		};
 
-		append_ezarray(mesh, full_block_data, sizeof(float) * 8 * 6);
+		append_ezarray(mesh_data, full_block_data, sizeof(float) * 8 * 6);
 		*vertex_count += 6;
 	}
 
@@ -225,7 +225,7 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 			block_x + 1, block_y, block_z,		0, -1, 0,	u_sml, v_big,
 		};
 
-		append_ezarray(mesh, full_block_data, sizeof(float) * 8 * 6);
+		append_ezarray(mesh_data, full_block_data, sizeof(float) * 8 * 6);
 		*vertex_count += 6;
 	}
 
@@ -244,27 +244,27 @@ void append_block_to_mesh(EZArray *mesh, int *vertex_count, const unsigned char 
 			block_x, block_y + 1, block_z + 1,		0, 1, 0,	u_sml, v_sml,
 		};
 
-		append_ezarray(mesh, full_block_data, sizeof(float) * 8 * 6);
+		append_ezarray(mesh_data, full_block_data, sizeof(float) * 8 * 6);
 		*vertex_count += 6;
 	}
 }
 
-// remeshes based on the model's internal chunk_data
-void remesh_chunk(const ChunkModel *chunk) {
+// remeshes based on the chunk's internal blocks
+void remesh_chunk(const Chunk *chunk) {
 
-	EZArray mesh = {0};
+	EZArray mesh_data = {0};
 
 	int vertex_count = 0;
 
 	for (int x = 0; x < 16; x++)
 		for (int y = 0; y < 16; y++)
 			for (int z = 0; z < 16; z++)
-				append_block_to_mesh(&mesh, &vertex_count, chunk->blocks, x, y, z);
+				append_block_to_mesh(&mesh_data, &vertex_count, chunk->blocks, x, y, z);
 
-	Model *model = create_model(mesh.data, mesh.bytecount, vertex_count, block_spritemap, 256, 256);
+	Mesh *mesh = create_mesh(mesh_data.data, mesh_data.bytecount, vertex_count, block_spritemap_data, 256, 256);
 
-	memcpy((void *) &chunk->model, model, sizeof(Model));
-	free(model);
+	memcpy((void *) &chunk->mesh, mesh, sizeof(Mesh));
+	free(mesh);
 }
 
 void mat4_mult(const GLfloat b[4][4], const GLfloat a[4][4], GLfloat out[4][4]) {
@@ -350,7 +350,7 @@ void generate_rotation_matrices(GLfloat pitch_matrix[4][4], float pitch, GLfloat
 	yaw_matrix[3][3] = 1;
 }
 
-void draw_model(const Transform *camera, const Transform *transform, const Model *model) { // rename model to mesh
+void draw_mesh(const Transform *camera, const Transform *transform, const Mesh *mesh) {
 
 	// shared buffers
 	GLfloat pitch_matrix[4][4];
@@ -358,9 +358,9 @@ void draw_model(const Transform *camera, const Transform *transform, const Model
 
 	GLfloat position_matrix[4][4];
 
-	// bind the model's vertex mesh and texture
-	glBindVertexArray(model->vertex_array);
-	glBindTexture(GL_TEXTURE_2D, model->texture);
+	// bind the mesh's vertex mesh and texture
+	glBindVertexArray(mesh->vertex_array);
+	glBindTexture(GL_TEXTURE_2D, mesh->texture);
 
 	// model matrix (converts from model space to world space)
 	generate_rotation_matrices(
@@ -397,7 +397,7 @@ void draw_model(const Transform *camera, const Transform *transform, const Model
 	mat4_mult(proj_matrix, view_matrix, position_matrix);
 	mat4_mult(position_matrix, model_matrix, position_matrix);
 
-	// normal matrix (applied to normals to account for model rotation)
+	// normal matrix (applied to normals to account for mesh rotation)
 	GLfloat normal_matrix[4][4];
 
 	generate_rotation_matrices(
@@ -413,7 +413,7 @@ void draw_model(const Transform *camera, const Transform *transform, const Model
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, "normal_matrix"), 1, GL_FALSE, &normal_matrix[0][0]);
 
 	// draw
-	glDrawArrays(GL_TRIANGLES, 0, model->vertex_count);
+	glDrawArrays(GL_TRIANGLES, 0, mesh->vertex_count);
 }
 
 void initialize_shader() {

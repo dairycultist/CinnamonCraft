@@ -7,7 +7,7 @@
 
 void print_binary(const unsigned char *binary, const int binary_length, const char *var_name) {
 
-	printf("unsigned char %s[] = {", var_name);
+	printf("unsigned char %s_data[] = {", var_name);
 	for (int i = 0; i < binary_length; i++) {
 		printf("%#x,", *(binary + i));
 	}
