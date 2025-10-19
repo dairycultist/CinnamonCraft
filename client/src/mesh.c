@@ -57,13 +57,31 @@ typedef struct {
 
 Texture *load_texture(const char *path) {
 
-	Texture *tex = malloc(sizeof(Texture));
+	Texture *texture = malloc(sizeof(Texture));
 
-	tex->surface = IMG_Load(path);
+	texture->surface = IMG_Load(path);
 
-	// TODO flip texture to match OpenGL spec
+	// flip texture vertically to match OpenGL spec
+	unsigned char *pixels = (unsigned char *) texture->surface->pixels;
+	int pixelBytes = texture->surface->format->BytesPerPixel;
 
-	return tex;
+	for (int y = 0; y < texture->surface->h / 2; y++) {
+
+		for (int x = 0; x < texture->surface->w; x++) {
+
+			int top = x + y * texture->surface->h;
+			int bottom = x + (texture->surface->w * texture->surface->h - (y + 1) * texture->surface->h);
+
+			for (int i=0; i<pixelBytes; i++) {
+
+				unsigned char hold = pixels[top * pixelBytes + i];
+				pixels[top * pixelBytes + i] = pixels[bottom * pixelBytes + i];
+				pixels[bottom * pixelBytes + i] = hold;
+			}
+		}
+	}
+
+	return texture;
 }
 
 // returns NULL on error
