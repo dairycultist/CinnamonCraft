@@ -149,7 +149,7 @@ void append_block_to_mesh(EZArray *mesh_data, int *vertex_count, const unsigned 
 }
 
 // remeshes based on the chunk's internal blocks
-void remesh_chunk(const Chunk *chunk, const void *blocksheet) {
+void remesh_chunk(const Chunk *chunk, const Texture *blocksheet_texture) {
 
 	EZArray mesh_data = {0};
 
@@ -160,7 +160,7 @@ void remesh_chunk(const Chunk *chunk, const void *blocksheet) {
 			for (int z = 0; z < 16; z++)
 				append_block_to_mesh(&mesh_data, &vertex_count, chunk->blocks, x, y, z);
 
-	Mesh *mesh = create_mesh(mesh_data.data, mesh_data.bytecount, vertex_count, blocksheet, 256, 256);
+	Mesh *mesh = create_mesh(mesh_data.data, mesh_data.bytecount, vertex_count, blocksheet_texture);
 
 	memcpy((void *) &chunk->mesh, mesh, sizeof(Mesh));
 	free(mesh);

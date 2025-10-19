@@ -49,8 +49,25 @@ typedef struct {
 
 } Mesh;
 
+typedef struct {
+
+	SDL_Surface *surface;
+
+} Texture;
+
+Texture *load_texture(const char *path) {
+
+	Texture *tex = malloc(sizeof(Texture));
+
+	tex->surface = IMG_Load(path);
+
+	// TODO flip texture to match OpenGL spec
+
+	return tex;
+}
+
 // returns NULL on error
-Mesh *create_mesh(const unsigned char *mesh_data, const int mesh_bytecount, const int mesh_vertcount, const unsigned char *tex, const int tex_width, const int tex_height) {
+Mesh *create_mesh(const unsigned char *mesh_data, const int mesh_bytecount, const int mesh_vertcount, const Texture *texture) {
 
 	// make vertex array
 	GLuint vertex_array;
@@ -80,11 +97,11 @@ Mesh *create_mesh(const unsigned char *mesh_data, const int mesh_bytecount, cons
 	glBindVertexArray(0);
 
 	// create texture object
-	GLuint texture;
-	glGenTextures(1, &texture);
+	GLuint texture_object;
+	glGenTextures(1, &texture_object);
 
 	// bind texture (to active texture 2D)
-	glBindTexture(GL_TEXTURE_2D, texture);
+	glBindTexture(GL_TEXTURE_2D, texture_object);
 
 	// wrap repeat
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -95,13 +112,13 @@ Mesh *create_mesh(const unsigned char *mesh_data, const int mesh_bytecount, cons
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	// write texture data
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_width, tex_height, 0, GL_RGB, GL_UNSIGNED_BYTE, tex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture->surface->w, texture->surface->h, 0, GL_RGB, GL_UNSIGNED_BYTE, texture->surface->pixels);
 
 	// create final mesh object to return
 	Mesh *mesh = malloc(sizeof(Mesh));
 	mesh->vertex_array = vertex_array;
 	mesh->vertex_count = mesh_vertcount;
-	mesh->texture = texture;
+	mesh->texture = texture_object;
 
 	return mesh;
 }

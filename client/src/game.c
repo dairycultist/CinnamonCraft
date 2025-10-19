@@ -21,7 +21,7 @@ void on_start() {
 	camera.z = 2;
 
 	// create a mesh for testing
-	miku = create_mesh(miku_mesh_data, miku_mesh_bytecount, miku_mesh_vertcount, IMG_Load("client/res/dirt.ppm")->pixels, 16, 16);
+	miku = create_mesh(miku_mesh_data, miku_mesh_bytecount, miku_mesh_vertcount, load_texture("client/res/dirt.ppm"));
 
 	// create a chunk for testing
 	float heightmap[16][16];
@@ -32,7 +32,7 @@ void on_start() {
 			for (int z = 0; z < 16; z++)
 				chunk.blocks[x][y][z] = heightmap[x][z] > (1 - y / 16.) ? 0 : 1;
 
-	remesh_chunk(&chunk, IMG_Load("client/res/minecraft_block_spritemap.ppm")->pixels);
+	remesh_chunk(&chunk, load_texture("client/res/minecraft_block_spritemap.ppm"));
 }
 
 void on_terminate() {
