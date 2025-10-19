@@ -44,7 +44,7 @@ void on_start() {
 	camera.z = 2;
 
 	// create a mesh for testing
-	miku_mesh = create_mesh(miku_mesh_data, miku_mesh_bytecount, miku_mesh_vertcount, load_texture("client/res/dirt.ppm"));
+	miku_mesh = create_mesh_from_obj("client/res/miku.obj", load_texture("client/res/dirt.ppm"));
 	miku_transform.x = 4;
 	miku_transform.z = -4;
 	miku_transform.y = 6.45;

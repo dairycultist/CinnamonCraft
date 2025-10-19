@@ -32,6 +32,7 @@ typedef struct {
 
 Texture *load_texture(const char *path);
 Mesh *create_mesh(const unsigned char *mesh_data, const int mesh_bytecount, const int mesh_vertcount, const Texture *texture);
+Mesh *create_mesh_from_obj(const char *obj_path, const Texture *texture);
 void draw_mesh(const Transform *camera, const Transform *transform, const Mesh *mesh);
 // destroy_mesh when
 
