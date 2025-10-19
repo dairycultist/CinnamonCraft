@@ -1,8 +1,10 @@
-// TODO allow initialization by mod using register_block_type function
-static BlockType block_types[256] = {
-	0, 0, 0, 0,
-	1, 98, 243, 242
-};
+static BlockType block_types[256] = { 0, 0, 0, 0 }; // first block is always air
+static unsigned char block_type_count = 1;
+
+void register_block_type(BlockType block_type) {
+
+	block_types[block_type_count++] = block_type;
+}
 
 #define BLOCK_MESH_EMPTY 0
 #define BLOCK_MESH_CUBE 1

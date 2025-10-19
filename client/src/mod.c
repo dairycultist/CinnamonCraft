@@ -5,8 +5,6 @@
 #include "engine.h"
 #include "mod.h"
 
-#include "resources.c" // binary, automatically updated with new OBJ on Make (ought to replace with external loading since better for modding + more intuitive)
-
 #define TRUE 1
 #define FALSE 0
 
@@ -37,6 +35,8 @@ int up       = FALSE;
 int down     = FALSE;
 
 void on_start() {
+
+	register_block_type((BlockType) { 1, 98, 243, 242 });
 	
 	glClearColor(0.2f, 0.2f, 0.23f, 1.0f);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
