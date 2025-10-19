@@ -284,6 +284,8 @@ void initialize_shader() {
 
 void initialize_perspective(const float aspectRatio) {
 
+	#define DEG2RAD (M_PI / 180)
+
 	// perspective projection matrix (converts from view space to clip space)
 	const float fovY = 90;
 	const float front = 0.01; // near plane

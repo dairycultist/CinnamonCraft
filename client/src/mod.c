@@ -10,60 +10,22 @@
 #define TRUE 1
 #define FALSE 0
 
-static unsigned int rng_state = 1; // uint32_t? time(NULL)?
+// static unsigned int rng_state = 1; // uint32_t? time(NULL)?
 
-// stole this from nash so I don't have to use rand(). it's deterministic!
-unsigned int random_uint(unsigned int bound) {
+// // stole this from nash so I don't have to use rand(). it's deterministic!
+// unsigned int random_uint(unsigned int bound) {
 	
-    rng_state ^= rng_state << 13;
-    rng_state ^= rng_state >> 17;
-    rng_state ^= rng_state << 5;
-    return rng_state % bound;
-}
-
-unsigned char random_uchar() {
-
-	return (unsigned char) random_uint(256);
-}
-
-void populate_2D_noise(int width, int height, int smoothness, float *buffer) {
-
-	// these comments were made for 1D noise and I kinda just extrapolated the code to 2D the best I could
-
-	// generate array of random values
-	for (int i = 0; i < width * height; i++) {
-		buffer[i] = random_uint(10000) * 0.0001;
-	}
-
-	// smoothing step (must repeat this ~20 times or until smooth)
-	for (int i = 0; i < smoothness; i++) {
-
-		// for every element except the last one, average it with the element following it
-		for (int x = 0; x < width - 1; x++) {
-			for (int y = 0; y < height - 1; y++) {
-			
-				buffer[y * width + x] = (buffer[y * width + x] + buffer[y * width + x + 1] + buffer[(y + 1) * width + x] + buffer[(y + 1) * width + x + 1]) / 4;
-			}
-		}
-
-		// finally set the last element to the first element
-		for (int x = 0; x < width - 1; x++) {
-
-			buffer[(height - 1) * width + x] = buffer[x];
-		}
-
-		for (int y = 0; y < height; y++) {
-
-			buffer[y * width + (width - 1)] = buffer[y * width];
-		}
-	}
-}
+//     rng_state ^= rng_state << 13;
+//     rng_state ^= rng_state >> 17;
+//     rng_state ^= rng_state << 5;
+//     return rng_state % bound;
+// }
 
 Transform camera;
 Transform chunk_transform;
-Transform mesh_transform;
+Transform miku_transform;
 
-Mesh *miku;
+Mesh *miku_mesh;
 
 Chunk chunk;
 
@@ -82,23 +44,23 @@ void on_start() {
 	camera.z = 2;
 
 	// create a mesh for testing
-	miku = create_mesh(miku_mesh_data, miku_mesh_bytecount, miku_mesh_vertcount, load_texture("client/res/dirt.ppm"));
+	miku_mesh = create_mesh(miku_mesh_data, miku_mesh_bytecount, miku_mesh_vertcount, load_texture("client/res/dirt.ppm"));
+	miku_transform.x = 4;
+	miku_transform.z = -4;
+	miku_transform.y = 6.45;
 
 	// create a chunk for testing
-	float heightmap[16][16];
-	populate_2D_noise(16, 16, 20, (float *) heightmap);
-
 	for (int x = 0; x < 16; x++)
 		for (int y = 0; y < 16; y++)
 			for (int z = 0; z < 16; z++)
-				chunk.blocks[x][y][z] = heightmap[x][z] > (1 - y / 16.) ? 0 : 1;
+				chunk.blocks[x][y][z] = (sin(x * 0.5) / 4 + 0.5) > (1 - y / 16.) ? 0 : 1;
 
 	remesh_chunk(&chunk, load_texture("client/res/minecraft_block_spritemap.ppm"));
 }
 
 void on_terminate() {
 
-	free(miku);
+	free(miku_mesh);
 }
 
 void process_tick() {
@@ -192,9 +154,9 @@ void process_tick() {
 		}
 	}
 
-	mesh_transform.yaw += 0.01;
+	miku_transform.yaw += 0.01;
 
-	draw_mesh(&camera, &mesh_transform, miku);
+	draw_mesh(&camera, &miku_transform, miku_mesh);
 	draw_mesh(&camera, &chunk_transform, &chunk.mesh);
 }
 

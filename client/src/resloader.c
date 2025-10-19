@@ -1,9 +1,9 @@
+// this script is a utility until I find out how to consistently load OBJ files externally at runtime
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "../../util.c"
-
-// this script is a utility until I find out how to consistently load OBJ files externally at runtime
+#include "../src/ez_array.c"
 
 void print_binary(const unsigned char *binary, const int binary_length, const char *var_name) {
 

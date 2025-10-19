@@ -4,6 +4,7 @@
 /*
  * mesh stuff
  */
+
 typedef struct {
 
 	float x;
@@ -40,6 +41,7 @@ void initialize_perspective(const float aspectRatio);
 /*
  * chunk stuff
  */
+
 typedef struct {
 
 	Mesh mesh;

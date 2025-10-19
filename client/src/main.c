@@ -1,15 +1,16 @@
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include "ez_array.c"
+
+#define TRUE 1
+#define FALSE 0
 
 #include "engine.h"
 #include "mod.h"
 
-#include "../../util.c"
 #include "mesh.c"
 #include "chunk.c"
-
-// TODO separate engine code from mod code (and add mod.h)
 
 void log_error(const char *msg) {
 	

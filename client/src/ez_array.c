@@ -1,11 +1,3 @@
-#ifndef UTIL_DEFINED
-
-#define UTIL_DEFINED
-
-#define TRUE 1
-#define FALSE 0
-#define DEG2RAD (M_PI / 180)
-
 typedef struct {
 
 	unsigned char *data;
@@ -32,5 +24,3 @@ void append_ezarray(EZArray *array, void *data, int data_length) {
 	memcpy(&array->data[array->bytecount], data, data_length);
 	array->bytecount += data_length;
 }
-
-#endif
