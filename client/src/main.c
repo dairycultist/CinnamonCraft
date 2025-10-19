@@ -1,5 +1,6 @@
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
 #include "resources.c" // binary, automatically updated with new resources on Make (ought to replace with external loading since better for modding + more intuitive)
 #include "../../util.c"
