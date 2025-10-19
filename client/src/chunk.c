@@ -3,7 +3,7 @@
 typedef struct {
 
 	Mesh mesh;
-	unsigned char blocks[16][16][16]; // array of bytes representing blockstates
+	unsigned char blocks[16][16][16]; // array of bytes indexing into block_types
 	
 	// int chunk_x;
 	// int chunk_y;
@@ -11,8 +11,17 @@ typedef struct {
 
 } Chunk;
 
-// TODO allow initialization by mod using register_block function
-static unsigned char block_types[256 * 4] = { // 4 bytes: block mesh (0:empty,1:cube,...slope?) | top texture index | side texture index | bottom texture index
+typedef struct {
+
+	unsigned char mesh_type; // 0:empty,1:cube,...slope?
+	unsigned char tex_top;
+	unsigned char tex_side;
+	unsigned char tex_bottom;
+
+} BlockState;
+
+// TODO allow initialization by mod using register_block_type function
+static BlockState block_types[256] = {
 	0, 0, 0, 0,
 	1, 98, 243, 242
 };
@@ -20,11 +29,7 @@ static unsigned char block_types[256 * 4] = { // 4 bytes: block mesh (0:empty,1:
 #define BLOCK_MESH_EMPTY 0
 #define BLOCK_MESH_CUBE 1
 
-#define BLOCK_GET_MESH_TYPE(block) (block_types[block * 4])
-#define BLOCK_GET_TOP(block) (block_types[block * 4 + 1])
-#define BLOCK_GET_SIDE(block) (block_types[block * 4 + 2])
-#define BLOCK_GET_BOTTOM(block) (block_types[block * 4 + 3])
-#define BLOCK_HAS_PASSTHROUGH(block) (BLOCK_GET_MESH_TYPE(block) == 0) // "passthrough" means adjacent blocks aren't able to cull the faces that touch it
+#define BLOCK_HAS_PASSTHROUGH(block) (block_types[block].mesh_type == 0) // "passthrough" means adjacent blocks aren't able to cull the faces that touch it
 
 #define GET_SPRITEMAP_UV(index, u_sml, v_sml, u_big, v_big) u_sml = ((index) % 16) / 16.; v_sml = ((index) / 16) / 16.; u_big = (((index) + 1) % 16) / 16.; v_big = ((index) / 16 + 1) / 16.;
 
@@ -34,12 +39,12 @@ void append_block_to_mesh(EZArray *mesh_data, int *vertex_count, const unsigned 
 
 	unsigned char block = blocks[block_x][block_y][block_z];
 
-	if (BLOCK_GET_MESH_TYPE(block) == BLOCK_MESH_EMPTY) { return; }
+	if (block_types[block].mesh_type == BLOCK_MESH_EMPTY) { return; }
 
 	float u_sml, v_sml, u_big, v_big;
 
 	// get UV for sides
-	GET_SPRITEMAP_UV(BLOCK_GET_SIDE(block), u_sml, v_sml, u_big, v_big)
+	GET_SPRITEMAP_UV(block_types[block].tex_side, u_sml, v_sml, u_big, v_big)
 
 	// -x face
 	if (block_x == 0 || BLOCK_HAS_PASSTHROUGH(blocks[block_x-1][block_y][block_z])) {
@@ -109,7 +114,7 @@ void append_block_to_mesh(EZArray *mesh_data, int *vertex_count, const unsigned 
 	if (block_y == 0 || BLOCK_HAS_PASSTHROUGH(blocks[block_x][block_y-1][block_z])) {
 
 		// get UV for bottom
-		GET_SPRITEMAP_UV(BLOCK_GET_BOTTOM(block), u_sml, v_sml, u_big, v_big)
+		GET_SPRITEMAP_UV(block_types[block].tex_bottom, u_sml, v_sml, u_big, v_big)
 
 		float full_block_data[] = {
 			block_x, block_y, block_z,			0, -1, 0,	u_sml, v_sml,
@@ -128,7 +133,7 @@ void append_block_to_mesh(EZArray *mesh_data, int *vertex_count, const unsigned 
 	if (block_y == 15 || BLOCK_HAS_PASSTHROUGH(blocks[block_x][block_y+1][block_z])) {
 
 		// get UV for top
-		GET_SPRITEMAP_UV(BLOCK_GET_TOP(block), u_sml, v_sml, u_big, v_big)
+		GET_SPRITEMAP_UV(block_types[block].tex_top, u_sml, v_sml, u_big, v_big)
 
 		float full_block_data[] = {
 			block_x, block_y + 1, block_z,			0, 1, 0,	u_big, v_sml,
