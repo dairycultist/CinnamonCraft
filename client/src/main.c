@@ -2,11 +2,12 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
-#include "resources.c" // binary, automatically updated with new resources on Make (ought to replace with external loading since better for modding + more intuitive)
+#include "engine.h"
+#include "mod.h"
+
 #include "../../util.c"
 #include "mesh.c"
 #include "chunk.c"
-#include "game.c"
 
 // TODO separate engine code from mod code (and add mod.h)
 

@@ -1,25 +1,3 @@
-#include "../../util.c"
-
-typedef struct {
-
-	Mesh mesh;
-	unsigned char blocks[16][16][16]; // array of bytes indexing into block_types
-	
-	// int chunk_x;
-	// int chunk_y;
-	// int chunk_z;
-
-} Chunk;
-
-typedef struct {
-
-	unsigned char mesh_type; // 0:empty,1:cube,...slope?
-	unsigned char tex_top;
-	unsigned char tex_side;
-	unsigned char tex_bottom;
-
-} BlockType;
-
 // TODO allow initialization by mod using register_block_type function
 static BlockType block_types[256] = {
 	0, 0, 0, 0,
@@ -34,7 +12,7 @@ static BlockType block_types[256] = {
 #define GET_SPRITEMAP_UV(index, u_sml, v_sml, u_big, v_big) u_sml = ((index) % 16) / 16.; v_sml = ((index) / 16) / 16.; u_big = (((index) + 1) % 16) / 16.; v_big = ((index) / 16 + 1) / 16.;
 
 // this function determines what mesh/UV a block gets (including considering its environment)
-void append_block_to_mesh(EZArray *mesh_data, int *vertex_count, const unsigned char blocks[16][16][16], int block_x, int block_y, int block_z) {
+static void append_block_to_mesh(EZArray *mesh_data, int *vertex_count, const unsigned char blocks[16][16][16], int block_x, int block_y, int block_z) {
 
 	unsigned char block = blocks[block_x][block_y][block_z];
 

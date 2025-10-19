@@ -1,5 +1,3 @@
-#include "../../util.c"
-
 // all 3D objects use the same hardcoded shader for simplicity
 static char *vertex =
 "#version 150 core\n"
@@ -29,31 +27,6 @@ static char *fragment =
 
 static GLuint shader_program;
 static GLfloat proj_matrix[4][4] = {0};
-
-typedef struct {
-
-	float x;
-	float y;
-	float z;
-	float pitch;
-	// no one needs roll
-	float yaw;
-
-} Transform;
-
-typedef struct {
-
-	GLuint vertex_array; // "VAO"
-	uint vertex_count;
-	GLuint texture;
-
-} Mesh;
-
-typedef struct {
-
-	SDL_Surface *surface;
-
-} Texture;
 
 Texture *load_texture(const char *path) {
 
@@ -141,7 +114,7 @@ Mesh *create_mesh(const unsigned char *mesh_data, const int mesh_bytecount, cons
 	return mesh;
 }
 
-void mat4_mult(const GLfloat b[4][4], const GLfloat a[4][4], GLfloat out[4][4]) {
+static void mat4_mult(const GLfloat b[4][4], const GLfloat a[4][4], GLfloat out[4][4]) {
 
 	// a (rightmost) is applied first, then b
 
@@ -181,7 +154,7 @@ void mat4_mult(const GLfloat b[4][4], const GLfloat a[4][4], GLfloat out[4][4]) 
 	}
 }
 
-void generate_rotation_matrices(GLfloat pitch_matrix[4][4], float pitch, GLfloat yaw_matrix[4][4], float yaw) {
+static void generate_rotation_matrices(GLfloat pitch_matrix[4][4], float pitch, GLfloat yaw_matrix[4][4], float yaw) {
 
 	pitch_matrix[0][0] = 1;
 	pitch_matrix[0][1] = 0;
