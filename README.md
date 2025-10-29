@@ -1,8 +1,11 @@
 # CinnamonCraft
 
-A game that is actually just a featherweight engine written in C + modding tools, with a default mod representing the base game
-(that doubles as a demo for engine features). Engine features include a player controller, inventory system, block grid, etc.
+I was originally planning on making this a Minecraft-inspired engine with modding tools, but I've since drastically cut back on the scope (for the sake of my own fun/sanity!).
+
+I'm not going to shoot too far because, given this project isn't for anyone but me, I don't have to be rigorous implementing potentially useful, but definitely complex/annoying, features -- those projects already exist (e.g. Cubyz).
+
+featherweight! open-source! C!!
 
 Might implement multiplayer functionality (with 100% separate client-server code).
 
-you can make a farming game, a hl inspired shooter, all with that blocky aesthetic
+farming game? a hl inspired shooter? all with that blocky aesthetic...
