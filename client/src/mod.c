@@ -36,7 +36,7 @@ int down     = FALSE;
 
 void on_start() {
 
-	register_block_type((BlockType) { 1, 98, 243, 242 });
+	register_block_type((BlockType) { 0b00000001, 98, 243, 242 });
 	
 	glClearColor(0.2f, 0.2f, 0.23f, 1.0f);
 	SDL_SetRelativeMouseMode(SDL_TRUE);

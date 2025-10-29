@@ -1,4 +1,4 @@
-static BlockType block_types[256] = { 0, 0, 0, 0 }; // first block is always air
+static BlockType block_types[256] = { 0b00000000, 0, 0, 0 }; // first block is always air
 static unsigned char block_type_count = 1;
 
 void register_block_type(BlockType block_type) {
@@ -9,8 +9,6 @@ void register_block_type(BlockType block_type) {
 #define BLOCK_MESH_EMPTY 0
 #define BLOCK_MESH_CUBE 1
 
-#define BLOCK_HAS_PASSTHROUGH(block) (block_types[block].mesh_type == 0) // "passthrough" means adjacent blocks aren't able to cull the faces that touch it
-
 #define GET_SPRITEMAP_UV(index, u_sml, v_sml, u_big, v_big) u_sml = ((index) % 16) / 16.; v_sml = ((index) / 16) / 16.; u_big = (((index) + 1) % 16) / 16.; v_big = ((index) / 16 + 1) / 16.;
 
 // this function determines what mesh/UV a block gets (including considering its environment)
@@ -18,7 +16,7 @@ static void append_block_to_mesh(EZArray *mesh_data, int *vertex_count, const un
 
 	unsigned char block = blocks[block_x][block_y][block_z];
 
-	if (block_types[block].mesh_type == BLOCK_MESH_EMPTY) { return; }
+	if (block == 0) { return; }
 
 	float u_sml, v_sml, u_big, v_big;
 
@@ -26,7 +24,7 @@ static void append_block_to_mesh(EZArray *mesh_data, int *vertex_count, const un
 	GET_SPRITEMAP_UV(block_types[block].tex_side, u_sml, v_sml, u_big, v_big)
 
 	// -x face
-	if (block_x == 0 || BLOCK_HAS_PASSTHROUGH(blocks[block_x-1][block_y][block_z])) {
+	if (block_x == 0 || !BT_IsSolid(block_types[blocks[block_x-1][block_y][block_z]])) {
 
 		float full_block_data[] = {
 			block_x, block_y, block_z,			-1, 0, 0,	u_big, v_sml,
@@ -42,7 +40,7 @@ static void append_block_to_mesh(EZArray *mesh_data, int *vertex_count, const un
 	}
 
 	// +x face
-	if (block_x == 15 || BLOCK_HAS_PASSTHROUGH(blocks[block_x+1][block_y][block_z])) {
+	if (block_x == 15 || !BT_IsSolid(block_types[blocks[block_x+1][block_y][block_z]])) {
 
 		float full_block_data[] = {
 			block_x + 1, block_y, block_z,			1, 0, 0,	u_sml, v_sml,
@@ -58,7 +56,7 @@ static void append_block_to_mesh(EZArray *mesh_data, int *vertex_count, const un
 	}
 
 	// -z face
-	if (block_z == 0 || BLOCK_HAS_PASSTHROUGH(blocks[block_x][block_y][block_z-1])) {
+	if (block_z == 0 || !BT_IsSolid(block_types[blocks[block_x][block_y][block_z-1]])) {
 
 		float full_block_data[] = {
 			block_x, block_y, block_z,			0, 0, -1,	u_sml, v_sml,
@@ -74,7 +72,7 @@ static void append_block_to_mesh(EZArray *mesh_data, int *vertex_count, const un
 	}
 
 	// +z face
-	if (block_z == 15 || BLOCK_HAS_PASSTHROUGH(blocks[block_x][block_y][block_z+1])) {
+	if (block_z == 15 || !BT_IsSolid(block_types[blocks[block_x][block_y][block_z+1]])) {
 
 		float full_block_data[] = {
 			block_x, block_y, block_z + 1,			0, 0, 1,	u_big, v_sml,
@@ -90,7 +88,7 @@ static void append_block_to_mesh(EZArray *mesh_data, int *vertex_count, const un
 	}
 
 	// -y face
-	if (block_y == 0 || BLOCK_HAS_PASSTHROUGH(blocks[block_x][block_y-1][block_z])) {
+	if (block_y == 0 || !BT_IsSolid(block_types[blocks[block_x][block_y-1][block_z]])) {
 
 		// get UV for bottom
 		GET_SPRITEMAP_UV(block_types[block].tex_bottom, u_sml, v_sml, u_big, v_big)
@@ -109,7 +107,7 @@ static void append_block_to_mesh(EZArray *mesh_data, int *vertex_count, const un
 	}
 
 	// +y face
-	if (block_y == 15 || BLOCK_HAS_PASSTHROUGH(blocks[block_x][block_y+1][block_z])) {
+	if (block_y == 15 || !BT_IsSolid(block_types[blocks[block_x][block_y+1][block_z]])) {
 
 		// get UV for top
 		GET_SPRITEMAP_UV(block_types[block].tex_top, u_sml, v_sml, u_big, v_big)

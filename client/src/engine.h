@@ -54,9 +54,12 @@ typedef struct {
 
 } Chunk;
 
+#define BT_IsSolid(block_type) (block_type.flags & 0b00000001)
+
 typedef struct {
 
-	unsigned char mesh_type; // 0:empty,1:cube,...slope?
+	// right now flags is just the first bit representing "solid," which means adjacent blocks will cull the faces that touch it
+	unsigned char flags;
 	unsigned char tex_top;
 	unsigned char tex_side;
 	unsigned char tex_bottom;
