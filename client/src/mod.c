@@ -57,7 +57,7 @@ void on_start() {
 	for (int x = 0; x < 16; x++)
 		for (int y = 0; y < 16; y++)
 			for (int z = 0; z < 16; z++)
-				chunk.blocks[x][y][z] = (sin(x * 0.5) / 4 + 0.5) > (1 - y / 16.) ? 0 : (y < 5 ? 2 : 1);
+				chunk.blocks[x][y][z] = (sin(x * 0.5) / 4 + 0.5) > (1 - y / 16.) || (z > 6 && z < 11 && y > 4 && y < 7) ? 0 : (y < 5 ? 2 : 1);
 
 	remesh_chunk(&chunk, load_texture("client/res/blockmap.png"));
 }
@@ -75,9 +75,9 @@ void process_tick() {
 	// if colliding, step in opposite direction in small increments (10) until no longer collision (or completely undid movement)
 	// doesn't allow sliding against walls ugh
 
-	#define PLAYER_WL 0.2
-	#define PLAYER_H 1.8
-	#define PLAYER_CAM_H 1.5
+	#define PLAYER_WL 0.4
+	#define PLAYER_H 1.7
+	#define PLAYER_CAM_H 1.4
 
 	if (left) {
 
@@ -134,11 +134,12 @@ void process_tick() {
 			camera.y -= vertical_velocity / 10;
 		}
 
-		vertical_velocity = -0.01;
-
-		// jump
-		if (up)
+		// jump (only when grounded)
+		if (up && vertical_velocity < 0) {
 			vertical_velocity = 0.2;
+		} else {
+			vertical_velocity = -0.01;
+		}
 
 	} else {
 
