@@ -153,15 +153,16 @@ int is_point_inside_chunk(const Chunk *chunk, float x, float y, float z) {
 	return chunk->blocks[(int) x][(int) y][(int) -z];
 }
 
-int is_aabb_inside_chunk(const Chunk *chunk, float x, float y, float z, float size) {
+int is_aabb_inside_chunk(const Chunk *chunk, float x, float y, float z, float wl, float h) {
 
-	// gonna use unit aabb for now
-	return is_point_inside_chunk(chunk, x - size, y - size, z - size)
-	    || is_point_inside_chunk(chunk, x - size, y - size, z + size)
-		|| is_point_inside_chunk(chunk, x - size, y + size, z - size)
-		|| is_point_inside_chunk(chunk, x - size, y + size, z + size)
-		|| is_point_inside_chunk(chunk, x + size, y - size, z - size)
-		|| is_point_inside_chunk(chunk, x + size, y - size, z + size)
-		|| is_point_inside_chunk(chunk, x + size, y + size, z - size)
-		|| is_point_inside_chunk(chunk, x + size, y + size, z + size);
+	wl /= 2;
+
+	return is_point_inside_chunk(chunk, x - wl, y, z - wl)
+	    || is_point_inside_chunk(chunk, x - wl, y, z + wl)
+		|| is_point_inside_chunk(chunk, x + wl, y, z - wl)
+		|| is_point_inside_chunk(chunk, x + wl, y, z + wl)
+		|| is_point_inside_chunk(chunk, x - wl, y + h, z - wl)
+		|| is_point_inside_chunk(chunk, x - wl, y + h, z + wl)
+		|| is_point_inside_chunk(chunk, x + wl, y + h, z - wl)
+		|| is_point_inside_chunk(chunk, x + wl, y + h, z + wl);
 }

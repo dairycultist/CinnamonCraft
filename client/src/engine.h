@@ -69,6 +69,6 @@ typedef struct {
 void register_block_type(BlockType block_type);
 void remesh_chunk(const Chunk *chunk, const Texture *blocksheet_texture);
 int is_point_inside_chunk(const Chunk *chunk, float x, float y, float z);
-int is_aabb_inside_chunk(const Chunk *chunk, float x, float y, float z, float size);
+int is_aabb_inside_chunk(const Chunk *chunk, float x, float y, float z, float wl, float h);
 
 #endif

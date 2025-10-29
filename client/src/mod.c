@@ -37,6 +37,7 @@ int down     = FALSE;
 void on_start() {
 
 	register_block_type((BlockType) { 0b00000001, 240, 240, 240 });
+	register_block_type((BlockType) { 0b00000001, 241, 241, 241 });
 	
 	glClearColor(0.2f, 0.2f, 0.23f, 1.0f);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
@@ -53,7 +54,7 @@ void on_start() {
 	for (int x = 0; x < 16; x++)
 		for (int y = 0; y < 16; y++)
 			for (int z = 0; z < 16; z++)
-				chunk.blocks[x][y][z] = (sin(x * 0.5) / 4 + 0.5) > (1 - y / 16.) ? 0 : 1;
+				chunk.blocks[x][y][z] = (sin(x * 0.5) / 4 + 0.5) > (1 - y / 16.) ? 0 : (y < 5 ? 2 : 1);
 
 	remesh_chunk(&chunk, load_texture("client/res/blockmap.png"));
 }
@@ -69,20 +70,19 @@ void process_tick() {
 	// if colliding, step in opposite direction in small increments (10) until no longer collision (or completely undid movement)
 	// doesn't allow sliding against walls ugh
 
-	const float size = 0.2;
+	#define PLAYER_WL 0.2
+	#define PLAYER_H 1.8
+	#define PLAYER_CAM_H 1.5
 
 	if (left) {
 
 		camera.z -= sin(camera.yaw) * 0.1;
 		camera.x -= cos(camera.yaw) * 0.1;
 
-		if (is_aabb_inside_chunk(&chunk, camera.x, camera.y, camera.z, size)) {
+		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 10; i++) {
 
-			for (int i=0; i<10 && is_aabb_inside_chunk(&chunk, camera.x, camera.y, camera.z, size); i++) {
-
-				camera.z += sin(camera.yaw) * 0.01;
-				camera.x += cos(camera.yaw) * 0.01;
-			}
+			camera.z += sin(camera.yaw) * 0.01;
+			camera.x += cos(camera.yaw) * 0.01;
 		}
 
 	} else if (right) {
@@ -90,13 +90,10 @@ void process_tick() {
 		camera.z += sin(camera.yaw) * 0.1;
 		camera.x += cos(camera.yaw) * 0.1;
 
-		if (is_aabb_inside_chunk(&chunk, camera.x, camera.y, camera.z, size)) {
+		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 10; i++) {
 
-			for (int i=0; i<10 && is_aabb_inside_chunk(&chunk, camera.x, camera.y, camera.z, size); i++) {
-
-				camera.z -= sin(camera.yaw) * 0.01;
-				camera.x -= cos(camera.yaw) * 0.01;
-			}
+			camera.z -= sin(camera.yaw) * 0.01;
+			camera.x -= cos(camera.yaw) * 0.01;
 		}
 	}
 
@@ -105,13 +102,10 @@ void process_tick() {
 		camera.z -= cos(camera.yaw) * 0.1;
 		camera.x += sin(camera.yaw) * 0.1;
 
-		if (is_aabb_inside_chunk(&chunk, camera.x, camera.y, camera.z, size)) {
+		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 10; i++) {
 
-			for (int i=0; i<10 && is_aabb_inside_chunk(&chunk, camera.x, camera.y, camera.z, size); i++) {
-
-				camera.z += cos(camera.yaw) * 0.01;
-				camera.x -= sin(camera.yaw) * 0.01;
-			}
+			camera.z += cos(camera.yaw) * 0.01;
+			camera.x -= sin(camera.yaw) * 0.01;
 		}
 
 	} else if (backward) {
@@ -119,13 +113,10 @@ void process_tick() {
 		camera.z += cos(camera.yaw) * 0.1;
 		camera.x -= sin(camera.yaw) * 0.1;
 
-		if (is_aabb_inside_chunk(&chunk, camera.x, camera.y, camera.z, size)) {
+		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 10; i++) {
 
-			for (int i=0; i<10 && is_aabb_inside_chunk(&chunk, camera.x, camera.y, camera.z, size); i++) {
-
-				camera.z -= cos(camera.yaw) * 0.01;
-				camera.x += sin(camera.yaw) * 0.01;
-			}
+			camera.z -= cos(camera.yaw) * 0.01;
+			camera.x += sin(camera.yaw) * 0.01;
 		}
 	}
 
@@ -133,24 +124,18 @@ void process_tick() {
 
 		camera.y += 0.1;
 
-		if (is_aabb_inside_chunk(&chunk, camera.x, camera.y, camera.z, size)) {
+		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 10; i++) {
 
-			for (int i=0; i<10 && is_aabb_inside_chunk(&chunk, camera.x, camera.y, camera.z, size); i++) {
-
-				camera.y -= 0.01;
-			}
+			camera.y -= 0.01;
 		}
 
 	} else if (down) {
 
 		camera.y -= 0.1;
 
-		if (is_aabb_inside_chunk(&chunk, camera.x, camera.y, camera.z, size)) {
+		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 10; i++) {
 
-			for (int i=0; i<10 && is_aabb_inside_chunk(&chunk, camera.x, camera.y, camera.z, size); i++) {
-
-				camera.y += 0.01;
-			}
+			camera.y += 0.01;
 		}
 	}
 
