@@ -19,20 +19,22 @@
 //     return rng_state % bound;
 // }
 
-Transform camera;
-Transform chunk_transform;
-Transform miku_transform;
+static Transform camera;
+static float vertical_velocity;
 
-Mesh *miku_mesh;
+static Transform chunk_transform;
+static Transform miku_transform;
 
-Chunk chunk;
+static Mesh *miku_mesh;
 
-int left     = FALSE;
-int right    = FALSE;
-int forward  = FALSE;
-int backward = FALSE;
-int up       = FALSE;
-int down     = FALSE;
+static Chunk chunk;
+
+static int left     = FALSE;
+static int right    = FALSE;
+static int forward  = FALSE;
+static int backward = FALSE;
+static int up       = FALSE;
+static int down     = FALSE;
 
 void on_start() {
 
@@ -42,7 +44,8 @@ void on_start() {
 	glClearColor(0.2f, 0.2f, 0.23f, 1.0f);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 
-	camera.z = 2;
+	camera.z = -2;
+	camera.y = 11;
 
 	// create a mesh for testing
 	miku_mesh = create_mesh_from_obj("client/res/miku.obj", load_texture("client/res/dirt.png"));
@@ -65,6 +68,8 @@ void on_terminate() {
 }
 
 void process_tick() {
+
+	miku_transform.yaw += 0.01;
 
 	// move in direction of input
 	// if colliding, step in opposite direction in small increments (10) until no longer collision (or completely undid movement)
@@ -120,26 +125,26 @@ void process_tick() {
 		}
 	}
 
-	if (up) {
+	camera.y += vertical_velocity;
 
-		camera.y += 0.1;
-
-		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 10; i++) {
-
-			camera.y -= 0.01;
-		}
-
-	} else if (down) {
-
-		camera.y -= 0.1;
+	if (is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H)) {
 
 		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 10; i++) {
 
-			camera.y += 0.01;
+			camera.y -= vertical_velocity / 10;
 		}
+
+		vertical_velocity = -0.01;
+
+		// jump
+		if (up)
+			vertical_velocity = 0.2;
+
+	} else {
+
+		// gravity
+		vertical_velocity -= 0.01;
 	}
-
-	miku_transform.yaw += 0.01;
 
 	draw_mesh(&camera, &miku_transform, miku_mesh);
 	draw_mesh(&camera, &chunk_transform, &chunk.mesh);
