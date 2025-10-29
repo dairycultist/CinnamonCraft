@@ -36,7 +36,7 @@ int down     = FALSE;
 
 void on_start() {
 
-	register_block_type((BlockType) { 0b00000001, 98, 243, 242 });
+	register_block_type((BlockType) { 0b00000001, 240, 240, 240 });
 	
 	glClearColor(0.2f, 0.2f, 0.23f, 1.0f);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
@@ -44,7 +44,7 @@ void on_start() {
 	camera.z = 2;
 
 	// create a mesh for testing
-	miku_mesh = create_mesh_from_obj("client/res/miku.obj", load_texture("client/res/dirt.ppm"));
+	miku_mesh = create_mesh_from_obj("client/res/miku.obj", load_texture("client/res/dirt.png"));
 	miku_transform.x = 4;
 	miku_transform.z = -4;
 	miku_transform.y = 6.45;
@@ -55,7 +55,7 @@ void on_start() {
 			for (int z = 0; z < 16; z++)
 				chunk.blocks[x][y][z] = (sin(x * 0.5) / 4 + 0.5) > (1 - y / 16.) ? 0 : 1;
 
-	remesh_chunk(&chunk, load_texture("client/res/minecraft_block_spritemap.ppm"));
+	remesh_chunk(&chunk, load_texture("client/res/blockmap.png"));
 }
 
 void on_terminate() {

@@ -103,7 +103,7 @@ Mesh *create_mesh(const unsigned char *mesh_data, const int mesh_bytecount, cons
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	// write texture data
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture->surface->w, texture->surface->h, 0, GL_RGB, GL_UNSIGNED_BYTE, texture->surface->pixels);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
 
 	// create final mesh object to return
 	Mesh *mesh = malloc(sizeof(Mesh));
