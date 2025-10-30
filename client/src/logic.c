@@ -70,28 +70,30 @@ void process_tick() {
 	#define PLAYER_H 1.7
 	#define PLAYER_CAM_H 1.4
 
+	#define PLAYER_IS_COLLIDING is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H)
+
 	if (left) {
 
 		camera.z -= sin(camera.yaw) * 0.1;
 
-		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 11; i++)
+		for (int i=0; PLAYER_IS_COLLIDING && i < 11; i++)
 			camera.z += sin(camera.yaw) * 0.01;
 
 		camera.x -= cos(camera.yaw) * 0.1;
 
-		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 11; i++)
+		for (int i=0; PLAYER_IS_COLLIDING && i < 11; i++)
 			camera.x += cos(camera.yaw) * 0.01;
 
 	} else if (right) {
 
 		camera.z += sin(camera.yaw) * 0.1;
 
-		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 11; i++)
+		for (int i=0; PLAYER_IS_COLLIDING && i < 11; i++)
 			camera.z -= sin(camera.yaw) * 0.01;
 
 		camera.x += cos(camera.yaw) * 0.1;
 
-		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 11; i++)
+		for (int i=0; PLAYER_IS_COLLIDING && i < 11; i++)
 			camera.x -= cos(camera.yaw) * 0.01;
 	}
 
@@ -99,32 +101,32 @@ void process_tick() {
 
 		camera.z -= cos(camera.yaw) * 0.1;
 
-		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 11; i++)
+		for (int i=0; PLAYER_IS_COLLIDING && i < 11; i++)
 			camera.z += cos(camera.yaw) * 0.01;
 
 		camera.x += sin(camera.yaw) * 0.1;
 
-		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 11; i++)
+		for (int i=0; PLAYER_IS_COLLIDING && i < 11; i++)
 			camera.x -= sin(camera.yaw) * 0.01;
 
 	} else if (backward) {
 
 		camera.z += cos(camera.yaw) * 0.1;
 
-		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 11; i++)
+		for (int i=0; PLAYER_IS_COLLIDING && i < 11; i++)
 			camera.z -= cos(camera.yaw) * 0.01;
 
 		camera.x -= sin(camera.yaw) * 0.1;
 
-		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 11; i++)
+		for (int i=0; PLAYER_IS_COLLIDING && i < 11; i++)
 			camera.x += sin(camera.yaw) * 0.01;
 	}
 
 	camera.y += vertical_velocity;
 
-	if (is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H)) {
+	if (PLAYER_IS_COLLIDING) {
 
-		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 11; i++) {
+		for (int i=0; PLAYER_IS_COLLIDING && i < 11; i++) {
 
 			camera.y -= vertical_velocity / 10;
 		}
