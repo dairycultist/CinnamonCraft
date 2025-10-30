@@ -71,7 +71,7 @@ typedef struct {
 
 } Chunk;
 
-#define BT_IsSolid(block_type) (block_type.flags & 0b00000001)
+#define BT_IS_SOLID(block_type) (block_type.flags & 0b00000001)
 
 typedef struct {
 
