@@ -1,12 +1,4 @@
-#include <GL/glew.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-
-#include "engine.h"
-#include "mod.h"
-
-#define TRUE 1
-#define FALSE 0
+#include "header.h"
 
 // static unsigned int rng_state = 1; // uint32_t? time(NULL)?
 

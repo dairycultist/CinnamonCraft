@@ -1,10 +1,4 @@
-typedef struct {
-
-	unsigned char *data;
-	int datasize;
-	int bytecount;
-
-} EZArray;
+#include "header.h"
 
 void append_ezarray(EZArray *array, void *data, int data_length) {
 

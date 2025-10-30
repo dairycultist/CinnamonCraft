@@ -1,3 +1,5 @@
+#include "header.h"
+
 // all 3D objects use the same hardcoded shader for simplicity
 static char *vertex =
 "#version 150 core\n"

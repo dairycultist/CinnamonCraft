@@ -1,16 +1,4 @@
-#include <GL/glew.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-
-#define TRUE 1
-#define FALSE 0
-
-#include "engine.h"
-#include "mod.h"
-
-#include "ez_array.c"
-#include "mesh.c"
-#include "chunk.c"
+#include "header.h"
 
 void log_error(const char *msg) {
 	

@@ -1,8 +1,25 @@
-#ifndef ENGINE_H
-#define ENGINE_H
+#ifndef HEADER
+#define HEADER
+
+#include <GL/glew.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+
+#define TRUE 1
+#define FALSE 0
 
 /*
- * mesh stuff
+ * logic.c
+ */
+
+void on_start();
+void on_terminate();
+
+void process_tick();
+void process_event(SDL_Event event);
+
+/*
+ * mesh.c
  */
 
 typedef struct {
@@ -40,7 +57,7 @@ void initialize_shader();
 void initialize_perspective(const float aspectRatio);
 
 /*
- * chunk stuff
+ * chunk.c
  */
 
 typedef struct {
@@ -70,5 +87,18 @@ void register_block_type(BlockType block_type);
 void remesh_chunk(const Chunk *chunk, const Texture *blocksheet_texture);
 int is_point_inside_chunk(const Chunk *chunk, float x, float y, float z);
 int is_aabb_inside_chunk(const Chunk *chunk, float x, float y, float z, float wl, float h);
+
+/*
+ * ez_array.c
+ */
+typedef struct {
+
+	unsigned char *data;
+	int datasize;
+	int bytecount;
+
+} EZArray;
+
+void append_ezarray(EZArray *array, void *data, int data_length);
 
 #endif

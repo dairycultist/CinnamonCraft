@@ -1,3 +1,5 @@
+#include "header.h"
+
 #include <math.h>
 
 static BlockType block_types[256] = { 0b00000000, 0, 0, 0 }; // first block is always air
