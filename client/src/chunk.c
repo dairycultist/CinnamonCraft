@@ -147,7 +147,7 @@ void remesh_chunk(const Chunk *chunk, const Texture *blocksheet_texture) {
 }
 
 // TODO should be global and account for chunk position and such but whatever
-int is_point_inside_chunk(const Chunk *chunk, float x, float y, float z) {
+int collide_point_blocks(const Chunk *chunk, float x, float y, float z) {
 
 	if (x < 0 || y < 0 || z > 0 || x >= 16 || y >= 16 || z <= -16)
 		return FALSE;
@@ -156,7 +156,7 @@ int is_point_inside_chunk(const Chunk *chunk, float x, float y, float z) {
 }
 
 // the AABB is a rectangular prism with a square base centered on x,y,z (extruding up)
-int is_aabb_inside_chunk(const Chunk *chunk, float x, float y, float z, float wl, float h) {
+int collide_aabb_blocks(const Chunk *chunk, float x, float y, float z, float wl, float h) {
 
 	wl /= 2;
 
@@ -166,10 +166,42 @@ int is_aabb_inside_chunk(const Chunk *chunk, float x, float y, float z, float wl
 
 			for (int block_y = floor(y); block_y <= floor(y + h); block_y++) {
 
-				if (is_point_inside_chunk(chunk, block_x, block_y, block_z))
+				if (collide_point_blocks(chunk, block_x, block_y, block_z))
 					return TRUE;
 			}
 		}
+	}
+
+	return FALSE;
+}
+
+// returns TRUE if it hit a block, in which case it populates the output parameters with the position of the block
+int raycast_blocks(const Chunk *chunk, const Transform *origin, float max_dist, int *out_x, int *out_y, int *out_z) {
+
+	float x = origin->x, y = origin->y, z = origin->z;
+	float dx, dy, dz;
+
+	dx = sin(origin->yaw) * 0.1;
+	dz = -cos(origin->yaw) * 0.1;
+
+	dy = 0;
+
+	for (float dist = 0.0; dist < max_dist; dist += 0.1) {
+		
+		if (collide_point_blocks(chunk, x, y, z)) {
+
+			*out_x = floor(x);
+			*out_y = floor(y);
+			*out_z = ceil(z);
+
+			printf("%d %d %d\n", *out_x, *out_y, *out_z);
+
+			return TRUE;
+		}
+
+		x += dx;
+		y += dy;
+		z += dz;
 	}
 
 	return FALSE;

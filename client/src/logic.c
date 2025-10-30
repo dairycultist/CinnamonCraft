@@ -63,15 +63,15 @@ void process_tick() {
 
 	miku_transform.yaw += 0.01;
 
-	// move in direction of input (crucially, splitting movement into its components to allow for sliding)
-	// if colliding, step in opposite direction in small increments until no longer collision (or completely undid movement + a little to prevent float-error related stuckage)
-
+	// player control
 	#define PLAYER_WL 0.4
 	#define PLAYER_H 1.7
 	#define PLAYER_CAM_H 1.4
 
-	#define PLAYER_IS_COLLIDING is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H)
+	#define PLAYER_IS_COLLIDING collide_aabb_blocks(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H)
 
+	// move in direction of input (crucially, splitting movement into its components to allow for sliding)
+	// if colliding, step in opposite direction in small increments until no longer collision (or completely undid movement + a little to prevent float-error related stuckage)
 	if (left) {
 
 		camera.z -= sin(camera.yaw) * 0.1;
@@ -122,6 +122,7 @@ void process_tick() {
 			camera.x += sin(camera.yaw) * 0.01;
 	}
 
+	// vertical movement
 	camera.y += vertical_velocity;
 
 	if (PLAYER_IS_COLLIDING) {
@@ -144,6 +145,7 @@ void process_tick() {
 		vertical_velocity -= 0.01;
 	}
 
+	// draw everything
 	draw_mesh(&camera, &miku_transform, miku_mesh);
 	draw_mesh(&camera, &chunk_transform, &chunk.mesh);
 }
@@ -160,6 +162,23 @@ void process_event(SDL_Event event) {
 			camera.pitch = M_PI / 2;
 		} else if (camera.pitch < -M_PI / 2) {
 			camera.pitch = -M_PI / 2;
+		}
+	}
+
+	else if (event.type == SDL_MOUSEBUTTONDOWN) {
+
+		// LMB = 1, RMB = 3
+		if (event.button.button == 1) {
+
+			int hit_x = 0;
+			int hit_y = 0;
+			int hit_z = 0;
+
+			if (raycast_blocks(&chunk, &camera, 5.0, &hit_x, &hit_y, &hit_z)) {
+
+				chunk.blocks[hit_x][hit_y][-hit_z] = 0;
+				remesh_chunk(&chunk, load_texture("client/res/blockmap.png"));
+			}
 		}
 	}
 
