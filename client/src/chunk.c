@@ -178,15 +178,17 @@ int collide_aabb_blocks(const Chunk *chunk, float x, float y, float z, float wl,
 // returns TRUE if it hit a block, in which case it populates the output parameters with the position of the block
 int raycast_blocks(const Chunk *chunk, const Transform *origin, float max_dist, int *out_x, int *out_y, int *out_z) {
 
+	#define STEP_SIZE 0.1
+
 	float x = origin->x, y = origin->y, z = origin->z;
 	float dx, dy, dz;
 
-	dx = sin(origin->yaw) * 0.1;
-	dz = -cos(origin->yaw) * 0.1;
+	dx = STEP_SIZE *  sin(origin->yaw) * cos(origin->pitch);
+	dz = STEP_SIZE * -cos(origin->yaw) * cos(origin->pitch);
 
-	dy = 0;
+	dy = STEP_SIZE * -sin(origin->pitch);
 
-	for (float dist = 0.0; dist < max_dist; dist += 0.1) {
+	for (float dist = 0.0; dist < max_dist; dist += STEP_SIZE) {
 		
 		if (collide_point_blocks(chunk, x, y, z)) {
 
