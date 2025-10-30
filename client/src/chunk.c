@@ -1,3 +1,5 @@
+#include <math.h>
+
 static BlockType block_types[256] = { 0b00000000, 0, 0, 0 }; // first block is always air
 static unsigned char block_type_count = 1;
 
@@ -147,22 +149,28 @@ void remesh_chunk(const Chunk *chunk, const Texture *blocksheet_texture) {
 // TODO should be global and account for chunk position and such but whatever
 int is_point_inside_chunk(const Chunk *chunk, float x, float y, float z) {
 
-	if (x < 0 || y < 0 || z > 0 || x > 16 || y > 16 || z < -16)
+	if (x < 0 || y < 0 || z > 0 || x >= 16 || y >= 16 || z <= -16)
 		return FALSE;
 
 	return chunk->blocks[(int) x][(int) y][(int) -z];
 }
 
+// the AABB is a rectangular prism with a square base centered on x,y,z (extruding up)
 int is_aabb_inside_chunk(const Chunk *chunk, float x, float y, float z, float wl, float h) {
 
 	wl /= 2;
 
-	return is_point_inside_chunk(chunk, x - wl, y, z - wl)
-	    || is_point_inside_chunk(chunk, x - wl, y, z + wl)
-		|| is_point_inside_chunk(chunk, x + wl, y, z - wl)
-		|| is_point_inside_chunk(chunk, x + wl, y, z + wl)
-		|| is_point_inside_chunk(chunk, x - wl, y + h, z - wl)
-		|| is_point_inside_chunk(chunk, x - wl, y + h, z + wl)
-		|| is_point_inside_chunk(chunk, x + wl, y + h, z - wl)
-		|| is_point_inside_chunk(chunk, x + wl, y + h, z + wl);
+	for (int block_x = floor(x - wl); block_x <= floor(x + wl); block_x++) {
+
+		for (int block_z = ceil(z - wl); block_z <= ceil(z + wl); block_z++) {
+
+			for (int block_y = floor(y); block_y <= floor(y + h); block_y++) {
+
+				if (is_point_inside_chunk(chunk, block_x, block_y, block_z))
+					return TRUE;
+			}
+		}
+	}
+
+	return FALSE;
 }
