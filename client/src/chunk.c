@@ -2,12 +2,29 @@
 
 #include <math.h>
 
+typedef struct { // only this file can access this struct
+
+	Mesh mesh;
+	unsigned char blocks[16][16][16]; // array of bytes indexing into block_types
+	
+	// int chunk_x;
+	// int chunk_y;
+	// int chunk_z;
+
+} Chunk;
+
 static BlockType block_types[256] = { 0b00000000, 0, 0, 0 }; // first block is always air
 static unsigned char block_type_count = 1;
+
+static Chunk *chunk = NULL; // TEMP until we make a whole array of them
 
 void register_block_type(BlockType block_type) {
 
 	block_types[block_type_count++] = block_type;
+
+	if (!chunk) {
+		chunk = malloc(sizeof(Chunk)); // TEMP very scuffed but we need to initialize it for testing somehow
+	}
 }
 
 // this function determines what mesh/UV a block gets (including face culling)
@@ -129,7 +146,9 @@ static void append_block_to_mesh(EZArray *mesh_data, int *vertex_count, const un
 }
 
 // remeshes based on the chunk's internal blocks
-void remesh_chunk(const Chunk *chunk, const Texture *blocksheet_texture) {
+static void remesh_chunk(const Chunk *chunk) {
+
+	const Texture *blockmap_texture = load_texture("client/res/blockmap.png");
 
 	EZArray mesh_data = {0};
 
@@ -140,23 +159,41 @@ void remesh_chunk(const Chunk *chunk, const Texture *blocksheet_texture) {
 			for (int z = 0; z < 16; z++)
 				append_block_to_mesh(&mesh_data, &vertex_count, chunk->blocks, x, y, z);
 
-	Mesh *mesh = create_mesh(mesh_data.data, mesh_data.bytecount, vertex_count, blocksheet_texture);
+	Mesh *mesh = create_mesh(mesh_data.data, mesh_data.bytecount, vertex_count, blockmap_texture);
 
 	memcpy((void *) &chunk->mesh, mesh, sizeof(Mesh));
 	free(mesh);
 }
 
-// TODO should be global and account for chunk position and such but whatever
-int does_point_intersect_blocks(const Chunk *chunk, float x, float y, float z) {
+void draw_chunks(const Transform *camera) {
+
+	Transform chunk_transform = { 0 };
+
+	draw_mesh(camera, &chunk_transform, &chunk->mesh);
+}
+
+unsigned char get_block_at(int x, int y, int z) {
+	// TODO should be global and account for chunk position and such but whatever
+}
+
+void set_block_at(int x, int y, int z, unsigned char block, int bool_remesh) {
+	
+	chunk->blocks[x][y][z] = block;
+
+	if (bool_remesh)
+		remesh_chunk(chunk);
+}
+
+int does_point_intersect_blocks(float x, float y, float z) {
 
 	if (x < 0 || y < 0 || z > 0 || x >= 16 || y >= 16 || z <= -16)
 		return FALSE;
 
-	return chunk->blocks[(int) x][(int) y][(int) -z];
+	return BT_IS_SOLID(block_types[chunk->blocks[(int) x][(int) y][(int) -z]]);
 }
 
 // the AABB is a rectangular prism with a square base centered on x,y,z (extruding up)
-int does_aabb_intersect_blocks(const Chunk *chunk, float x, float y, float z, float wl, float h) {
+int does_aabb_intersect_blocks(float x, float y, float z, float wl, float h) {
 
 	wl /= 2;
 
@@ -166,7 +203,7 @@ int does_aabb_intersect_blocks(const Chunk *chunk, float x, float y, float z, fl
 
 			for (int block_y = floor(y); block_y <= floor(y + h); block_y++) {
 
-				if (does_point_intersect_blocks(chunk, block_x, block_y, block_z))
+				if (does_point_intersect_blocks(block_x, block_y, block_z))
 					return TRUE;
 			}
 		}
@@ -176,7 +213,7 @@ int does_aabb_intersect_blocks(const Chunk *chunk, float x, float y, float z, fl
 }
 
 // returns TRUE if it hit a block, in which case it populates the output parameters with the position of the block
-int raycast_blocks(const Chunk *chunk, const Transform *origin, float max_dist, int bool_surface, int *out_x, int *out_y, int *out_z) {
+int raycast_blocks(const Transform *origin, float max_dist, int bool_surface, int *out_x, int *out_y, int *out_z) {
 
 	#define STEP_SIZE 0.1
 
@@ -190,7 +227,7 @@ int raycast_blocks(const Chunk *chunk, const Transform *origin, float max_dist, 
 
 	for (float dist = 0.0; dist < max_dist; dist += STEP_SIZE) {
 		
-		if (does_point_intersect_blocks(chunk, x, y, z)) {
+		if (does_point_intersect_blocks(x, y, z)) {
 
 			if (bool_surface) {
 

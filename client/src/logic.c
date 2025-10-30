@@ -14,12 +14,9 @@
 static Transform camera;
 static float vertical_velocity;
 
-static Transform chunk_transform;
 static Transform miku_transform;
 
 static Mesh *miku_mesh;
-
-static Chunk chunk;
 
 static int left     = FALSE;
 static int right    = FALSE;
@@ -49,9 +46,9 @@ void on_start() {
 	for (int x = 0; x < 16; x++)
 		for (int y = 0; y < 16; y++)
 			for (int z = 0; z < 16; z++)
-				chunk.blocks[x][y][z] = (sin(x * 0.5) / 4 + 0.5) > (1 - y / 16.) || (z > 6 && z < 11 && y > 4 && y < 7) ? 0 : (y < 5 ? 2 : 1);
-
-	remesh_chunk(&chunk, load_texture("client/res/blockmap.png"));
+				set_block_at(x, y, z, (sin(x * 0.5) / 4 + 0.5) > (1 - y / 16.) || (z > 6 && z < 11 && y > 4 && y < 7) ? 0 : (y < 5 ? 2 : 1), FALSE);
+	
+		set_block_at(0, 0, 0, 1, TRUE);
 }
 
 void on_terminate() {
@@ -68,7 +65,7 @@ void process_tick() {
 	#define PLAYER_H 1.7
 	#define PLAYER_CAM_H 1.4
 
-	#define PLAYER_IS_COLLIDING does_aabb_intersect_blocks(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H)
+	#define PLAYER_IS_COLLIDING does_aabb_intersect_blocks(camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H)
 
 	// move in direction of input (crucially, splitting movement into its components to allow for sliding)
 	// if colliding, step in opposite direction in small increments until no longer collision (or completely undid movement + a little to prevent float-error related stuckage)
@@ -147,7 +144,7 @@ void process_tick() {
 
 	// draw everything
 	draw_mesh(&camera, &miku_transform, miku_mesh);
-	draw_mesh(&camera, &chunk_transform, &chunk.mesh);
+	draw_chunks(&camera);
 }
 
 void process_event(SDL_Event event) {
@@ -172,10 +169,10 @@ void process_event(SDL_Event event) {
 
 			int hit_x, hit_y, hit_z;
 
-			if (raycast_blocks(&chunk, &camera, 5.0, FALSE, &hit_x, &hit_y, &hit_z)) {
+			if (raycast_blocks(&camera, 5.0, FALSE, &hit_x, &hit_y, &hit_z)) {
 
-				chunk.blocks[hit_x][hit_y][-hit_z] = 0;
-				remesh_chunk(&chunk, load_texture("client/res/blockmap.png"));
+				// chunk.blocks[hit_x][hit_y][-hit_z] = 0;
+				// remesh_chunk(&chunk, load_texture("client/res/blockmap.png"));
 			}
 		}
 
@@ -183,10 +180,10 @@ void process_event(SDL_Event event) {
 
 			int hit_x, hit_y, hit_z;
 
-			if (raycast_blocks(&chunk, &camera, 5.0, TRUE, &hit_x, &hit_y, &hit_z)) {
+			if (raycast_blocks(&camera, 5.0, TRUE, &hit_x, &hit_y, &hit_z)) {
 
-				chunk.blocks[hit_x][hit_y][-hit_z] = 1;
-				remesh_chunk(&chunk, load_texture("client/res/blockmap.png"));
+				// chunk.blocks[hit_x][hit_y][-hit_z] = 1;
+				// remesh_chunk(&chunk, load_texture("client/res/blockmap.png"));
 			}
 		}
 	}

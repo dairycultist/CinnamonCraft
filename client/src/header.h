@@ -60,17 +60,6 @@ void initialize_perspective(const float aspectRatio);
  * chunk.c
  */
 
-typedef struct {
-
-	Mesh mesh;
-	unsigned char blocks[16][16][16]; // array of bytes indexing into block_types
-	
-	// int chunk_x;
-	// int chunk_y;
-	// int chunk_z;
-
-} Chunk;
-
 #define BT_IS_SOLID(block_type) (block_type.flags & 0b00000001)
 
 typedef struct {
@@ -84,10 +73,14 @@ typedef struct {
 } BlockType;
 
 void register_block_type(BlockType block_type);
-void remesh_chunk(const Chunk *chunk, const Texture *blocksheet_texture);
-int does_point_intersect_blocks(const Chunk *chunk, float x, float y, float z);
-int does_aabb_intersect_blocks(const Chunk *chunk, float x, float y, float z, float wl, float h);
-int raycast_blocks(const Chunk *chunk, const Transform *origin, float max_dist, int bool_surface, int *out_x, int *out_y, int *out_z);
+
+void draw_chunks(const Transform *camera);
+unsigned char get_block_at(int x, int y, int z);
+void set_block_at(int x, int y, int z, unsigned char block, int bool_remesh);
+
+int does_point_intersect_blocks(float x, float y, float z);
+int does_aabb_intersect_blocks(float x, float y, float z, float wl, float h);
+int raycast_blocks(const Transform *origin, float max_dist, int bool_surface, int *out_x, int *out_y, int *out_z);
 
 /*
  * ez_array.c
