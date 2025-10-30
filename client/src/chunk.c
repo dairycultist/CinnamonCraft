@@ -147,7 +147,7 @@ void remesh_chunk(const Chunk *chunk, const Texture *blocksheet_texture) {
 }
 
 // TODO should be global and account for chunk position and such but whatever
-int collide_point_blocks(const Chunk *chunk, float x, float y, float z) {
+int does_point_intersect_blocks(const Chunk *chunk, float x, float y, float z) {
 
 	if (x < 0 || y < 0 || z > 0 || x >= 16 || y >= 16 || z <= -16)
 		return FALSE;
@@ -156,7 +156,7 @@ int collide_point_blocks(const Chunk *chunk, float x, float y, float z) {
 }
 
 // the AABB is a rectangular prism with a square base centered on x,y,z (extruding up)
-int collide_aabb_blocks(const Chunk *chunk, float x, float y, float z, float wl, float h) {
+int does_aabb_intersect_blocks(const Chunk *chunk, float x, float y, float z, float wl, float h) {
 
 	wl /= 2;
 
@@ -166,7 +166,7 @@ int collide_aabb_blocks(const Chunk *chunk, float x, float y, float z, float wl,
 
 			for (int block_y = floor(y); block_y <= floor(y + h); block_y++) {
 
-				if (collide_point_blocks(chunk, block_x, block_y, block_z))
+				if (does_point_intersect_blocks(chunk, block_x, block_y, block_z))
 					return TRUE;
 			}
 		}
@@ -190,13 +190,11 @@ int raycast_blocks(const Chunk *chunk, const Transform *origin, float max_dist, 
 
 	for (float dist = 0.0; dist < max_dist; dist += STEP_SIZE) {
 		
-		if (collide_point_blocks(chunk, x, y, z)) {
+		if (does_point_intersect_blocks(chunk, x, y, z)) {
 
 			*out_x = floor(x);
 			*out_y = floor(y);
 			*out_z = ceil(z);
-
-			printf("%d %d %d\n", *out_x, *out_y, *out_z);
 
 			return TRUE;
 		}

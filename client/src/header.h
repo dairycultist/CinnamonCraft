@@ -85,8 +85,8 @@ typedef struct {
 
 void register_block_type(BlockType block_type);
 void remesh_chunk(const Chunk *chunk, const Texture *blocksheet_texture);
-int collide_point_blocks(const Chunk *chunk, float x, float y, float z);
-int collide_aabb_blocks(const Chunk *chunk, float x, float y, float z, float wl, float h);
+int does_point_intersect_blocks(const Chunk *chunk, float x, float y, float z);
+int does_aabb_intersect_blocks(const Chunk *chunk, float x, float y, float z, float wl, float h);
 int raycast_blocks(const Chunk *chunk, const Transform *origin, float max_dist, int *out_x, int *out_y, int *out_z);
 
 /*

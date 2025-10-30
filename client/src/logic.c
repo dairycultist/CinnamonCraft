@@ -68,7 +68,7 @@ void process_tick() {
 	#define PLAYER_H 1.7
 	#define PLAYER_CAM_H 1.4
 
-	#define PLAYER_IS_COLLIDING collide_aabb_blocks(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H)
+	#define PLAYER_IS_COLLIDING does_aabb_intersect_blocks(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H)
 
 	// move in direction of input (crucially, splitting movement into its components to allow for sliding)
 	// if colliding, step in opposite direction in small increments until no longer collision (or completely undid movement + a little to prevent float-error related stuckage)
