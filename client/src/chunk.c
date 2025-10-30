@@ -2,6 +2,8 @@
 
 #include <math.h>
 
+// problem: chunk Z increases in the direction rendering Z decreases
+
 typedef struct { // only this file can access this struct
 
 	Mesh mesh;
@@ -146,6 +148,8 @@ static void append_block_to_mesh(EZArray *mesh_data, int *vertex_count, const un
 }
 
 // remeshes based on the chunk's internal blocks
+// TODO should probably "free" chunk->mesh.vertex_array, however that works in OpenGL
+// TODO should really only load blockmap_texture once...
 static void remesh_chunk(const Chunk *chunk) {
 
 	const Texture *blockmap_texture = load_texture("client/res/blockmap.png");
@@ -172,8 +176,13 @@ void draw_chunks(const Transform *camera) {
 	draw_mesh(camera, &chunk_transform, &chunk->mesh);
 }
 
+/*
+ * the following functions are globally positioned! no need for logic.c to consider where chunk boundaries are
+ */
+
 unsigned char get_block_at(int x, int y, int z) {
-	// TODO should be global and account for chunk position and such but whatever
+	
+	return chunk->blocks[x][y][z];
 }
 
 void set_block_at(int x, int y, int z, unsigned char block, int bool_remesh) {
@@ -189,7 +198,7 @@ int does_point_intersect_blocks(float x, float y, float z) {
 	if (x < 0 || y < 0 || z > 0 || x >= 16 || y >= 16 || z <= -16)
 		return FALSE;
 
-	return BT_IS_SOLID(block_types[chunk->blocks[(int) x][(int) y][(int) -z]]);
+	return BT_IS_SOLID(block_types[get_block_at((int) x, (int) y, (int) -z)]);
 }
 
 // the AABB is a rectangular prism with a square base centered on x,y,z (extruding up)
@@ -238,7 +247,7 @@ int raycast_blocks(const Transform *origin, float max_dist, int bool_surface, in
 
 			*out_x = floor(x);
 			*out_y = floor(y);
-			*out_z = ceil(z);
+			*out_z = -ceil(z);
 
 			return TRUE;
 		}

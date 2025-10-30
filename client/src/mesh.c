@@ -68,9 +68,9 @@ Mesh *create_mesh(const unsigned char *mesh_data, const int mesh_bytecount, cons
 	glBindVertexArray(vertex_array);
 
 	// make vertex buffer (stored by vertex_array)
-	GLuint vertexBuffer;
-	glGenBuffers(1, &vertexBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);								// make it the active buffer
+	GLuint vertex_buffer;
+	glGenBuffers(1, &vertex_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);								// make it the active buffer
 	glBufferData(GL_ARRAY_BUFFER, mesh_bytecount, mesh_data, GL_STATIC_DRAW);	// copy vertex data into the active buffer
 
 	// link active vertex data and shader attributes

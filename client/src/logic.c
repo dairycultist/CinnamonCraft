@@ -48,7 +48,7 @@ void on_start() {
 			for (int z = 0; z < 16; z++)
 				set_block_at(x, y, z, (sin(x * 0.5) / 4 + 0.5) > (1 - y / 16.) || (z > 6 && z < 11 && y > 4 && y < 7) ? 0 : (y < 5 ? 2 : 1), FALSE);
 	
-		set_block_at(0, 0, 0, 1, TRUE);
+	set_block_at(0, 0, 0, 1, TRUE); // need to trigger a remesh
 }
 
 void on_terminate() {
@@ -171,8 +171,7 @@ void process_event(SDL_Event event) {
 
 			if (raycast_blocks(&camera, 5.0, FALSE, &hit_x, &hit_y, &hit_z)) {
 
-				// chunk.blocks[hit_x][hit_y][-hit_z] = 0;
-				// remesh_chunk(&chunk, load_texture("client/res/blockmap.png"));
+				set_block_at(hit_x, hit_y, hit_z, 0, TRUE);
 			}
 		}
 
@@ -182,8 +181,7 @@ void process_event(SDL_Event event) {
 
 			if (raycast_blocks(&camera, 5.0, TRUE, &hit_x, &hit_y, &hit_z)) {
 
-				// chunk.blocks[hit_x][hit_y][-hit_z] = 1;
-				// remesh_chunk(&chunk, load_texture("client/res/blockmap.png"));
+				set_block_at(hit_x, hit_y, hit_z, 1, TRUE);
 			}
 		}
 	}
