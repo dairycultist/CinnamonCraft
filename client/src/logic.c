@@ -63,9 +63,8 @@ void process_tick() {
 
 	miku_transform.yaw += 0.01;
 
-	// move in direction of input
+	// move in direction of input (crucially, splitting movement into its components to allow for sliding)
 	// if colliding, step in opposite direction in small increments until no longer collision (or completely undid movement + a little to prevent float-error related stuckage)
-	// doesn't allow sliding against walls ugh
 
 	#define PLAYER_WL 0.4
 	#define PLAYER_H 1.7
@@ -74,47 +73,51 @@ void process_tick() {
 	if (left) {
 
 		camera.z -= sin(camera.yaw) * 0.1;
+
+		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 11; i++)
+			camera.z += sin(camera.yaw) * 0.01;
+
 		camera.x -= cos(camera.yaw) * 0.1;
 
-		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 11; i++) {
-
-			camera.z += sin(camera.yaw) * 0.01;
+		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 11; i++)
 			camera.x += cos(camera.yaw) * 0.01;
-		}
 
 	} else if (right) {
 
 		camera.z += sin(camera.yaw) * 0.1;
+
+		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 11; i++)
+			camera.z -= sin(camera.yaw) * 0.01;
+
 		camera.x += cos(camera.yaw) * 0.1;
 
-		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 11; i++) {
-
-			camera.z -= sin(camera.yaw) * 0.01;
+		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 11; i++)
 			camera.x -= cos(camera.yaw) * 0.01;
-		}
 	}
 
 	if (forward) {
 
 		camera.z -= cos(camera.yaw) * 0.1;
+
+		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 11; i++)
+			camera.z += cos(camera.yaw) * 0.01;
+
 		camera.x += sin(camera.yaw) * 0.1;
 
-		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 11; i++) {
-
-			camera.z += cos(camera.yaw) * 0.01;
+		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 11; i++)
 			camera.x -= sin(camera.yaw) * 0.01;
-		}
 
 	} else if (backward) {
 
 		camera.z += cos(camera.yaw) * 0.1;
+
+		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 11; i++)
+			camera.z -= cos(camera.yaw) * 0.01;
+
 		camera.x -= sin(camera.yaw) * 0.1;
 
-		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 11; i++) {
-
-			camera.z -= cos(camera.yaw) * 0.01;
+		for (int i=0; is_aabb_inside_chunk(&chunk, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H) && i < 11; i++)
 			camera.x += sin(camera.yaw) * 0.01;
-		}
 	}
 
 	camera.y += vertical_velocity;
