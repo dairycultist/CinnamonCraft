@@ -18,7 +18,7 @@ static void append_block_to_mesh(EZArray *mesh_data, int *vertex_count, const un
 
 	if (blocks[block_x][block_y][block_z] == 0) { return; }
 
-	BlockType *block_type = &block_types[blocks[block_x][block_y][block_z]];
+	BlockType *block_type = &BT_AT(block_x, block_y, block_z);
 
 	float u_sml, v_sml, u_big, v_big;
 
