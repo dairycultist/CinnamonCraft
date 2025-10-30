@@ -170,13 +170,22 @@ void process_event(SDL_Event event) {
 		// LMB = 1, RMB = 3
 		if (event.button.button == 1) {
 
-			int hit_x = 0;
-			int hit_y = 0;
-			int hit_z = 0;
+			int hit_x, hit_y, hit_z;
 
-			if (raycast_blocks(&chunk, &camera, 5.0, &hit_x, &hit_y, &hit_z)) {
+			if (raycast_blocks(&chunk, &camera, 5.0, FALSE, &hit_x, &hit_y, &hit_z)) {
 
 				chunk.blocks[hit_x][hit_y][-hit_z] = 0;
+				remesh_chunk(&chunk, load_texture("client/res/blockmap.png"));
+			}
+		}
+
+		else if (event.button.button == 3) {
+
+			int hit_x, hit_y, hit_z;
+
+			if (raycast_blocks(&chunk, &camera, 5.0, TRUE, &hit_x, &hit_y, &hit_z)) {
+
+				chunk.blocks[hit_x][hit_y][-hit_z] = 1;
 				remesh_chunk(&chunk, load_texture("client/res/blockmap.png"));
 			}
 		}

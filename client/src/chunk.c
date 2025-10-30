@@ -176,7 +176,7 @@ int does_aabb_intersect_blocks(const Chunk *chunk, float x, float y, float z, fl
 }
 
 // returns TRUE if it hit a block, in which case it populates the output parameters with the position of the block
-int raycast_blocks(const Chunk *chunk, const Transform *origin, float max_dist, int *out_x, int *out_y, int *out_z) {
+int raycast_blocks(const Chunk *chunk, const Transform *origin, float max_dist, int bool_surface, int *out_x, int *out_y, int *out_z) {
 
 	#define STEP_SIZE 0.1
 
@@ -191,6 +191,13 @@ int raycast_blocks(const Chunk *chunk, const Transform *origin, float max_dist, 
 	for (float dist = 0.0; dist < max_dist; dist += STEP_SIZE) {
 		
 		if (does_point_intersect_blocks(chunk, x, y, z)) {
+
+			if (bool_surface) {
+
+				x -= dx;
+				y -= dy;
+				z -= dz;
+			}
 
 			*out_x = floor(x);
 			*out_y = floor(y);

@@ -87,7 +87,7 @@ void register_block_type(BlockType block_type);
 void remesh_chunk(const Chunk *chunk, const Texture *blocksheet_texture);
 int does_point_intersect_blocks(const Chunk *chunk, float x, float y, float z);
 int does_aabb_intersect_blocks(const Chunk *chunk, float x, float y, float z, float wl, float h);
-int raycast_blocks(const Chunk *chunk, const Transform *origin, float max_dist, int *out_x, int *out_y, int *out_z);
+int raycast_blocks(const Chunk *chunk, const Transform *origin, float max_dist, int bool_surface, int *out_x, int *out_y, int *out_z);
 
 /*
  * ez_array.c
