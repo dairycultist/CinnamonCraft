@@ -185,6 +185,16 @@ void draw_chunks(const Transform *camera) {
 }
 
 static Chunk *get_chunk_of_block(int x, int y, int z) {
+
+	if (
+		x < 0 ||
+		y < 0 ||
+		z < 0 ||
+		x >= WORLD_DIM_IN_CHUNKS * CHUNK_DIM_IN_BLOCKS ||
+		y >= WORLD_DIM_IN_CHUNKS * CHUNK_DIM_IN_BLOCKS ||
+		z >= WORLD_DIM_IN_CHUNKS * CHUNK_DIM_IN_BLOCKS
+	)
+		return NULL;
 	
 	return chunks[x / CHUNK_DIM_IN_BLOCKS][y / CHUNK_DIM_IN_BLOCKS][z / CHUNK_DIM_IN_BLOCKS];
 }
@@ -210,6 +220,9 @@ void set_block_at(int x, int y, int z, unsigned char block, int bool_remesh) {
 	
 	Chunk *chunk = get_chunk_of_block(x, y, z);
 
+	if (!chunk)
+		return;
+
 	chunk->blocks[x % CHUNK_DIM_IN_BLOCKS][y % CHUNK_DIM_IN_BLOCKS][z % CHUNK_DIM_IN_BLOCKS] = block;
 
 	if (bool_remesh)
@@ -218,27 +231,19 @@ void set_block_at(int x, int y, int z, unsigned char block, int bool_remesh) {
 
 int does_point_intersect_blocks(float x, float y, float z) {
 
-	if (
-		x < 0 ||
-		y < 0 ||
-		z > 0 ||
-		x >= WORLD_DIM_IN_CHUNKS * CHUNK_DIM_IN_BLOCKS ||
-		y >= WORLD_DIM_IN_CHUNKS * CHUNK_DIM_IN_BLOCKS ||
-		z <= -WORLD_DIM_IN_CHUNKS * CHUNK_DIM_IN_BLOCKS
-	)
-		return FALSE;
-
-	return BT_IS_SOLID(block_types[get_block_at((int) x, (int) y, (int) -z)]);
+	return BT_IS_SOLID(block_types[get_block_at((int) x, (int) y, (int) z)]);
 }
 
 // the AABB is a rectangular prism with a square base centered on x,y,z (extruding up)
 int does_aabb_intersect_blocks(float x, float y, float z, float wl, float h) {
 
+	z = -z;
+
 	wl /= 2;
 
 	for (int block_x = floor(x - wl); block_x <= floor(x + wl); block_x++) {
 
-		for (int block_z = ceil(z - wl); block_z <= ceil(z + wl); block_z++) {
+		for (int block_z = floor(z - wl); block_z <= floor(z + wl); block_z++) {
 
 			for (int block_y = floor(y); block_y <= floor(y + h); block_y++) {
 
@@ -266,7 +271,7 @@ int raycast_blocks(const Transform *origin, float max_dist, int bool_surface, in
 
 	for (float dist = 0.0; dist < max_dist; dist += STEP_SIZE) {
 		
-		if (does_point_intersect_blocks(x, y, z)) {
+		if (does_point_intersect_blocks(x, y, -z)) {
 
 			if (bool_surface) {
 

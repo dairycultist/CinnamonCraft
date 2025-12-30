@@ -37,7 +37,7 @@ void on_start() {
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 
 	camera.z = -2;
-	camera.y = 11;
+	camera.y = 66;
 
 	// create a mesh for testing
 	miku_mesh = create_mesh_from_obj("client/res/miku.obj", load_texture("client/res/dirt.png"));
@@ -51,14 +51,16 @@ void on_start() {
 			for (int cz = 0; cz < WORLD_DIM_IN_CHUNKS; cz++) {
 
 				// populate single chunk
-				for (int x = 0; x < CHUNK_DIM_IN_BLOCKS; x++) {
-					for (int y = 0; y < CHUNK_DIM_IN_BLOCKS; y++) {
-						for (int z = 0; z < CHUNK_DIM_IN_BLOCKS; z++) {
+				for (int bx = 0; bx < CHUNK_DIM_IN_BLOCKS; bx++) {
+					for (int by = 0; by < CHUNK_DIM_IN_BLOCKS; by++) {
+						for (int bz = 0; bz < CHUNK_DIM_IN_BLOCKS; bz++) {
 							
+							int x = cx * CHUNK_DIM_IN_BLOCKS + bx;
+							int y = cy * CHUNK_DIM_IN_BLOCKS + by;
+							int z = cz * CHUNK_DIM_IN_BLOCKS + bz;
+
 							set_block_at(
-								cx * CHUNK_DIM_IN_BLOCKS + x,
-								cy * CHUNK_DIM_IN_BLOCKS + y,
-								cz * CHUNK_DIM_IN_BLOCKS + z,
+								x, y, z,
 								(sin(x * 0.5) / 4 + 0.5) > (1 - y / 16.) || (z > 6 && z < 11 && y > 4 && y < 7) ? 0 : (y < 5 ? 2 : 1),
 								FALSE
 							);
@@ -67,7 +69,7 @@ void on_start() {
 				}
 
 				// trigger a remesh
-				set_block_at(cx * CHUNK_DIM_IN_BLOCKS, cy * CHUNK_DIM_IN_BLOCKS, cz * CHUNK_DIM_IN_BLOCKS, 1, TRUE);
+				set_block_at(cx * CHUNK_DIM_IN_BLOCKS, cy * CHUNK_DIM_IN_BLOCKS, cz * CHUNK_DIM_IN_BLOCKS, 0, TRUE);
 			}
 		}
 	}
