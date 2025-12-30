@@ -204,7 +204,7 @@ static Chunk *get_chunk_of_block(int x, int y, int z) {
  * No need for other files to consider where chunk boundaries are.
  */
 
-// TODO int is_block_loaded(int x, int y, int z)
+// TODO int is_chunk_loaded(int cx, int cy, int cz)
 
 unsigned char get_block_at(int x, int y, int z) {
 
@@ -226,6 +226,20 @@ void set_block_at(int x, int y, int z, unsigned char block, int bool_remesh) {
 	chunk->blocks[x % CHUNK_DIM_IN_BLOCKS][y % CHUNK_DIM_IN_BLOCKS][z % CHUNK_DIM_IN_BLOCKS] = block;
 
 	if (bool_remesh)
+		remesh_chunk(chunk);
+}
+
+void remesh_chunk_chunkpos(int cx, int cy, int cz) {
+
+	// I'm lazy
+	remesh_chunk_blockpos(cx * CHUNK_DIM_IN_BLOCKS, cy * CHUNK_DIM_IN_BLOCKS, cz * CHUNK_DIM_IN_BLOCKS);
+}
+
+void remesh_chunk_blockpos(int x, int y, int z) {
+
+	Chunk *chunk = get_chunk_of_block(x, y, z);
+
+	if (chunk)
 		remesh_chunk(chunk);
 }
 

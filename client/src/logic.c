@@ -61,7 +61,7 @@ void on_start() {
 
 							set_block_at(
 								x, y, z,
-								(sin(x * 0.5) / 4 + 0.5) > (1 - y / 16.) || (z > 6 && z < 11 && y > 4 && y < 7) ? 0 : (y < 5 ? 2 : 1),
+								sin(x * 0.1) * 16 + 16 < y ? 0 : (y < 20 ? 2 : 1),
 								FALSE
 							);
 						}
@@ -69,7 +69,7 @@ void on_start() {
 				}
 
 				// trigger a remesh
-				set_block_at(cx * CHUNK_DIM_IN_BLOCKS, cy * CHUNK_DIM_IN_BLOCKS, cz * CHUNK_DIM_IN_BLOCKS, 0, TRUE);
+				remesh_chunk_chunkpos(cx, cy, cz);
 			}
 		}
 	}

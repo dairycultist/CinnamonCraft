@@ -30,6 +30,9 @@ void draw_chunks(const Transform *camera);
 unsigned char get_block_at(int x, int y, int z);
 void set_block_at(int x, int y, int z, unsigned char block, int bool_remesh);
 
+void remesh_chunk_chunkpos(int cx, int cy, int cz);
+void remesh_chunk_blockpos(int x, int y, int z);
+
 int does_point_intersect_blocks(float x, float y, float z);
 int does_aabb_intersect_blocks(float x, float y, float z, float wl, float h);
 int raycast_blocks(const Transform *origin, float max_dist, int bool_surface, int *out_x, int *out_y, int *out_z);
