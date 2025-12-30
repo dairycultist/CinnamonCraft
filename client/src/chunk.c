@@ -199,11 +199,16 @@ void initialize_chunk_system(void (*chunk_populator)(int x, int y, int z)) {
 
 void draw_chunks(const Transform *camera) {
 
-	for (int cx = 0; cx < WORLD_DIM_IN_CHUNKS; cx++) {
-		for (int cy = 0; cy < WORLD_DIM_IN_CHUNKS; cy++) {
-			for (int cz = 0; cz < WORLD_DIM_IN_CHUNKS; cz++) {
+	int cx, cy, cz;
+	Transform chunk_transform = {};
 
-				Transform chunk_transform = { cx * CHUNK_DIM_IN_BLOCKS, cy * CHUNK_DIM_IN_BLOCKS, cz * CHUNK_DIM_IN_BLOCKS };
+	for (cx = 0; cx < WORLD_DIM_IN_CHUNKS; cx++) {
+		for (cy = 0; cy < WORLD_DIM_IN_CHUNKS; cy++) {
+			for (cz = 0; cz < WORLD_DIM_IN_CHUNKS; cz++) {
+
+				chunk_transform.x = cx * CHUNK_DIM_IN_BLOCKS;
+				chunk_transform.y = cy * CHUNK_DIM_IN_BLOCKS;
+				chunk_transform.z = cz * CHUNK_DIM_IN_BLOCKS;
 
 				draw_mesh(camera, &chunk_transform, &chunks[cx][cy][cz]->mesh);
 			}
