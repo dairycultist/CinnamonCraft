@@ -1,10 +1,11 @@
 #include "header.h"
+#include "chunk.h"
 
 #include <math.h>
 
 // problem: chunk Z increases in the direction rendering Z decreases
 
-typedef struct { // only this file can access this struct
+typedef struct { // remember, only this file can access this struct
 
 	Mesh mesh;
 	unsigned char blocks[16][16][16]; // array of bytes indexing into block_types
@@ -18,15 +19,18 @@ typedef struct { // only this file can access this struct
 static BlockType block_types[256] = { 0b00000000, 0, 0, 0 }; // first block is always air
 static unsigned char block_type_count = 1;
 
-static Chunk *chunk = NULL; // TEMP until we make a whole array of them
+static Texture *blockmap_texture;
+static Chunk *chunk;
+
+void initialize_chunk_system() {
+
+	blockmap_texture = load_texture("client/res/blockmap.png");
+	chunk = malloc(sizeof(Chunk));
+}
 
 void register_block_type(BlockType block_type) {
 
 	block_types[block_type_count++] = block_type;
-
-	if (!chunk) {
-		chunk = malloc(sizeof(Chunk)); // TEMP very scuffed but we need to initialize it for testing somehow
-	}
 }
 
 // this function determines what mesh/UV a block gets (including face culling)
@@ -148,11 +152,8 @@ static void append_block_to_mesh(EZArray *mesh_data, int *vertex_count, const un
 }
 
 // remeshes based on the chunk's internal blocks
-// TODO should probably "free" chunk->mesh.vertex_array, however that works in OpenGL
-// TODO should really only load blockmap_texture once...
+// TODO should probably "free" chunk->mesh.vertex_array, in however way that works in OpenGL
 static void remesh_chunk(const Chunk *chunk) {
-
-	const Texture *blockmap_texture = load_texture("client/res/blockmap.png");
 
 	EZArray mesh_data = {0};
 
@@ -177,8 +178,11 @@ void draw_chunks(const Transform *camera) {
 }
 
 /*
- * the following functions are globally positioned! no need for logic.c to consider where chunk boundaries are
+ * The following functions (from chunk.h!) are globally positioned!
+ * No need for other files to consider where chunk boundaries are.
  */
+
+// TODO int is_block_loaded(int x, int y, int z)
 
 unsigned char get_block_at(int x, int y, int z) {
 	

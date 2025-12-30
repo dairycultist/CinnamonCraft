@@ -1,6 +1,6 @@
 #include "header.h"
 
-void log_error(const char *msg) {
+static void log_error(const char *msg) {
 	
 	if (strlen(SDL_GetError()) == 0) {
 		fprintf(stderr, "\n%s: <No error given>\n\n", msg);

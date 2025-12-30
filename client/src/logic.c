@@ -1,4 +1,5 @@
 #include "header.h"
+#include "chunk.h"
 
 // static unsigned int rng_state = 1; // uint32_t? time(NULL)?
 
@@ -26,6 +27,8 @@ static int up       = FALSE;
 static int down     = FALSE;
 
 void on_start() {
+
+	initialize_chunk_system();
 
 	register_block_type((BlockType) { 0b00000001, 240, 240, 240 });
 	register_block_type((BlockType) { 0b00000001, 241, 241, 241 });

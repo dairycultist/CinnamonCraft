@@ -57,33 +57,6 @@ void initialize_shader();
 void initialize_perspective(const float aspectRatio);
 
 /*
- * chunk.c
- */
-
-#define BT_IS_SOLID(block_type) (block_type.flags & 0b00000001)
-
-typedef struct {
-
-	// right now flags is just the first bit representing "solid," which means adjacent blocks will cull the faces that touch it
-	unsigned char flags;
-	unsigned char tex_top;
-	unsigned char tex_side;
-	unsigned char tex_bottom;
-
-} BlockType;
-
-void register_block_type(BlockType block_type);
-
-void draw_chunks(const Transform *camera);
-
-unsigned char get_block_at(int x, int y, int z);
-void set_block_at(int x, int y, int z, unsigned char block, int bool_remesh);
-
-int does_point_intersect_blocks(float x, float y, float z);
-int does_aabb_intersect_blocks(float x, float y, float z, float wl, float h);
-int raycast_blocks(const Transform *origin, float max_dist, int bool_surface, int *out_x, int *out_y, int *out_z);
-
-/*
  * ez_array.c
  */
 typedef struct {
