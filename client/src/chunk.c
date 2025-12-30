@@ -172,13 +172,13 @@ static void remesh_chunk(const Chunk *chunk) {
 
 void draw_chunks(const Transform *camera) {
 
-	for (int x = 0; x < WORLD_DIM_IN_CHUNKS; x++) {
-		for (int y = 0; y < WORLD_DIM_IN_CHUNKS; y++) {
-			for (int z = 0; z < WORLD_DIM_IN_CHUNKS; z++) {
+	for (int cx = 0; cx < WORLD_DIM_IN_CHUNKS; cx++) {
+		for (int cy = 0; cy < WORLD_DIM_IN_CHUNKS; cy++) {
+			for (int cz = 0; cz < WORLD_DIM_IN_CHUNKS; cz++) {
 
-				Transform chunk_transform = { x * CHUNK_DIM_IN_BLOCKS, y * CHUNK_DIM_IN_BLOCKS, z * CHUNK_DIM_IN_BLOCKS };
+				Transform chunk_transform = { cx * CHUNK_DIM_IN_BLOCKS, cy * CHUNK_DIM_IN_BLOCKS, -cz * CHUNK_DIM_IN_BLOCKS };
 
-				draw_mesh(camera, &chunk_transform, &chunks[x][y][z]->mesh);
+				draw_mesh(camera, &chunk_transform, &chunks[cx][cy][cz]->mesh);
 			}
 		}
 	}
@@ -209,9 +209,6 @@ unsigned char get_block_at(int x, int y, int z) {
 void set_block_at(int x, int y, int z, unsigned char block, int bool_remesh) {
 	
 	Chunk *chunk = get_chunk_of_block(x, y, z);
-
-	if (!chunk)
-		return;
 
 	chunk->blocks[x % CHUNK_DIM_IN_BLOCKS][y % CHUNK_DIM_IN_BLOCKS][z % CHUNK_DIM_IN_BLOCKS] = block;
 

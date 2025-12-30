@@ -1,6 +1,8 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 
+// only 256 texture indices and 256 block types can exist right now
+
 /*
  * Abstraction layer for all block/chunk related actions.
  */

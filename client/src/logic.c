@@ -45,13 +45,32 @@ void on_start() {
 	miku_transform.z = -4;
 	miku_transform.y = 6.45;
 
-	// create a chunk for testing
-	for (int x = 0; x < 16; x++)
-		for (int y = 0; y < 16; y++)
-			for (int z = 0; z < 16; z++)
-				set_block_at(x, y, z, (sin(x * 0.5) / 4 + 0.5) > (1 - y / 16.) || (z > 6 && z < 11 && y > 4 && y < 7) ? 0 : (y < 5 ? 2 : 1), FALSE);
-	
-	set_block_at(0, 0, 0, 1, TRUE); // need to trigger a remesh
+	// populate chunks
+	for (int cx = 0; cx < WORLD_DIM_IN_CHUNKS; cx++) {
+		for (int cy = 0; cy < WORLD_DIM_IN_CHUNKS; cy++) {
+			for (int cz = 0; cz < WORLD_DIM_IN_CHUNKS; cz++) {
+
+				// populate single chunk
+				for (int x = 0; x < CHUNK_DIM_IN_BLOCKS; x++) {
+					for (int y = 0; y < CHUNK_DIM_IN_BLOCKS; y++) {
+						for (int z = 0; z < CHUNK_DIM_IN_BLOCKS; z++) {
+							
+							set_block_at(
+								cx * CHUNK_DIM_IN_BLOCKS + x,
+								cy * CHUNK_DIM_IN_BLOCKS + y,
+								cz * CHUNK_DIM_IN_BLOCKS + z,
+								(sin(x * 0.5) / 4 + 0.5) > (1 - y / 16.) || (z > 6 && z < 11 && y > 4 && y < 7) ? 0 : (y < 5 ? 2 : 1),
+								FALSE
+							);
+						}
+					}
+				}
+
+				// trigger a remesh
+				set_block_at(cx * CHUNK_DIM_IN_BLOCKS, cy * CHUNK_DIM_IN_BLOCKS, cz * CHUNK_DIM_IN_BLOCKS, 1, TRUE);
+			}
+		}
+	}
 }
 
 void on_terminate() {
