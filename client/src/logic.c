@@ -45,14 +45,15 @@ void on_start() {
 	glClearColor(0.2f, 0.2f, 0.23f, 1.0f);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 
-	camera.z = -2;
-	camera.y = 66;
+	camera.x = 8;
+	camera.z = 8;
+	camera.y = 30;
 
 	// create a mesh for testing
 	miku_mesh = create_mesh_from_obj("client/res/miku.obj", load_texture("client/res/dirt.png"));
-	miku_transform.x = 4;
-	miku_transform.z = -4;
-	miku_transform.y = 6.45;
+	miku_transform.x = 8;
+	miku_transform.z = 8;
+	miku_transform.y = 30;
 }
 
 void on_terminate() {

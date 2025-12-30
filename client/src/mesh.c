@@ -11,7 +11,7 @@ static char *vertex =
 "out vec3 normal_camera;\n"
 "out vec2 frag_UV;\n"
 "void main() {\n"
-    "gl_Position = position_matrix * vec4(position.xy, -position.z, 1.0);\n" // get final position
+    "gl_Position = position_matrix * vec4(position.xyz, 1.0);\n" // get final position
     "normal_camera = (normal_matrix * vec4(normal, 1.0)).xyz;\n" // get final normal
     "frag_UV = UV;\n" // pass along UV
 "}";

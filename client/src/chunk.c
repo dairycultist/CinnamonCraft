@@ -3,8 +3,6 @@
 
 #include <math.h>
 
-// problem: chunk Z increases in the direction rendering Z decreases
-
 typedef struct { // remember, only this file can access this struct
 
 	Mesh mesh;
@@ -205,7 +203,7 @@ void draw_chunks(const Transform *camera) {
 		for (int cy = 0; cy < WORLD_DIM_IN_CHUNKS; cy++) {
 			for (int cz = 0; cz < WORLD_DIM_IN_CHUNKS; cz++) {
 
-				Transform chunk_transform = { cx * CHUNK_DIM_IN_BLOCKS, cy * CHUNK_DIM_IN_BLOCKS, -cz * CHUNK_DIM_IN_BLOCKS };
+				Transform chunk_transform = { cx * CHUNK_DIM_IN_BLOCKS, cy * CHUNK_DIM_IN_BLOCKS, cz * CHUNK_DIM_IN_BLOCKS };
 
 				draw_mesh(camera, &chunk_transform, &chunks[cx][cy][cz]->mesh);
 			}
@@ -266,8 +264,6 @@ int does_point_intersect_blocks(float x, float y, float z) {
 // the AABB is a rectangular prism with a square base centered on x,y,z (extruding up)
 int does_aabb_intersect_blocks(float x, float y, float z, float wl, float h) {
 
-	z = -z;
-
 	wl /= 2;
 
 	for (int block_x = floor(x - wl); block_x <= floor(x + wl); block_x++) {
@@ -300,7 +296,7 @@ int raycast_blocks(const Transform *origin, float max_dist, int bool_surface, in
 
 	for (float dist = 0.0; dist < max_dist; dist += STEP_SIZE) {
 		
-		if (does_point_intersect_blocks(x, y, -z)) {
+		if (does_point_intersect_blocks(x, y, z)) {
 
 			if (bool_surface) {
 
@@ -311,7 +307,7 @@ int raycast_blocks(const Transform *origin, float max_dist, int bool_surface, in
 
 			*out_x = floor(x);
 			*out_y = floor(y);
-			*out_z = -ceil(z);
+			*out_z = floor(z);
 
 			return TRUE;
 		}

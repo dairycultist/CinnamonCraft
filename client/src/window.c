@@ -42,7 +42,7 @@ int main() {
 
 	// enable backface culling
 	glEnable(GL_CULL_FACE);
-	glFrontFace(GL_CW);
+	glFrontFace(GL_CCW);
 
 	// initialize 3D
 	initialize_shader();
