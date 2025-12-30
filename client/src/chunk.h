@@ -7,6 +7,9 @@
 
 #define BT_IS_SOLID(block_type) (block_type.flags & 0b00000001)
 
+#define WORLD_DIM_IN_CHUNKS 8
+#define CHUNK_DIM_IN_BLOCKS 16
+
 typedef struct {
 
 	// right now flags is just the first bit representing "solid," which means adjacent blocks will cull the faces that touch it

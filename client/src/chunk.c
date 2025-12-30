@@ -8,11 +8,7 @@
 typedef struct { // remember, only this file can access this struct
 
 	Mesh mesh;
-	unsigned char blocks[16][16][16]; // array of bytes indexing into block_types
-	
-	// int chunk_x;
-	// int chunk_y;
-	// int chunk_z;
+	unsigned char blocks[CHUNK_DIM_IN_BLOCKS][CHUNK_DIM_IN_BLOCKS][CHUNK_DIM_IN_BLOCKS]; // array of bytes indexing into block_types
 
 } Chunk;
 
@@ -20,12 +16,16 @@ static BlockType block_types[256] = { 0b00000000, 0, 0, 0 }; // first block is a
 static unsigned char block_type_count = 1;
 
 static Texture *blockmap_texture;
-static Chunk *chunk;
+static Chunk *chunks[WORLD_DIM_IN_CHUNKS][WORLD_DIM_IN_CHUNKS][WORLD_DIM_IN_CHUNKS]; // finite for now
 
 void initialize_chunk_system() {
 
 	blockmap_texture = load_texture("client/res/blockmap.png");
-	chunk = malloc(sizeof(Chunk));
+	
+	for (int x = 0; x < WORLD_DIM_IN_CHUNKS; x++)
+		for (int y = 0; y < WORLD_DIM_IN_CHUNKS; y++)
+			for (int z = 0; z < WORLD_DIM_IN_CHUNKS; z++)
+				chunks[x][y][z] = malloc(sizeof(Chunk));
 }
 
 void register_block_type(BlockType block_type) {
@@ -34,7 +34,7 @@ void register_block_type(BlockType block_type) {
 }
 
 // this function determines what mesh/UV a block gets (including face culling)
-static void append_block_to_mesh(EZArray *mesh_data, int *vertex_count, const unsigned char blocks[16][16][16], int block_x, int block_y, int block_z) {
+static void append_block_to_mesh(EZArray *mesh_data, int *vertex_count, const unsigned char blocks[CHUNK_DIM_IN_BLOCKS][CHUNK_DIM_IN_BLOCKS][CHUNK_DIM_IN_BLOCKS], int block_x, int block_y, int block_z) {
 
 	#define GET_SPRITEMAP_UV(index, u_sml, v_sml, u_big, v_big) u_sml = ((index) % 16) / 16.; v_sml = ((index) / 16) / 16.; u_big = (((index) + 1) % 16) / 16.; v_big = ((index) / 16 + 1) / 16.
 	#define BT_AT(x, y, z) (block_types[blocks[x][y][z]])
@@ -159,9 +159,9 @@ static void remesh_chunk(const Chunk *chunk) {
 
 	int vertex_count = 0;
 
-	for (int x = 0; x < 16; x++)
-		for (int y = 0; y < 16; y++)
-			for (int z = 0; z < 16; z++)
+	for (int x = 0; x < CHUNK_DIM_IN_BLOCKS; x++)
+		for (int y = 0; y < CHUNK_DIM_IN_BLOCKS; y++)
+			for (int z = 0; z < CHUNK_DIM_IN_BLOCKS; z++)
 				append_block_to_mesh(&mesh_data, &vertex_count, chunk->blocks, x, y, z);
 
 	Mesh *mesh = create_mesh(mesh_data.data, mesh_data.bytecount, vertex_count, blockmap_texture);
@@ -172,9 +172,21 @@ static void remesh_chunk(const Chunk *chunk) {
 
 void draw_chunks(const Transform *camera) {
 
-	Transform chunk_transform = { 0 };
+	for (int x = 0; x < WORLD_DIM_IN_CHUNKS; x++) {
+		for (int y = 0; y < WORLD_DIM_IN_CHUNKS; y++) {
+			for (int z = 0; z < WORLD_DIM_IN_CHUNKS; z++) {
 
-	draw_mesh(camera, &chunk_transform, &chunk->mesh);
+				Transform chunk_transform = { x * CHUNK_DIM_IN_BLOCKS, y * CHUNK_DIM_IN_BLOCKS, z * CHUNK_DIM_IN_BLOCKS };
+
+				draw_mesh(camera, &chunk_transform, &chunks[x][y][z]->mesh);
+			}
+		}
+	}
+}
+
+static Chunk *get_chunk_of_block(int x, int y, int z) {
+	
+	return chunks[x / CHUNK_DIM_IN_BLOCKS][y / CHUNK_DIM_IN_BLOCKS][z / CHUNK_DIM_IN_BLOCKS];
 }
 
 /*
@@ -185,13 +197,23 @@ void draw_chunks(const Transform *camera) {
 // TODO int is_block_loaded(int x, int y, int z)
 
 unsigned char get_block_at(int x, int y, int z) {
+
+	Chunk *chunk = get_chunk_of_block(x, y, z);
+
+	if (!chunk)
+		return 0;
 	
-	return chunk->blocks[x][y][z];
+	return chunk->blocks[x % CHUNK_DIM_IN_BLOCKS][y % CHUNK_DIM_IN_BLOCKS][z % CHUNK_DIM_IN_BLOCKS];
 }
 
 void set_block_at(int x, int y, int z, unsigned char block, int bool_remesh) {
 	
-	chunk->blocks[x][y][z] = block;
+	Chunk *chunk = get_chunk_of_block(x, y, z);
+
+	if (!chunk)
+		return;
+
+	chunk->blocks[x % CHUNK_DIM_IN_BLOCKS][y % CHUNK_DIM_IN_BLOCKS][z % CHUNK_DIM_IN_BLOCKS] = block;
 
 	if (bool_remesh)
 		remesh_chunk(chunk);
@@ -199,7 +221,14 @@ void set_block_at(int x, int y, int z, unsigned char block, int bool_remesh) {
 
 int does_point_intersect_blocks(float x, float y, float z) {
 
-	if (x < 0 || y < 0 || z > 0 || x >= 16 || y >= 16 || z <= -16)
+	if (
+		x < 0 ||
+		y < 0 ||
+		z > 0 ||
+		x >= WORLD_DIM_IN_CHUNKS * CHUNK_DIM_IN_BLOCKS ||
+		y >= WORLD_DIM_IN_CHUNKS * CHUNK_DIM_IN_BLOCKS ||
+		z <= -WORLD_DIM_IN_CHUNKS * CHUNK_DIM_IN_BLOCKS
+	)
 		return FALSE;
 
 	return BT_IS_SOLID(block_types[get_block_at((int) x, (int) y, (int) -z)]);
