@@ -68,5 +68,6 @@ typedef struct {
 } EZArray;
 
 void append_ezarray(EZArray *array, void *data, int data_length);
+void clear_ezarray(EZArray *array);
 
 #endif

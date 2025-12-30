@@ -18,3 +18,8 @@ void append_ezarray(EZArray *array, void *data, int data_length) {
 	memcpy(&array->data[array->bytecount], data, data_length);
 	array->bytecount += data_length;
 }
+
+void clear_ezarray(EZArray *array) {
+
+	array->bytecount = 0;
+}
