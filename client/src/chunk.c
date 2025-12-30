@@ -273,7 +273,7 @@ void set_delay_remesh_block_at(int x, int y, int z, unsigned char block) {
 	chunk->blocks[x % CHUNK_DIM_IN_BLOCKS][y % CHUNK_DIM_IN_BLOCKS][z % CHUNK_DIM_IN_BLOCKS] = block;
 
 	// save chunk for delayed remeshing if it's not already saved
-	if (!contains_ezarray(&delayed_remesh_chunks, chunk, sizeof(Chunk *)))
+	if (!contains_ezarray(&delayed_remesh_chunks, &chunk, sizeof(Chunk *)))
 		append_ezarray(&delayed_remesh_chunks, &chunk, sizeof(Chunk *));
 }
 

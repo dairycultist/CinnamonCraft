@@ -17,14 +17,14 @@ void append_ezarray(EZArray *array, void *data, int data_length) {
 		array->datasize = (array->bytecount + data_length) * 2;
 	}
 
-	memcpy(&array->data[array->bytecount], data, data_length);
+	memcpy(array->data + array->bytecount, data, data_length);
 	array->bytecount += data_length;
 }
 
 int contains_ezarray(EZArray *array, void *data, int data_length) {
 
 	for (int i = 0; i < array->bytecount; i += data_length)
-		if (!memcmp(&data, array->data + i, data_length))
+		if (!memcmp(data, array->data + i, data_length))
 			return TRUE;
 
 	return FALSE;
