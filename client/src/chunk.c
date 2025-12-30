@@ -17,7 +17,7 @@ static Texture *blockmap_texture;
 
 static Chunk *chunks[WORLD_DIM_IN_CHUNKS][WORLD_DIM_IN_CHUNKS][WORLD_DIM_IN_CHUNKS]; // finite for now
 
-static Chunk **delayed_remesh_chunks; // when you want to set a bunch of blocks, remeshing after each is slow and redundant, so you save them to remesh once at the end
+static EZArray delayed_remesh_chunks; // when you want to set a bunch of blocks, remeshing after each is slow and redundant, so you save them to remesh once at the end
 
 static void (*populator)(int x, int y, int z);
 
@@ -183,18 +183,18 @@ void initialize_chunk_system(void (*chunk_populator)(int x, int y, int z)) {
 				for (int bx = 0; bx < CHUNK_DIM_IN_BLOCKS; bx++) {
 					for (int by = 0; by < CHUNK_DIM_IN_BLOCKS; by++) {
 						for (int bz = 0; bz < CHUNK_DIM_IN_BLOCKS; bz++) {
-							
-							int x = cx * CHUNK_DIM_IN_BLOCKS + bx;
-							int y = cy * CHUNK_DIM_IN_BLOCKS + by;
-							int z = cz * CHUNK_DIM_IN_BLOCKS + bz;
 
-							populator(x, y, z);
+							populator(
+								cx * CHUNK_DIM_IN_BLOCKS + bx,
+								cy * CHUNK_DIM_IN_BLOCKS + by,
+								cz * CHUNK_DIM_IN_BLOCKS + bz
+							);
 						}
 					}
 				}
 
-				// trigger a remesh
-				remesh_chunk(chunks[cx][cy][cz]);
+				// remesh the chunk
+				remesh_delayed_chunks();
 			}
 		}
 	}
@@ -272,11 +272,19 @@ void set_delay_remesh_block_at(int x, int y, int z, unsigned char block) {
 
 	chunk->blocks[x % CHUNK_DIM_IN_BLOCKS][y % CHUNK_DIM_IN_BLOCKS][z % CHUNK_DIM_IN_BLOCKS] = block;
 
-	// TODO add chunk to delayed_remesh_chunks
+	// save chunk for delayed remeshing if it's not already saved
+	if (!contains_ezarray(&delayed_remesh_chunks, chunk, sizeof(Chunk *)))
+		append_ezarray(&delayed_remesh_chunks, &chunk, sizeof(Chunk *));
 }
 
 void remesh_delayed_chunks() {
 
+	Chunk **chunks = (Chunk **) delayed_remesh_chunks.data;
+
+	for (int i = 0; i < delayed_remesh_chunks.bytecount / sizeof(Chunk *); i++)
+		remesh_chunk(chunks[i]);
+
+	clear_ezarray(&delayed_remesh_chunks);
 }
 
 int does_point_intersect_blocks(float x, float y, float z) {

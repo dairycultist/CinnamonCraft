@@ -1,4 +1,5 @@
 #include "header.h"
+#include <string.h>
 
 void append_ezarray(EZArray *array, void *data, int data_length) {
 
@@ -7,6 +8,7 @@ void append_ezarray(EZArray *array, void *data, int data_length) {
 		// create a data allocation
 		array->data = malloc(data_length * 8);
 		array->datasize = data_length * 8;
+		array->bytecount = 0;
 
 	} else if (array->datasize < array->bytecount + data_length) {
 
@@ -17,6 +19,15 @@ void append_ezarray(EZArray *array, void *data, int data_length) {
 
 	memcpy(&array->data[array->bytecount], data, data_length);
 	array->bytecount += data_length;
+}
+
+int contains_ezarray(EZArray *array, void *data, int data_length) {
+
+	for (int i = 0; i < array->bytecount; i += data_length)
+		if (!memcmp(&data, array->data + i, data_length))
+			return TRUE;
+
+	return FALSE;
 }
 
 void clear_ezarray(EZArray *array) {
