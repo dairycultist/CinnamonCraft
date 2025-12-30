@@ -15,5 +15,7 @@ farming game? a hl inspired shooter? all with that blocky aesthetic...
 
 ## Planned
 
+- Entities (with .obj model support)
+- Inventory and items
 - Modding support with Lua
 - Multiplayer (with 100% separate client-server code)

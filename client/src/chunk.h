@@ -22,16 +22,13 @@ typedef struct {
 
 } BlockType;
 
-void initialize_chunk_system();
+void initialize_chunk_system(void (*chunk_populator)(int x, int y, int z));
 void register_block_type(BlockType block_type);
 
 void draw_chunks(const Transform *camera);
 
 unsigned char get_block_at(int x, int y, int z);
 void set_block_at(int x, int y, int z, unsigned char block, int bool_remesh);
-
-void remesh_chunk_chunkpos(int cx, int cy, int cz);
-void remesh_chunk_blockpos(int x, int y, int z);
 
 int does_point_intersect_blocks(float x, float y, float z);
 int does_aabb_intersect_blocks(float x, float y, float z, float wl, float h);

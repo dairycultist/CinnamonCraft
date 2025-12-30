@@ -18,15 +18,7 @@ static unsigned char block_type_count = 1;
 static Texture *blockmap_texture;
 static Chunk *chunks[WORLD_DIM_IN_CHUNKS][WORLD_DIM_IN_CHUNKS][WORLD_DIM_IN_CHUNKS]; // finite for now
 
-void initialize_chunk_system() {
-
-	blockmap_texture = load_texture("client/res/blockmap.png");
-	
-	for (int x = 0; x < WORLD_DIM_IN_CHUNKS; x++)
-		for (int y = 0; y < WORLD_DIM_IN_CHUNKS; y++)
-			for (int z = 0; z < WORLD_DIM_IN_CHUNKS; z++)
-				chunks[x][y][z] = malloc(sizeof(Chunk));
-}
+static void (*populator)(int x, int y, int z);
 
 void register_block_type(BlockType block_type) {
 
@@ -170,6 +162,43 @@ static void remesh_chunk(const Chunk *chunk) {
 	free(mesh);
 }
 
+void initialize_chunk_system(void (*chunk_populator)(int x, int y, int z)) {
+
+	populator = chunk_populator;
+
+	blockmap_texture = load_texture("client/res/blockmap.png");
+	
+	for (int x = 0; x < WORLD_DIM_IN_CHUNKS; x++)
+		for (int y = 0; y < WORLD_DIM_IN_CHUNKS; y++)
+			for (int z = 0; z < WORLD_DIM_IN_CHUNKS; z++)
+				chunks[x][y][z] = malloc(sizeof(Chunk));
+	
+	// populate chunks (finite)
+	for (int cx = 0; cx < WORLD_DIM_IN_CHUNKS; cx++) {
+		for (int cy = 0; cy < WORLD_DIM_IN_CHUNKS; cy++) {
+			for (int cz = 0; cz < WORLD_DIM_IN_CHUNKS; cz++) {
+
+				// populate single chunk
+				for (int bx = 0; bx < CHUNK_DIM_IN_BLOCKS; bx++) {
+					for (int by = 0; by < CHUNK_DIM_IN_BLOCKS; by++) {
+						for (int bz = 0; bz < CHUNK_DIM_IN_BLOCKS; bz++) {
+							
+							int x = cx * CHUNK_DIM_IN_BLOCKS + bx;
+							int y = cy * CHUNK_DIM_IN_BLOCKS + by;
+							int z = cz * CHUNK_DIM_IN_BLOCKS + bz;
+
+							populator(x, y, z);
+						}
+					}
+				}
+
+				// trigger a remesh
+				remesh_chunk(chunks[cx][cy][cz]);
+			}
+		}
+	}
+}
+
 void draw_chunks(const Transform *camera) {
 
 	for (int cx = 0; cx < WORLD_DIM_IN_CHUNKS; cx++) {
@@ -226,20 +255,6 @@ void set_block_at(int x, int y, int z, unsigned char block, int bool_remesh) {
 	chunk->blocks[x % CHUNK_DIM_IN_BLOCKS][y % CHUNK_DIM_IN_BLOCKS][z % CHUNK_DIM_IN_BLOCKS] = block;
 
 	if (bool_remesh)
-		remesh_chunk(chunk);
-}
-
-void remesh_chunk_chunkpos(int cx, int cy, int cz) {
-
-	// I'm lazy
-	remesh_chunk_blockpos(cx * CHUNK_DIM_IN_BLOCKS, cy * CHUNK_DIM_IN_BLOCKS, cz * CHUNK_DIM_IN_BLOCKS);
-}
-
-void remesh_chunk_blockpos(int x, int y, int z) {
-
-	Chunk *chunk = get_chunk_of_block(x, y, z);
-
-	if (chunk)
 		remesh_chunk(chunk);
 }
 

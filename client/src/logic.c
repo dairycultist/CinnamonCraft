@@ -26,12 +26,21 @@ static int backward = FALSE;
 static int up       = FALSE;
 static int down     = FALSE;
 
-void on_start() {
+static void chunk_populator(int x, int y, int z) {
 
-	initialize_chunk_system();
+	set_block_at(
+		x, y, z,
+		sin(x * 0.1) * 16 + 16 < y ? 0 : (y < 20 ? 2 : 1),
+		FALSE
+	);
+}
+
+void on_start() {
 
 	register_block_type((BlockType) { 0b00000001, 240, 240, 240 });
 	register_block_type((BlockType) { 0b00000001, 241, 241, 241 });
+
+	initialize_chunk_system(chunk_populator);
 	
 	glClearColor(0.2f, 0.2f, 0.23f, 1.0f);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
@@ -44,35 +53,6 @@ void on_start() {
 	miku_transform.x = 4;
 	miku_transform.z = -4;
 	miku_transform.y = 6.45;
-
-	// populate chunks
-	for (int cx = 0; cx < WORLD_DIM_IN_CHUNKS; cx++) {
-		for (int cy = 0; cy < WORLD_DIM_IN_CHUNKS; cy++) {
-			for (int cz = 0; cz < WORLD_DIM_IN_CHUNKS; cz++) {
-
-				// populate single chunk
-				for (int bx = 0; bx < CHUNK_DIM_IN_BLOCKS; bx++) {
-					for (int by = 0; by < CHUNK_DIM_IN_BLOCKS; by++) {
-						for (int bz = 0; bz < CHUNK_DIM_IN_BLOCKS; bz++) {
-							
-							int x = cx * CHUNK_DIM_IN_BLOCKS + bx;
-							int y = cy * CHUNK_DIM_IN_BLOCKS + by;
-							int z = cz * CHUNK_DIM_IN_BLOCKS + bz;
-
-							set_block_at(
-								x, y, z,
-								sin(x * 0.1) * 16 + 16 < y ? 0 : (y < 20 ? 2 : 1),
-								FALSE
-							);
-						}
-					}
-				}
-
-				// trigger a remesh
-				remesh_chunk_chunkpos(cx, cy, cz);
-			}
-		}
-	}
 }
 
 void on_terminate() {
