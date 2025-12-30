@@ -28,10 +28,9 @@ static int down     = FALSE;
 
 static void chunk_populator(int x, int y, int z) {
 
-	set_block_at(
+	set_delay_remesh_block_at(
 		x, y, z,
-		sin(x * 0.1) * 16 + 16 < y ? 0 : (y < 20 ? 2 : 1),
-		FALSE
+		sin(x * 0.1) * 16 + 16 < y ? 0 : (y < 20 ? 2 : 1)
 	);
 }
 
@@ -176,7 +175,7 @@ void process_event(SDL_Event event) {
 
 			if (raycast_blocks(&camera, 5.0, FALSE, &hit_x, &hit_y, &hit_z)) {
 
-				set_block_at(hit_x, hit_y, hit_z, 0, TRUE);
+				set_block_at(hit_x, hit_y, hit_z, 0);
 			}
 		}
 
@@ -186,7 +185,7 @@ void process_event(SDL_Event event) {
 
 			if (raycast_blocks(&camera, 5.0, TRUE, &hit_x, &hit_y, &hit_z)) {
 
-				set_block_at(hit_x, hit_y, hit_z, 1, TRUE);
+				set_block_at(hit_x, hit_y, hit_z, 1);
 			}
 		}
 	}

@@ -22,13 +22,15 @@ typedef struct {
 
 } BlockType;
 
-void initialize_chunk_system(void (*chunk_populator)(int x, int y, int z));
+void initialize_chunk_system(void (*chunk_populator)(int x, int y, int z)); // chunk populator doesn't need to account for remeshes
 void register_block_type(BlockType block_type);
 
 void draw_chunks(const Transform *camera);
 
 unsigned char get_block_at(int x, int y, int z);
-void set_block_at(int x, int y, int z, unsigned char block, int bool_remesh);
+void set_block_at(int x, int y, int z, unsigned char block);
+void set_delay_remesh_block_at(int x, int y, int z, unsigned char block);
+void remesh_delayed_chunks();
 
 int does_point_intersect_blocks(float x, float y, float z);
 int does_aabb_intersect_blocks(float x, float y, float z, float wl, float h);

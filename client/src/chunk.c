@@ -14,7 +14,10 @@ static BlockType block_types[256] = { 0b00000000, 0, 0, 0 }; // first block is a
 static unsigned char block_type_count = 1;
 
 static Texture *blockmap_texture;
+
 static Chunk *chunks[WORLD_DIM_IN_CHUNKS][WORLD_DIM_IN_CHUNKS][WORLD_DIM_IN_CHUNKS]; // finite for now
+
+static Chunk **delayed_remesh_chunks; // when you want to set a bunch of blocks, remeshing after each is slow and redundant, so you save them to remesh once at the end
 
 static void (*populator)(int x, int y, int z);
 
@@ -248,7 +251,7 @@ unsigned char get_block_at(int x, int y, int z) {
 	return chunk->blocks[x % CHUNK_DIM_IN_BLOCKS][y % CHUNK_DIM_IN_BLOCKS][z % CHUNK_DIM_IN_BLOCKS];
 }
 
-void set_block_at(int x, int y, int z, unsigned char block, int bool_remesh) {
+void set_block_at(int x, int y, int z, unsigned char block) {
 	
 	Chunk *chunk = get_chunk_of_block(x, y, z);
 
@@ -257,8 +260,23 @@ void set_block_at(int x, int y, int z, unsigned char block, int bool_remesh) {
 
 	chunk->blocks[x % CHUNK_DIM_IN_BLOCKS][y % CHUNK_DIM_IN_BLOCKS][z % CHUNK_DIM_IN_BLOCKS] = block;
 
-	if (bool_remesh)
-		remesh_chunk(chunk);
+	remesh_chunk(chunk);
+}
+
+void set_delay_remesh_block_at(int x, int y, int z, unsigned char block) {
+
+	Chunk *chunk = get_chunk_of_block(x, y, z);
+
+	if (!chunk)
+		return;
+
+	chunk->blocks[x % CHUNK_DIM_IN_BLOCKS][y % CHUNK_DIM_IN_BLOCKS][z % CHUNK_DIM_IN_BLOCKS] = block;
+
+	// TODO add chunk to delayed_remesh_chunks
+}
+
+void remesh_delayed_chunks() {
+
 }
 
 int does_point_intersect_blocks(float x, float y, float z) {
