@@ -28,6 +28,7 @@ void register_block_type(BlockType block_type);
 
 void draw_chunks(const Transform *camera);
 
+BlockType *get_block_type(unsigned char id);
 unsigned char get_block_at(int x, int y, int z);
 void set_block_at(int x, int y, int z, unsigned char block);
 void set_delay_remesh_block_at(int x, int y, int z, unsigned char block);

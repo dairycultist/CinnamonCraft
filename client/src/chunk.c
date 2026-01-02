@@ -234,6 +234,11 @@ static Chunk *get_chunk_of_block(int x, int y, int z) {
 	return chunks[x / CHUNK_DIM_IN_BLOCKS][y / CHUNK_DIM_IN_BLOCKS][z / CHUNK_DIM_IN_BLOCKS];
 }
 
+BlockType *get_block_type(unsigned char id) {
+
+	return &block_types[id];
+}
+
 /*
  * The following functions (from chunk.h!) are globally positioned!
  * No need for other files to consider where chunk boundaries are.

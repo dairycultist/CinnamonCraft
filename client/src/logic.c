@@ -29,7 +29,7 @@ static int attack   = FALSE;
 
 static int BOOL_look_block;
 static int look_block_x, look_block_y, look_block_z;
-static short look_block_ticks_to_break;
+static unsigned short look_block_ticks_to_break;
 
 static void chunk_populator(int x, int y, int z) {
 
@@ -154,7 +154,22 @@ void process_tick() {
 	// breaking blocks
 	if (BOOL_look_block && attack) {
 
-		set_block_at(look_block_x, look_block_y, look_block_z, 0);
+		printf("%d\n", look_block_ticks_to_break);
+
+		if (look_block_ticks_to_break == 0) {
+
+			set_block_at(look_block_x, look_block_y, look_block_z, 0);
+
+			// update look block
+			BOOL_look_block = raycast_blocks(&camera, 5.0, FALSE, &look_block_x, &look_block_y, &look_block_z);
+
+			// update ticks to break
+			if (BOOL_look_block)
+				look_block_ticks_to_break = get_block_type(get_block_at(look_block_x, look_block_y, look_block_z))->ticks_to_break;
+
+		} else {
+			look_block_ticks_to_break--;
+		}
 	}
 
 	// draw everything
@@ -177,7 +192,16 @@ void process_event(SDL_Event event) {
 		}
 
 		// update look block
+		int prev_look_block_x = look_block_x;
+		int prev_look_block_y = look_block_y;
+		int prev_look_block_z = look_block_z;
+
 		BOOL_look_block = raycast_blocks(&camera, 5.0, FALSE, &look_block_x, &look_block_y, &look_block_z);
+
+		if (BOOL_look_block && (prev_look_block_x != look_block_x || prev_look_block_y != look_block_y || prev_look_block_z != look_block_z)) {
+
+			look_block_ticks_to_break = get_block_type(get_block_at(look_block_x, look_block_y, look_block_z))->ticks_to_break;
+		}
 	}
 
 	else if (event.type == SDL_MOUSEBUTTONDOWN) {
