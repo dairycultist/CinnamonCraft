@@ -19,6 +19,7 @@ typedef struct {
 	unsigned char tex_top;
 	unsigned char tex_side;
 	unsigned char tex_bottom;
+	unsigned short ticks_to_break;
 
 } BlockType;
 

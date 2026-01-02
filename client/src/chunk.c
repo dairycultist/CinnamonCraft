@@ -10,7 +10,7 @@ typedef struct { // remember, only this file can access this struct
 
 } Chunk;
 
-static BlockType block_types[256] = { 0b00000000, 0, 0, 0 }; // first block is always air
+static BlockType block_types[256] = { 0b00000000, 0, 0, 0, 0 }; // first block is always air
 static unsigned char block_type_count = 1;
 
 static Texture *blockmap_texture;

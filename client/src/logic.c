@@ -25,9 +25,11 @@ static int forward  = FALSE;
 static int backward = FALSE;
 static int up       = FALSE;
 static int down     = FALSE;
+static int attack   = FALSE;
 
 static int BOOL_look_block;
 static int look_block_x, look_block_y, look_block_z;
+static short look_block_ticks_to_break;
 
 static void chunk_populator(int x, int y, int z) {
 
@@ -39,8 +41,8 @@ static void chunk_populator(int x, int y, int z) {
 
 void on_start() {
 
-	register_block_type((BlockType) { 0b00000001, 240, 240, 240 });
-	register_block_type((BlockType) { 0b00000001, 241, 241, 241 });
+	register_block_type((BlockType) { 0b00000001, 240, 240, 240, 50 });
+	register_block_type((BlockType) { 0b00000001, 241, 241, 241, 100 });
 
 	initialize_chunk_system(chunk_populator);
 	
@@ -149,6 +151,12 @@ void process_tick() {
 		vertical_velocity -= 0.01;
 	}
 
+	// breaking blocks
+	if (BOOL_look_block && attack) {
+
+		set_block_at(look_block_x, look_block_y, look_block_z, 0);
+	}
+
 	// draw everything
 	draw_mesh(&camera, &miku_transform, miku_mesh);
 	draw_chunks(&camera);
@@ -175,11 +183,7 @@ void process_event(SDL_Event event) {
 	else if (event.type == SDL_MOUSEBUTTONDOWN) {
 
 		if (event.button.button == 1) { // LMB
-
-			if (BOOL_look_block) {
-
-				set_block_at(look_block_x, look_block_y, look_block_z, 0);
-			}
+			attack = TRUE;
 		}
 
 		else if (event.button.button == 3) { // RMB
@@ -190,6 +194,13 @@ void process_event(SDL_Event event) {
 
 				set_block_at(hit_x, hit_y, hit_z, 1);
 			}
+		}
+	}
+
+	else if (event.type == SDL_MOUSEBUTTONUP) {
+
+		if (event.button.button == 1) { // LMB
+			attack = FALSE;
 		}
 	}
 
