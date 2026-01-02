@@ -26,6 +26,9 @@ static int backward = FALSE;
 static int up       = FALSE;
 static int down     = FALSE;
 
+static int BOOL_look_block;
+static int look_block_x, look_block_y, look_block_z;
+
 static void chunk_populator(int x, int y, int z) {
 
 	set_delay_remesh_block_at(
@@ -164,22 +167,22 @@ void process_event(SDL_Event event) {
 		} else if (camera.pitch < -M_PI / 2) {
 			camera.pitch = -M_PI / 2;
 		}
+
+		// update look block
+		BOOL_look_block = raycast_blocks(&camera, 5.0, FALSE, &look_block_x, &look_block_y, &look_block_z);
 	}
 
 	else if (event.type == SDL_MOUSEBUTTONDOWN) {
 
-		// LMB = 1, RMB = 3
-		if (event.button.button == 1) {
+		if (event.button.button == 1) { // LMB
 
-			int hit_x, hit_y, hit_z;
+			if (BOOL_look_block) {
 
-			if (raycast_blocks(&camera, 5.0, FALSE, &hit_x, &hit_y, &hit_z)) {
-
-				set_block_at(hit_x, hit_y, hit_z, 0);
+				set_block_at(look_block_x, look_block_y, look_block_z, 0);
 			}
 		}
 
-		else if (event.button.button == 3) {
+		else if (event.button.button == 3) { // RMB
 
 			int hit_x, hit_y, hit_z;
 
