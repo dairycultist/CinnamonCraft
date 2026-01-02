@@ -160,16 +160,23 @@ void process_tick() {
 
 			set_block_at(look_block_x, look_block_y, look_block_z, 0);
 
-			// update look block
-			BOOL_look_block = raycast_blocks(&camera, 5.0, FALSE, &look_block_x, &look_block_y, &look_block_z);
-
-			// update ticks to break
-			if (BOOL_look_block)
-				look_block_ticks_to_break = get_block_type(get_block_at(look_block_x, look_block_y, look_block_z))->ticks_to_break;
-
 		} else {
+
 			look_block_ticks_to_break--;
 		}
+	}
+
+	// update look block every tick (since any movement, i.e. mouse, running,
+	// being knocked back, etc, and also having broken a block, can influence it)
+	int prev_look_block_x = look_block_x;
+	int prev_look_block_y = look_block_y;
+	int prev_look_block_z = look_block_z;
+
+	BOOL_look_block = raycast_blocks(&camera, 5.0, FALSE, &look_block_x, &look_block_y, &look_block_z);
+
+	if (BOOL_look_block && (prev_look_block_x != look_block_x || prev_look_block_y != look_block_y || prev_look_block_z != look_block_z)) {
+
+		look_block_ticks_to_break = get_block_type(get_block_at(look_block_x, look_block_y, look_block_z))->ticks_to_break;
 	}
 
 	// draw everything
@@ -189,18 +196,6 @@ void process_event(SDL_Event event) {
 			camera.pitch = M_PI / 2;
 		} else if (camera.pitch < -M_PI / 2) {
 			camera.pitch = -M_PI / 2;
-		}
-
-		// update look block
-		int prev_look_block_x = look_block_x;
-		int prev_look_block_y = look_block_y;
-		int prev_look_block_z = look_block_z;
-
-		BOOL_look_block = raycast_blocks(&camera, 5.0, FALSE, &look_block_x, &look_block_y, &look_block_z);
-
-		if (BOOL_look_block && (prev_look_block_x != look_block_x || prev_look_block_y != look_block_y || prev_look_block_z != look_block_z)) {
-
-			look_block_ticks_to_break = get_block_type(get_block_at(look_block_x, look_block_y, look_block_z))->ticks_to_break;
 		}
 	}
 
