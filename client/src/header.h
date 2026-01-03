@@ -48,9 +48,16 @@ typedef struct {
 } Texture;
 
 Texture *load_texture(const char *path);
+
+// 3D
 Mesh *create_mesh(const unsigned char *mesh_data, const int mesh_bytecount, const int mesh_vertcount, const Texture *texture);
 Mesh *create_mesh_from_obj(const char *obj_path, const Texture *texture);
 void draw_mesh(const Transform *camera, const Transform *transform, const Mesh *mesh);
+
+// 2D
+Mesh *create_sprite_mesh(float u, float v, float w, float h, const Texture *texture);
+void draw_sprite_mesh(const Mesh *mesh);
+
 // destroy_mesh when
 
 void initialize_shader();

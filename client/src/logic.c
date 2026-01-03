@@ -19,6 +19,8 @@ static Transform miku_transform;
 
 static Mesh *miku_mesh;
 
+static Mesh *sprite_mesh;
+
 static int left     = FALSE;
 static int right    = FALSE;
 static int forward  = FALSE;
@@ -58,6 +60,9 @@ void on_start() {
 	miku_transform.x = 8;
 	miku_transform.z = 8;
 	miku_transform.y = 30;
+
+	// create a sprite mesh for testing
+	sprite_mesh = create_sprite_mesh(0.0f, 0.0f, 0.2f, 0.2f, load_texture("client/res/dirt.png"));
 }
 
 void on_terminate() {
@@ -182,6 +187,7 @@ void process_tick() {
 	// draw everything
 	draw_mesh(&camera, &miku_transform, miku_mesh);
 	draw_chunks(&camera);
+	draw_sprite_mesh(sprite_mesh);
 }
 
 void process_event(SDL_Event event) {

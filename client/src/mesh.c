@@ -361,6 +361,14 @@ void draw_mesh(const Transform *camera, const Transform *transform, const Mesh *
 	glDrawArrays(GL_TRIANGLES, 0, mesh->vertex_count);
 }
 
+Mesh *create_sprite_mesh(float u, float v, float w, float h, const Texture *texture) {
+	return NULL;
+}
+
+void draw_sprite_mesh(const Mesh *mesh) {
+
+}
+
 void initialize_shader() {
 
 	// create shader program
