@@ -1,7 +1,7 @@
 #include "header.h"
 
 // all 3D objects use the same hardcoded shader for simplicity
-static char *vertex =
+static char *vertex3D =
 "#version 150 core\n"
 "uniform mat4 position_matrix;\n"
 "uniform mat4 normal_matrix;\n"
@@ -16,7 +16,7 @@ static char *vertex =
     "frag_UV = UV;\n" // pass along UV
 "}";
 
-static char *fragment =
+static char *fragment3D =
 "#version 150 core\n"
 "uniform sampler2D tex;\n"
 "in vec3 normal_camera;\n"
@@ -27,7 +27,28 @@ static char *fragment =
 	"outColor = texture(tex, frag_UV) * vec4(c, c, c, 1.0);\n"
 "}";
 
-static GLuint shader_program;
+// same for 2D sprites
+static char *vertex2D =
+"#version 150 core\n"
+"in vec2 position;\n"
+"in vec2 UV;\n"
+"out vec2 frag_UV;\n"
+"void main() {\n"
+    "gl_Position = vec4(position.xy, -1.0, 1.0);\n" // get final position
+    "frag_UV = UV;\n" // pass along UV
+"}";
+
+static char *fragment2D =
+"#version 150 core\n"
+"uniform sampler2D tex;\n"
+"in vec2 frag_UV;\n"
+"out vec4 outColor;\n"
+"void main() {\n"
+	"outColor = texture(tex, frag_UV);\n"
+"}";
+
+static GLuint shader3D_program;
+static GLuint shader2D_program;
 static GLfloat proj_matrix[4][4] = {0};
 
 Texture *load_texture(const char *path) {
@@ -74,15 +95,15 @@ Mesh *create_mesh(const unsigned char *mesh_data, const int mesh_bytecount, cons
 	glBufferData(GL_ARRAY_BUFFER, mesh_bytecount, mesh_data, GL_STATIC_DRAW);	// copy vertex data into the active buffer
 
 	// link active vertex data and shader attributes
-	GLint pos_attrib = glGetAttribLocation(shader_program, "position");
+	GLint pos_attrib = glGetAttribLocation(shader3D_program, "position");
 	glVertexAttribPointer(pos_attrib, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, 0);
 	glEnableVertexAttribArray(pos_attrib); // requires a VAO to be bound
 
-	GLint normal_attrib = glGetAttribLocation(shader_program, "normal");
+	GLint normal_attrib = glGetAttribLocation(shader3D_program, "normal");
 	glVertexAttribPointer(normal_attrib, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (GLvoid *) (sizeof(float) * 3));
 	glEnableVertexAttribArray(normal_attrib);
 
-	GLint uv_attrib = glGetAttribLocation(shader_program, "UV");
+	GLint uv_attrib = glGetAttribLocation(shader3D_program, "UV");
 	glVertexAttribPointer(uv_attrib, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (GLvoid *) (sizeof(float) * 6));
 	glEnableVertexAttribArray(uv_attrib);
 
@@ -353,39 +374,129 @@ void draw_mesh(const Transform *camera, const Transform *transform, const Mesh *
 	mat4_mult(yaw_matrix, pitch_matrix, normal_matrix);
 
 	// load the shader program and the uniforms we just calculated
-	glUseProgram(shader_program);
-	glUniformMatrix4fv(glGetUniformLocation(shader_program, "position_matrix"), 1, GL_FALSE, &position_matrix[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(shader_program, "normal_matrix"), 1, GL_FALSE, &normal_matrix[0][0]);
+	glUseProgram(shader3D_program);
+	glUniformMatrix4fv(glGetUniformLocation(shader3D_program, "position_matrix"), 1, GL_FALSE, &position_matrix[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(shader3D_program, "normal_matrix"), 1, GL_FALSE, &normal_matrix[0][0]);
 
 	// draw
 	glDrawArrays(GL_TRIANGLES, 0, mesh->vertex_count);
 }
 
+// returns NULL on error
 Mesh *create_sprite_mesh(float u, float v, float w, float h, const Texture *texture) {
-	return NULL;
+	
+	const float mesh_data[] = {
+		u,     v,     0.0f, 0.0f,
+		u + w, v,     1.0f, 0.0f,
+		u,     v + h, 0.0f, 1.0f,
+		u + w, v,     1.0f, 0.0f,
+		u + w, v + h, 1.0f, 1.0f,
+		u,     v + h, 0.0f, 1.0f
+	};
+
+	static const int mesh_vertcount = 6;
+	static const int mesh_bytecount = sizeof(float) * 4 * mesh_vertcount;
+
+	// make vertex array
+	GLuint vertex_array;
+	glGenVertexArrays(1, &vertex_array);
+	glBindVertexArray(vertex_array);
+
+	// make vertex buffer (stored by vertex_array)
+	GLuint vertex_buffer;
+	glGenBuffers(1, &vertex_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);								// make it the active buffer
+	glBufferData(GL_ARRAY_BUFFER, mesh_bytecount, mesh_data, GL_STATIC_DRAW);	// copy vertex data into the active buffer
+
+	// link active vertex data and shader attributes
+	GLint pos_attrib = glGetAttribLocation(shader2D_program, "position");
+	glVertexAttribPointer(pos_attrib, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
+	glEnableVertexAttribArray(pos_attrib); // requires a VAO to be bound
+
+	GLint uv_attrib = glGetAttribLocation(shader2D_program, "UV");
+	glVertexAttribPointer(uv_attrib, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, (GLvoid *) (sizeof(float) * 2));
+	glEnableVertexAttribArray(uv_attrib);
+
+	// debind vertex array
+	glBindVertexArray(0);
+
+	// create texture object
+	GLuint texture_object;
+	glGenTextures(1, &texture_object);
+
+	// bind texture (to active texture 2D)
+	glBindTexture(GL_TEXTURE_2D, texture_object);
+
+	// wrap repeat
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// filter linear
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	// write texture data
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
+
+	// create final mesh object to return
+	Mesh *mesh = malloc(sizeof(Mesh));
+	mesh->vertex_array = vertex_array;
+	mesh->vertex_count = mesh_vertcount;
+	mesh->texture = texture_object;
+
+	return mesh;
 }
 
 void draw_sprite_mesh(const Mesh *mesh) {
 
+	// bind the mesh's vertex mesh and texture
+	glBindVertexArray(mesh->vertex_array);
+	glBindTexture(GL_TEXTURE_2D, mesh->texture);
+
+	// load the shader program and the uniforms we just calculated
+	glUseProgram(shader2D_program);
+
+	// draw
+	glDrawArrays(GL_TRIANGLES, 0, mesh->vertex_count);
 }
 
-void initialize_shader() {
+void initialize_shaders() {
 
-	// create shader program
-	shader_program = glCreateProgram();
+	GLuint vertex_shader, fragment_shader;
 
-	GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertex_shader, 1, (const char *const *) &vertex, NULL);
+	/*
+	 * create shader 3D program
+	 */
+	shader3D_program = glCreateProgram();
+
+	vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertex_shader, 1, (const char *const *) &vertex3D, NULL);
 	glCompileShader(vertex_shader);
-	glAttachShader(shader_program, vertex_shader);
+	glAttachShader(shader3D_program, vertex_shader);
 
-	GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment_shader, 1, (const char *const *) &fragment, NULL);
+	fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragment_shader, 1, (const char *const *) &fragment3D, NULL);
 	glCompileShader(fragment_shader);
-	glAttachShader(shader_program, fragment_shader);
+	glAttachShader(shader3D_program, fragment_shader);
 
-	// apply changes to shader program (not gonna call "glUseProgram" yet bc not drawing)
-	glLinkProgram(shader_program);
+	glLinkProgram(shader3D_program); // apply changes to shader program (not gonna call "glUseProgram" yet bc not drawing)
+
+	/*
+	 * create shader 2D program
+	 */
+	shader2D_program = glCreateProgram();
+
+	vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertex_shader, 1, (const char *const *) &vertex2D, NULL);
+	glCompileShader(vertex_shader);
+	glAttachShader(shader2D_program, vertex_shader);
+
+	fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragment_shader, 1, (const char *const *) &fragment2D, NULL);
+	glCompileShader(fragment_shader);
+	glAttachShader(shader2D_program, fragment_shader);
+
+	glLinkProgram(shader2D_program); // apply changes to shader program
 }
 
 void initialize_perspective(const float aspectRatio) {

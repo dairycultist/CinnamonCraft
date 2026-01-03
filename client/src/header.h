@@ -60,7 +60,7 @@ void draw_sprite_mesh(const Mesh *mesh);
 
 // destroy_mesh when
 
-void initialize_shader();
+void initialize_shaders();
 void initialize_perspective(const float aspectRatio);
 
 /*

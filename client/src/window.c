@@ -44,8 +44,8 @@ int main() {
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CCW);
 
-	// initialize 3D
-	initialize_shader();
+	// initialize rendering
+	initialize_shaders();
 	initialize_perspective(2.0);
 	
 	// let programmer initialize stuff
