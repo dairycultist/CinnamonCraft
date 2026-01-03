@@ -43,8 +43,8 @@ static void chunk_populator(int x, int y, int z) {
 
 void on_start() {
 
-	register_block_type((BlockType) { 0b00000001, 240, 240, 240, 50 });
-	register_block_type((BlockType) { 0b00000001, 241, 241, 241, 100 });
+	register_block_type((BlockType) { 0b00000001, 240, 240, 240, 60 });
+	register_block_type((BlockType) { 0b00000001, 241, 241, 241, 20 });
 
 	initialize_chunk_system(chunk_populator);
 	
@@ -62,7 +62,7 @@ void on_start() {
 	miku_transform.y = 30;
 
 	// create a sprite mesh for testing
-	sprite_mesh = create_sprite_mesh(0.0f, 0.0f, 0.2f, 0.2f, load_texture("client/res/dirt.png"));
+	sprite_mesh = create_sprite_mesh(0.0f, 0.0f, 0.2f, 0.4f, load_texture("client/res/dirt.png"));
 }
 
 void on_terminate() {

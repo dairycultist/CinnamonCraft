@@ -373,7 +373,7 @@ void draw_mesh(const Transform *camera, const Transform *transform, const Mesh *
 
 	mat4_mult(yaw_matrix, pitch_matrix, normal_matrix);
 
-	// load the shader program and the uniforms we just calculated
+	// load the 3D shader program and the uniforms we just calculated
 	glUseProgram(shader3D_program);
 	glUniformMatrix4fv(glGetUniformLocation(shader3D_program, "position_matrix"), 1, GL_FALSE, &position_matrix[0][0]);
 	glUniformMatrix4fv(glGetUniformLocation(shader3D_program, "normal_matrix"), 1, GL_FALSE, &normal_matrix[0][0]);
@@ -453,7 +453,7 @@ void draw_sprite_mesh(const Mesh *mesh) {
 	glBindVertexArray(mesh->vertex_array);
 	glBindTexture(GL_TEXTURE_2D, mesh->texture);
 
-	// load the shader program and the uniforms we just calculated
+	// load the 2D shader program
 	glUseProgram(shader2D_program);
 
 	// draw
@@ -465,7 +465,7 @@ void initialize_shaders() {
 	GLuint vertex_shader, fragment_shader;
 
 	/*
-	 * create shader 3D program
+	 * create 3D shader program
 	 */
 	shader3D_program = glCreateProgram();
 
@@ -482,7 +482,7 @@ void initialize_shaders() {
 	glLinkProgram(shader3D_program); // apply changes to shader program (not gonna call "glUseProgram" yet bc not drawing)
 
 	/*
-	 * create shader 2D program
+	 * create 2D shader program
 	 */
 	shader2D_program = glCreateProgram();
 
