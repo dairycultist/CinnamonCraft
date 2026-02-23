@@ -14,6 +14,8 @@
 
 typedef struct {
 
+	// other stuff like mining level, dropped item, maybe function pointer for append_block_to_mesh
+
 	// right now flags is just the first bit representing "solid," which means adjacent blocks will cull the faces that touch it
 	unsigned char flags;
 	unsigned char tex_top;
