@@ -16,8 +16,15 @@ typedef struct {
 
 	// other stuff like mining level, dropped item, maybe function pointer for append_block_to_mesh
 
-	// right now flags is just the first bit representing "solid," which means adjacent blocks will cull the faces that touch it
 	unsigned char flags;
+	// 1 "solid": adjacent blocks will cull the faces that touch it AND it has collision
+	// 2
+	// 4
+	// 8
+	// 16
+	// 32
+	// 64
+	// 128
 	unsigned char tex_top;
 	unsigned char tex_side;
 	unsigned char tex_bottom;
@@ -25,6 +32,11 @@ typedef struct {
 
 } BlockType;
 
+// block type registry
+static BlockType block_types[256] = { 0b00000000, 0, 0, 0, 0 }; // first block is always air
+static unsigned char block_type_count = 1;
+
+// da functions
 void initialize_chunk_system(void (*chunk_populator)(int x, int y, int z)); // chunk populator doesn't need to account for remeshes
 void register_block_type(BlockType block_type);
 
