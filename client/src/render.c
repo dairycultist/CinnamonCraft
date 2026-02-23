@@ -80,8 +80,7 @@ Texture *load_texture(const char *path) {
 	return texture;
 }
 
-// returns NULL on error
-Mesh *create_mesh(const unsigned char *mesh_data, const int mesh_bytecount, const int mesh_vertcount, const Texture *texture) {
+void remesh_mesh(Mesh *mesh, const unsigned char *mesh_data, const int mesh_bytecount, const int mesh_vertcount) {
 
 	// make vertex array
 	GLuint vertex_array;
@@ -110,6 +109,13 @@ Mesh *create_mesh(const unsigned char *mesh_data, const int mesh_bytecount, cons
 	// debind vertex array
 	glBindVertexArray(0);
 
+	// assign to mesh (TODO free previous VAO if it exists)
+	mesh->vertex_array = vertex_array;
+	mesh->vertex_count = mesh_vertcount;
+}
+
+void retexture_mesh(Mesh *mesh, const Texture *texture) {
+
 	// create texture object
 	GLuint texture_object;
 	glGenTextures(1, &texture_object);
@@ -128,11 +134,23 @@ Mesh *create_mesh(const unsigned char *mesh_data, const int mesh_bytecount, cons
 	// write texture data
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
 
-	// create final mesh object to return
-	Mesh *mesh = malloc(sizeof(Mesh));
-	mesh->vertex_array = vertex_array;
-	mesh->vertex_count = mesh_vertcount;
+	// assign to mesh (TODO free previous texture object if it exists)
 	mesh->texture = texture_object;
+}
+
+void free_mesh(Mesh *mesh) {
+
+	// TODO "free" mesh->vertex_array and mesh->texture, in however way that works in OpenGL
+	free(mesh);
+}
+
+// returns NULL on error
+Mesh *create_mesh(const unsigned char *mesh_data, const int mesh_bytecount, const int mesh_vertcount, const Texture *texture) {
+
+	Mesh *mesh = malloc(sizeof(Mesh));
+
+	remesh_mesh(mesh, mesh_data, mesh_bytecount, mesh_vertcount);	
+	retexture_mesh(mesh, texture);
 
 	return mesh;
 }

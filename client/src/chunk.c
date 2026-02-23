@@ -48,23 +48,7 @@ static void remesh_chunk(Chunk *chunk) {
 					block_types[chunk->blocks[x][y][z]].append_block_to_mesh(&mesh_data, &vertex_count, chunk->blocks, x, y, z);
 
 	// create mesh
-	remesh(&chunk->mesh, mesh_data.data, mesh_data.bytecount, vertex_count);
-}
-
-void remesh(Mesh *mesh, const unsigned char *mesh_data, const int mesh_bytecount, const int mesh_vertcount) {
-	
-	// TODO implement this better
-
-	Mesh *mesh_new = create_mesh(mesh_data, mesh_bytecount, mesh_vertcount, blockmap_texture);
-
-	memcpy(mesh, mesh_new, sizeof(Mesh));
-	free_mesh(mesh_new);
-}
-
-void free_mesh(Mesh *mesh) {
-
-	// TODO "free" mesh->vertex_array and mesh->texture, in however way that works in OpenGL
-	free(mesh);
+	remesh_mesh(&chunk->mesh, mesh_data.data, mesh_data.bytecount, vertex_count);
 }
 
 void initialize_chunk_system(void (*chunk_populator)(int x, int y, int z)) {
@@ -75,8 +59,11 @@ void initialize_chunk_system(void (*chunk_populator)(int x, int y, int z)) {
 	
 	for (int x = 0; x < WORLD_DIM_IN_CHUNKS; x++)
 		for (int y = 0; y < WORLD_DIM_IN_CHUNKS; y++)
-			for (int z = 0; z < WORLD_DIM_IN_CHUNKS; z++)
+			for (int z = 0; z < WORLD_DIM_IN_CHUNKS; z++) {
+
 				chunks[x][y][z] = malloc(sizeof(Chunk));
+				retexture_mesh(&chunks[x][y][z]->mesh, blockmap_texture);
+			}
 	
 	// populate chunks (finite)
 	for (int cx = 0; cx < WORLD_DIM_IN_CHUNKS; cx++) {
