@@ -41,13 +41,13 @@ static void remesh_chunk(Chunk *chunk) {
 
 	for (int x = 0; x < CHUNK_DIM_IN_BLOCKS; x++)
 		for (int y = 0; y < CHUNK_DIM_IN_BLOCKS; y++)
-			for (int z = 0; z < CHUNK_DIM_IN_BLOCKS; z++) {
+			for (int z = 0; z < CHUNK_DIM_IN_BLOCKS; z++)
 
+				// add mesh of this block (given it has a meshing function)
 				if (block_types[chunk->blocks[x][y][z]].append_block_to_mesh != NULL)
 					block_types[chunk->blocks[x][y][z]].append_block_to_mesh(&mesh_data, &vertex_count, chunk->blocks, x, y, z);
-			}
 
-			// create mesh
+	// create mesh
 	remesh(&chunk->mesh, mesh_data.data, mesh_data.bytecount, vertex_count);
 }
 
