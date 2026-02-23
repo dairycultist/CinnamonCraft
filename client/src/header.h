@@ -53,12 +53,15 @@ Texture *load_texture(const char *path);
 Mesh *create_mesh(const unsigned char *mesh_data, const int mesh_bytecount, const int mesh_vertcount, const Texture *texture);
 Mesh *create_mesh_from_obj(const char *obj_path, const Texture *texture);
 void draw_mesh(const Transform *camera, const Transform *transform, const Mesh *mesh);
+void remesh(Mesh *mesh, const unsigned char *mesh_data, const int mesh_bytecount, const int mesh_vertcount);
+// TODO retexture?
 
 // 2D
 Mesh *create_sprite_mesh(float u, float v, float w, float h, const Texture *texture); // TODO only pass w, have h be dynamically calculated (including after window resize)
 void draw_sprite_mesh(const Mesh *mesh);
 
-// destroy_mesh when
+// both 2D and 3D
+void free_mesh(Mesh *mesh);
 
 void initialize_shaders();
 void initialize_perspective(const float aspectRatio);

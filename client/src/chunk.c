@@ -33,8 +33,7 @@ BlockType *get_block_type(unsigned char id) {
 }
 
 // remeshes based on the chunk's internal blocks
-// TODO should probably "free" chunk->mesh.vertex_array, in however way that works in OpenGL
-static void remesh_chunk(const Chunk *chunk) {
+static void remesh_chunk(Chunk *chunk) {
 
 	EZArray mesh_data = {0};
 
@@ -48,9 +47,23 @@ static void remesh_chunk(const Chunk *chunk) {
 					block_types[chunk->blocks[x][y][z]].append_block_to_mesh(&mesh_data, &vertex_count, chunk->blocks, x, y, z);
 			}
 
-	Mesh *mesh = create_mesh(mesh_data.data, mesh_data.bytecount, vertex_count, blockmap_texture);
+			// create mesh
+	remesh(&chunk->mesh, mesh_data.data, mesh_data.bytecount, vertex_count);
+}
 
-	memcpy((void *) &chunk->mesh, mesh, sizeof(Mesh));
+void remesh(Mesh *mesh, const unsigned char *mesh_data, const int mesh_bytecount, const int mesh_vertcount) {
+	
+	// TODO implement this better
+
+	Mesh *mesh_new = create_mesh(mesh_data, mesh_bytecount, mesh_vertcount, blockmap_texture);
+
+	memcpy(mesh, mesh_new, sizeof(Mesh));
+	free_mesh(mesh_new);
+}
+
+void free_mesh(Mesh *mesh) {
+
+	// TODO "free" mesh->vertex_array and mesh->texture, in however way that works in OpenGL
 	free(mesh);
 }
 

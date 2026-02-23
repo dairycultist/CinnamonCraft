@@ -19,7 +19,8 @@ typedef struct {
 	// this function determines what mesh/UV a block gets (including face culling)
 	void (*append_block_to_mesh)(EZArray *mesh_data, int *vertex_count, const unsigned char blocks[CHUNK_DIM_IN_BLOCKS][CHUNK_DIM_IN_BLOCKS][CHUNK_DIM_IN_BLOCKS], int block_x, int block_y, int block_z);
 
-	unsigned char flags;
+	// TODO separate solid into fullblock and collidable
+	// TODO add flipx, flipy, flipz (used by append_block_to_mesh)
 	// 1 "solid": adjacent blocks will cull the faces that touch it AND it has collision
 	// 2
 	// 4
@@ -28,6 +29,8 @@ typedef struct {
 	// 32
 	// 64
 	// 128
+	unsigned char flags;
+
 	unsigned char tex_top;
 	unsigned char tex_side;
 	unsigned char tex_bottom;
