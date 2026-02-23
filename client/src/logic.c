@@ -1,5 +1,6 @@
 #include "header.h"
 #include "chunk.h"
+#include "append_block_to_mesh.h"
 
 // static unsigned int rng_state = 1; // uint32_t? time(NULL)?
 
@@ -43,8 +44,8 @@ static void chunk_populator(int x, int y, int z) {
 
 void on_start() {
 
-	register_block_type((BlockType) { 0b00000001, 240, 240, 240, 60 });
-	register_block_type((BlockType) { 0b00000001, 241, 241, 241, 20 });
+	register_block_type((BlockType) { ABTM_block, 0b00000001, 240, 240, 240, 60 });
+	register_block_type((BlockType) { ABTM_block, 0b00000001, 241, 241, 241, 20 });
 
 	initialize_chunk_system(chunk_populator);
 	

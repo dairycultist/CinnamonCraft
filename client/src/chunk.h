@@ -7,7 +7,7 @@
  * Abstraction layer for all block/chunk related actions.
  */
 
-#define BT_IS_SOLID(block_type) (block_type.flags & 0b00000001)
+#define BT_IS_SOLID(block_type) ((block_type).flags & 0b00000001)
 
 #define WORLD_DIM_IN_CHUNKS 8
 #define CHUNK_DIM_IN_BLOCKS 16
@@ -15,6 +15,9 @@
 typedef struct {
 
 	// other stuff like mining level, dropped item, maybe function pointer for append_block_to_mesh
+
+	// this function determines what mesh/UV a block gets (including face culling)
+	void (*append_block_to_mesh)(EZArray *mesh_data, int *vertex_count, const unsigned char blocks[CHUNK_DIM_IN_BLOCKS][CHUNK_DIM_IN_BLOCKS][CHUNK_DIM_IN_BLOCKS], int block_x, int block_y, int block_z);
 
 	unsigned char flags;
 	// 1 "solid": adjacent blocks will cull the faces that touch it AND it has collision
@@ -32,17 +35,12 @@ typedef struct {
 
 } BlockType;
 
-// block type registry
-static BlockType block_types[256] = { 0b00000000, 0, 0, 0, 0 }; // first block is always air
-static unsigned char block_type_count = 1;
-
-// da functions
 void initialize_chunk_system(void (*chunk_populator)(int x, int y, int z)); // chunk populator doesn't need to account for remeshes
 void register_block_type(BlockType block_type);
+BlockType *get_block_type(unsigned char id);
 
 void draw_chunks(const Transform *camera);
 
-BlockType *get_block_type(unsigned char id);
 unsigned char get_block_at(int x, int y, int z);
 void set_block_at(int x, int y, int z, unsigned char block);
 void set_delay_remesh_block_at(int x, int y, int z, unsigned char block);
