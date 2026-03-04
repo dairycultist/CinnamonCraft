@@ -1,6 +1,8 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 
+#include "ez_array.h"
+
 // only 256 texture indices and 256 block types can exist right now
 
 /*

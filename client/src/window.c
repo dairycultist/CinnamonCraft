@@ -1,4 +1,5 @@
 #include "header.h"
+#include "logic.h"
 
 static void log_error(const char *msg) {
 	

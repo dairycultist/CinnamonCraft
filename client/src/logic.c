@@ -1,5 +1,6 @@
 #include "header.h"
 #include "chunk.h"
+#include "logic.h"
 #include "append_block_to_mesh.h"
 
 // static unsigned int rng_state = 1; // uint32_t? time(NULL)?

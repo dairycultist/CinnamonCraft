@@ -9,16 +9,6 @@
 #define FALSE 0
 
 /*
- * logic.c
- */
-
-void on_start();
-void on_terminate();
-
-void process_tick();
-void process_event(SDL_Event event);
-
-/*
  * mesh.c
  */
 
@@ -65,20 +55,5 @@ void free_mesh(Mesh *mesh);
 
 void initialize_shaders();
 void initialize_perspective(const float aspectRatio);
-
-/*
- * ez_array.c
- */
-typedef struct {
-
-	unsigned char *data;
-	int datasize;
-	int bytecount;
-
-} EZArray;
-
-void append_ezarray(EZArray *array, void *data, int data_length);
-int contains_ezarray(EZArray *array, void *data, int data_length);
-void clear_ezarray(EZArray *array);
 
 #endif

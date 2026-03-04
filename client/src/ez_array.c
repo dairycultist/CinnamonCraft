@@ -1,4 +1,5 @@
-#include "header.h"
+#include "ez_array.h"
+#include <stdlib.h>
 #include <string.h>
 
 void append_ezarray(EZArray *array, void *data, int data_length) {
@@ -25,9 +26,9 @@ int contains_ezarray(EZArray *array, void *data, int data_length) {
 
 	for (int i = 0; i < array->bytecount; i += data_length)
 		if (!memcmp(data, array->data + i, data_length))
-			return TRUE;
+			return 1;
 
-	return FALSE;
+	return 0;
 }
 
 void clear_ezarray(EZArray *array) {
