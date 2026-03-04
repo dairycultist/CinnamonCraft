@@ -15,7 +15,7 @@ void ABTM_block(EZArray *mesh_data, int *vertex_count, const unsigned char block
 	GET_SPRITEMAP_UV(block_type->tex_side, u_sml, v_sml, u_big, v_big);
 
 	// -x face
-	if (block_x == 0 || !BT_IS_SOLID(*BT_AT(block_x - 1, block_y, block_z))) {
+	if (block_x == 0 || !BT_IS_FULLBLOCK(*BT_AT(block_x - 1, block_y, block_z))) {
 
 		float full_block_data[] = {
 			block_x, block_y, block_z,			-1, 0, 0,	u_big, v_sml,
@@ -31,7 +31,7 @@ void ABTM_block(EZArray *mesh_data, int *vertex_count, const unsigned char block
 	}
 
 	// +x face
-	if (block_x == 15 || !BT_IS_SOLID(*BT_AT(block_x + 1, block_y, block_z))) {
+	if (block_x == 15 || !BT_IS_FULLBLOCK(*BT_AT(block_x + 1, block_y, block_z))) {
 
 		float full_block_data[] = {
 			block_x + 1, block_y, block_z,			1, 0, 0,	u_sml, v_sml,
@@ -47,7 +47,7 @@ void ABTM_block(EZArray *mesh_data, int *vertex_count, const unsigned char block
 	}
 
 	// -z face
-	if (block_z == 0 || !BT_IS_SOLID(*BT_AT(block_x, block_y, block_z - 1))) {
+	if (block_z == 0 || !BT_IS_FULLBLOCK(*BT_AT(block_x, block_y, block_z - 1))) {
 
 		float full_block_data[] = {
 			block_x, block_y, block_z,			0, 0, -1,	u_sml, v_sml,
@@ -63,7 +63,7 @@ void ABTM_block(EZArray *mesh_data, int *vertex_count, const unsigned char block
 	}
 
 	// +z face
-	if (block_z == 15 || !BT_IS_SOLID(*BT_AT(block_x, block_y, block_z + 1))) {
+	if (block_z == 15 || !BT_IS_FULLBLOCK(*BT_AT(block_x, block_y, block_z + 1))) {
 
 		float full_block_data[] = {
 			block_x, block_y, block_z + 1,			0, 0, 1,	u_big, v_sml,
@@ -79,7 +79,7 @@ void ABTM_block(EZArray *mesh_data, int *vertex_count, const unsigned char block
 	}
 
 	// -y face
-	if (block_y == 0 || !BT_IS_SOLID(*BT_AT(block_x, block_y - 1, block_z))) {
+	if (block_y == 0 || !BT_IS_FULLBLOCK(*BT_AT(block_x, block_y - 1, block_z))) {
 
 		// get UV for bottom
 		GET_SPRITEMAP_UV(block_type->tex_bottom, u_sml, v_sml, u_big, v_big);
@@ -98,7 +98,7 @@ void ABTM_block(EZArray *mesh_data, int *vertex_count, const unsigned char block
 	}
 
 	// +y face
-	if (block_y == 15 || !BT_IS_SOLID(*BT_AT(block_x, block_y + 1, block_z))) {
+	if (block_y == 15 || !BT_IS_FULLBLOCK(*BT_AT(block_x, block_y + 1, block_z))) {
 
 		// get UV for top
 		GET_SPRITEMAP_UV(block_type->tex_top, u_sml, v_sml, u_big, v_big);

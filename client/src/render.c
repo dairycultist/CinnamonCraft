@@ -25,6 +25,7 @@ static char *fragment3D =
 "void main() {\n"
 	"float c = dot(normal_camera, vec3(0.7, 0.7, 0)) * 0.3 + 0.7;\n"
 	"outColor = texture(tex, frag_UV) * vec4(c, c, c, 1.0);\n"
+	"if (outColor.a == 0) { discard; }" // texture clip transparency
 "}";
 
 // same for 2D sprites

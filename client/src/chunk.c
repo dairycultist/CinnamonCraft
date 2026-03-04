@@ -180,7 +180,7 @@ void remesh_delayed_chunks() {
 
 int does_point_intersect_blocks(float x, float y, float z) {
 
-	return BT_IS_SOLID(block_types[get_block_at((int) x, (int) y, (int) z)]);
+	return BT_IS_COLLIDABLE(block_types[get_block_at((int) x, (int) y, (int) z)]);
 }
 
 // the AABB is a rectangular prism with a square base centered on x,y,z (extruding up)

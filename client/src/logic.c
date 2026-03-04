@@ -44,8 +44,8 @@ static void chunk_populator(int x, int y, int z) {
 
 void on_start() {
 
-	register_block_type((BlockType) { ABTM_block, 0b00000001, 240, 240, 240, 60 });
-	register_block_type((BlockType) { ABTM_block, 0b00000001, 241, 241, 241, 20 });
+	register_block_type((BlockType) { ABTM_block, 0b00000011, 240, 240, 240, 60 });
+	register_block_type((BlockType) { ABTM_block, 0b00000010, 242, 242, 242, 20 });
 
 	initialize_chunk_system(chunk_populator);
 	
