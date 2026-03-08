@@ -8,6 +8,8 @@ typedef struct { // remember, only this file can access this struct
 	Mesh mesh;
 	unsigned char blocks[CHUNK_DIM_IN_BLOCKS][CHUNK_DIM_IN_BLOCKS][CHUNK_DIM_IN_BLOCKS]; // array of bytes indexing into block_types
 
+	int cx, cy, cz;
+
 } Chunk;
 
 static Texture *blockmap_texture;
@@ -45,7 +47,13 @@ static void remesh_chunk(Chunk *chunk) {
 
 				// add mesh of this block (given it has a meshing function)
 				if (block_types[chunk->blocks[x][y][z]].append_block_to_mesh != NULL)
-					block_types[chunk->blocks[x][y][z]].append_block_to_mesh(&mesh_data, &vertex_count, chunk->blocks, x, y, z);
+					block_types[chunk->blocks[x][y][z]].append_block_to_mesh(
+						&mesh_data,
+						&vertex_count,
+						x + chunk->cx * CHUNK_DIM_IN_BLOCKS,
+						y + chunk->cy * CHUNK_DIM_IN_BLOCKS,
+						z + chunk->cz * CHUNK_DIM_IN_BLOCKS
+					);
 
 	// create mesh
 	remesh_mesh(&chunk->mesh, mesh_data.data, mesh_data.bytecount, vertex_count);
@@ -62,7 +70,12 @@ void initialize_chunk_system(void (*chunk_populator)(int x, int y, int z)) {
 			for (int z = 0; z < WORLD_DIM_IN_CHUNKS; z++) {
 
 				chunks[x][y][z] = malloc(sizeof(Chunk));
+				
 				retexture_mesh(&chunks[x][y][z]->mesh, blockmap_texture);
+
+				chunks[x][y][z]->cx = x;
+				chunks[x][y][z]->cy = y;
+				chunks[x][y][z]->cz = z;
 			}
 	
 	// populate chunks (finite)

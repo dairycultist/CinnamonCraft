@@ -20,7 +20,7 @@ typedef struct {
 	// other stuff like mining level, dropped item, maybe function pointer for append_block_to_mesh
 
 	// this function determines what mesh/UV a block gets (including face culling)
-	void (*append_block_to_mesh)(EZArray *mesh_data, int *vertex_count, const unsigned char blocks[CHUNK_DIM_IN_BLOCKS][CHUNK_DIM_IN_BLOCKS][CHUNK_DIM_IN_BLOCKS], int block_x, int block_y, int block_z);
+	void (*append_block_to_mesh)(EZArray *mesh_data, int *vertex_count, int x, int y, int z);
 
 	// TODO add flipx, flipy, flipz (used by append_block_to_mesh)
 	// 1 "fullblock": adjacent blocks will cull the faces that touch it
