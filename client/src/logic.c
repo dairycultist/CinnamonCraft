@@ -3,17 +3,6 @@
 #include "logic.h"
 #include "append_block_to_mesh.h"
 
-// static unsigned int rng_state = 1; // uint32_t? time(NULL)?
-
-// // stole this from nash so I don't have to use rand(). it's deterministic!
-// unsigned int random_uint(unsigned int bound) {
-	
-//     rng_state ^= rng_state << 13;
-//     rng_state ^= rng_state >> 17;
-//     rng_state ^= rng_state << 5;
-//     return rng_state % bound;
-// }
-
 static Transform camera;
 static float vertical_velocity;
 
@@ -46,7 +35,7 @@ static void chunk_populator(int x, int y, int z) {
 void on_start() {
 
 	register_block_type((BlockType) { ABTM_grass, 0b00000011, 0, 1, 2, 60 });
-	register_block_type((BlockType) { ABTM_block, 0b00000010, 3, 3, 3, 20 });
+	register_block_type((BlockType) { ABTM_block, 0b00000011, 3, 3, 3, 20 });
 
 	initialize_chunk_system(chunk_populator);
 	
