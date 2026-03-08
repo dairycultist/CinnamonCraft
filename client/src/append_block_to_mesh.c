@@ -133,7 +133,7 @@ void ABTM_grass(EZArray *mesh_data, int *vertex_count, int x, int y, int z) {
 
 		float u_sml, v_sml, u_big, v_big;
 
-		GET_SPRITEMAP_UV(243, u_sml, v_sml, u_big, v_big);
+		GET_SPRITEMAP_UV(4, u_sml, v_sml, u_big, v_big);
 
 		float full_block_data[] = {
 			local_x,	 local_y + 1, 	local_z,		0, 1, 0,	u_big, v_sml,
