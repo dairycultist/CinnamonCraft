@@ -2,14 +2,14 @@
 #include "chunk.h"
 #include "append_block_to_mesh.h"
 
+#define GET_SPRITEMAP_UV(index, u_sml, v_sml, u_big, v_big) u_sml = ((index) % 16) / 16.; v_sml = ((index) / 16) / 16.; u_big = (((index) + 1) % 16) / 16.; v_big = ((index) / 16 + 1) / 16.
+#define BT_AT(x, y, z) (get_block_type(get_block_at(x, y, z)))
+
 void ABTM_block(EZArray *mesh_data, int *vertex_count, int x, int y, int z) {
 
 	int local_x = x % CHUNK_DIM_IN_BLOCKS;
 	int local_y = y % CHUNK_DIM_IN_BLOCKS;
 	int local_z = z % CHUNK_DIM_IN_BLOCKS;
-
-	#define GET_SPRITEMAP_UV(index, u_sml, v_sml, u_big, v_big) u_sml = ((index) % 16) / 16.; v_sml = ((index) / 16) / 16.; u_big = (((index) + 1) % 16) / 16.; v_big = ((index) / 16 + 1) / 16.
-	#define BT_AT(x, y, z) (get_block_type(get_block_at(x, y, z)))
 
 	BlockType *block_type = BT_AT(x, y, z);
 
@@ -108,12 +108,12 @@ void ABTM_block(EZArray *mesh_data, int *vertex_count, int x, int y, int z) {
 		GET_SPRITEMAP_UV(block_type->tex_top, u_sml, v_sml, u_big, v_big);
 
 		float full_block_data[] = {
-			local_x, local_y + 1, local_z,			0, 1, 0,	u_big, v_sml,
-			local_x, local_y + 1, local_z + 1,		0, 1, 0,	u_sml, v_sml,
-			local_x + 1, local_y + 1, local_z,		0, 1, 0,	u_big, v_big,
-			local_x + 1, local_y + 1, local_z + 1,	0, 1, 0,	u_sml, v_big,
-			local_x + 1, local_y + 1, local_z,		0, 1, 0,	u_big, v_big,
-			local_x, local_y + 1, local_z + 1,		0, 1, 0,	u_sml, v_sml,
+			local_x, 		local_y + 1, local_z,			0, 1, 0,	u_big, v_sml,
+			local_x, 		local_y + 1, local_z + 1,		0, 1, 0,	u_sml, v_sml,
+			local_x + 1, 	local_y + 1, local_z,			0, 1, 0,	u_big, v_big,
+			local_x + 1, 	local_y + 1, local_z + 1,		0, 1, 0,	u_sml, v_big,
+			local_x + 1, 	local_y + 1, local_z,			0, 1, 0,	u_big, v_big,
+			local_x, 		local_y + 1, local_z + 1,		0, 1, 0,	u_sml, v_sml,
 		};
 
 		append_ezarray(mesh_data, full_block_data, sizeof(float) * 8 * 6);
@@ -124,4 +124,48 @@ void ABTM_block(EZArray *mesh_data, int *vertex_count, int x, int y, int z) {
 void ABTM_grass(EZArray *mesh_data, int *vertex_count, int x, int y, int z) {
 
 	ABTM_block(mesh_data, vertex_count, x, y, z);
+
+	if (get_block_at(x, y + 1, z) == 0) {
+
+		int local_x = x % CHUNK_DIM_IN_BLOCKS;
+		int local_y = y % CHUNK_DIM_IN_BLOCKS;
+		int local_z = z % CHUNK_DIM_IN_BLOCKS;
+
+		float u_sml, v_sml, u_big, v_big;
+
+		GET_SPRITEMAP_UV(243, u_sml, v_sml, u_big, v_big);
+
+		float full_block_data[] = {
+			local_x,	 local_y + 1, 	local_z,		0, 1, 0,	u_big, v_sml,
+			local_x + 1, local_y + 1, 	local_z + 1,	0, 1, 0,	u_sml, v_sml,
+			local_x,	 local_y + 2, 	local_z,		0, 1, 0,	u_big, v_big,
+			local_x + 1, local_y + 2, 	local_z + 1,	0, 1, 0,	u_sml, v_big,
+			local_x,	 local_y + 2, 	local_z,		0, 1, 0,	u_big, v_big,
+			local_x + 1, local_y + 1, 	local_z + 1,	0, 1, 0,	u_sml, v_sml,
+
+			local_x,	 local_y + 1, 	local_z,		0, 1, 0,	u_big, v_sml,
+			local_x,	 local_y + 2, 	local_z,		0, 1, 0,	u_big, v_big,
+			local_x + 1, local_y + 1, 	local_z + 1,	0, 1, 0,	u_sml, v_sml,
+			local_x + 1, local_y + 2, 	local_z + 1,	0, 1, 0,	u_sml, v_big,
+			local_x + 1, local_y + 1, 	local_z + 1,	0, 1, 0,	u_sml, v_sml,
+			local_x,	 local_y + 2, 	local_z,		0, 1, 0,	u_big, v_big,
+
+			local_x,		local_y + 1, 	local_z + 1,	0, 1, 0,	u_big, v_sml,
+			local_x + 1, 	local_y + 1, 	local_z,		0, 1, 0,	u_sml, v_sml,
+			local_x,		local_y + 2, 	local_z + 1,	0, 1, 0,	u_big, v_big,
+			local_x + 1, 	local_y + 2, 	local_z,		0, 1, 0,	u_sml, v_big,
+			local_x,		local_y + 2, 	local_z + 1,	0, 1, 0,	u_big, v_big,
+			local_x + 1, 	local_y + 1, 	local_z,		0, 1, 0,	u_sml, v_sml,
+
+			local_x,		local_y + 1, 	local_z + 1,	0, 1, 0,	u_big, v_sml,
+			local_x,		local_y + 2, 	local_z + 1,	0, 1, 0,	u_big, v_big,
+			local_x + 1, 	local_y + 1, 	local_z,		0, 1, 0,	u_sml, v_sml,
+			local_x + 1, 	local_y + 2, 	local_z,		0, 1, 0,	u_sml, v_big,
+			local_x + 1, 	local_y + 1, 	local_z,		0, 1, 0,	u_sml, v_sml,
+			local_x,		local_y + 2, 	local_z + 1,	0, 1, 0,	u_big, v_big,
+		};
+
+		append_ezarray(mesh_data, full_block_data, sizeof(float) * 8 * 24);
+		*vertex_count += 24;
+	}
 }
