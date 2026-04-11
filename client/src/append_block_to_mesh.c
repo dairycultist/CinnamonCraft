@@ -1,5 +1,5 @@
 #include "header.h"
-#include "chunk.h"
+#include "terrain.h"
 #include "append_block_to_mesh.h"
 
 // stole this from nash so I don't have to use rand(). it's deterministic!
@@ -16,9 +16,9 @@ unsigned int r_hash(unsigned int seed) {
 
 void ABTM_block(EZArray *mesh_data, int *vertex_count, int x, int y, int z) {
 
-	int local_x = x % CHUNK_DIM_IN_BLOCKS;
-	int local_y = y % CHUNK_DIM_IN_BLOCKS;
-	int local_z = z % CHUNK_DIM_IN_BLOCKS;
+	int local_x = x % 16;
+	int local_y = y;
+	int local_z = z % 16;
 
 	BlockType *block_type = BT_AT(x, y, z);
 
@@ -136,9 +136,9 @@ void ABTM_grass(EZArray *mesh_data, int *vertex_count, int x, int y, int z) {
 
 	if (get_block_at(x, y + 1, z) == 0 && r_hash(x * 108 + z * 4878) % 3 != 0) {
 
-		float local_x = x % CHUNK_DIM_IN_BLOCKS + (r_hash(x * 51 + z * 12) % 30) * 0.01;
-		float local_y = y % CHUNK_DIM_IN_BLOCKS - (r_hash(x * 7 + z * 5) % 30) * 0.01;
-		float local_z = z % CHUNK_DIM_IN_BLOCKS + (r_hash(x * 19 + z * 154) % 30) * 0.01;
+		float local_x = x % 16 + (r_hash(x * 51 + z * 12) % 30) * 0.01;
+		float local_y = y      - (r_hash(x * 7 + z * 5) % 30) * 0.01;
+		float local_z = z % 16 + (r_hash(x * 19 + z * 154) % 30) * 0.01;
 
 		float u_sml, v_sml, u_big, v_big;
 

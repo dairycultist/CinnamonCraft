@@ -1,20 +1,24 @@
+/*
+ * Abstraction layer for terrain. Outside files (ideally) won't have to know about chunks at all.
+ */
+
 #include "header.h"
-#include "chunk.h"
+#include "terrain.h"
 
 #include <math.h>
 
 typedef struct { // remember, only this file can access this struct
 
 	Mesh mesh;
-	unsigned char blocks[CHUNK_DIM_IN_BLOCKS][CHUNK_DIM_IN_BLOCKS][CHUNK_DIM_IN_BLOCKS]; // array of bytes indexing into block_types
+	unsigned char blocks[16][128][16]; // array of bytes indexing into block_types
 
-	int cx, cy, cz;
+	int chunk_x, chunk_z;
 
 } Chunk;
 
 static Texture *blockmap_texture;
 
-static Chunk *chunks[WORLD_DIM_IN_CHUNKS][WORLD_DIM_IN_CHUNKS][WORLD_DIM_IN_CHUNKS]; // finite for now
+static Chunk *chunks[1][1]; // finite for now
 
 static EZArray delayed_remesh_chunks; // when you want to set a bunch of blocks, remeshing after each is slow and redundant, so you save them to remesh once at the end
 
@@ -41,18 +45,18 @@ static void remesh_chunk(Chunk *chunk) {
 
 	int vertex_count = 0;
 
-	for (int x = 0; x < CHUNK_DIM_IN_BLOCKS; x++)
-		for (int y = 0; y < CHUNK_DIM_IN_BLOCKS; y++)
-			for (int z = 0; z < CHUNK_DIM_IN_BLOCKS; z++)
+	for (int x = 0; x < 16; x++)
+		for (int y = 0; y < 128; y++)
+			for (int z = 0; z < 16; z++)
 
 				// add mesh of this block (given it has a meshing function)
 				if (block_types[chunk->blocks[x][y][z]].append_block_to_mesh != NULL)
 					block_types[chunk->blocks[x][y][z]].append_block_to_mesh(
 						&mesh_data,
 						&vertex_count,
-						x + chunk->cx * CHUNK_DIM_IN_BLOCKS,
-						y + chunk->cy * CHUNK_DIM_IN_BLOCKS,
-						z + chunk->cz * CHUNK_DIM_IN_BLOCKS
+						x + chunk->chunk_x * 16,
+						y,
+						z + chunk->chunk_z * 16
 					);
 
 	// create mesh
@@ -65,77 +69,71 @@ void initialize_chunk_system(void (*chunk_populator)(int x, int y, int z)) {
 
 	blockmap_texture = load_texture("client/res/blockmap.png");
 	
-	for (int x = 0; x < WORLD_DIM_IN_CHUNKS; x++)
-		for (int y = 0; y < WORLD_DIM_IN_CHUNKS; y++)
-			for (int z = 0; z < WORLD_DIM_IN_CHUNKS; z++) {
+	for (int chunk_x = 0; chunk_x < 1; chunk_x++)
+		for (int chunk_z = 0; chunk_z < 1; chunk_z++) {
 
-				chunks[x][y][z] = malloc(sizeof(Chunk));
-				
-				retexture_mesh(&chunks[x][y][z]->mesh, blockmap_texture);
+			chunks[chunk_x][chunk_z] = malloc(sizeof(Chunk));
+			
+			retexture_mesh(&chunks[chunk_x][chunk_z]->mesh, blockmap_texture);
 
-				chunks[x][y][z]->cx = x;
-				chunks[x][y][z]->cy = y;
-				chunks[x][y][z]->cz = z;
-			}
+			chunks[chunk_x][chunk_z]->chunk_x = chunk_x;
+			chunks[chunk_x][chunk_z]->chunk_z = chunk_z;
+		}
 	
 	// populate chunks (finite)
-	for (int cx = 0; cx < WORLD_DIM_IN_CHUNKS; cx++) {
-		for (int cy = 0; cy < WORLD_DIM_IN_CHUNKS; cy++) {
-			for (int cz = 0; cz < WORLD_DIM_IN_CHUNKS; cz++) {
+	for (int chunk_x = 0; chunk_x < 1; chunk_x++) {
+		for (int chunk_z = 0; chunk_z < 1; chunk_z++) {
 
-				// populate single chunk
-				for (int bx = 0; bx < CHUNK_DIM_IN_BLOCKS; bx++) {
-					for (int by = 0; by < CHUNK_DIM_IN_BLOCKS; by++) {
-						for (int bz = 0; bz < CHUNK_DIM_IN_BLOCKS; bz++) {
+			// populate single chunk
+			for (int x = 0; x < 16; x++) {
+				for (int y = 0; y < 128; y++) {
+					for (int z = 0; z < 16; z++) {
 
-							populator(
-								cx * CHUNK_DIM_IN_BLOCKS + bx,
-								cy * CHUNK_DIM_IN_BLOCKS + by,
-								cz * CHUNK_DIM_IN_BLOCKS + bz
-							);
-						}
+						populator(
+							x + chunk_x * 16,
+							y,
+							z + chunk_z * 16
+						);
 					}
 				}
-
-				// remesh the chunk
-				remesh_delayed_chunks();
 			}
+
+			// remesh the chunk
+			remesh_delayed_chunks();
 		}
 	}
 }
 
 void draw_chunks(const Transform *camera) {
 
-	int cx, cy, cz;
+	int chunk_x, chunk_z;
 	Transform chunk_transform = {};
 
-	for (cx = 0; cx < WORLD_DIM_IN_CHUNKS; cx++) {
-		for (cy = 0; cy < WORLD_DIM_IN_CHUNKS; cy++) {
-			for (cz = 0; cz < WORLD_DIM_IN_CHUNKS; cz++) {
+	for (chunk_x = 0; chunk_x < 1; chunk_x++) {
+		for (chunk_z = 0; chunk_z < 1; chunk_z++) {
 
-				chunk_transform.x = cx * CHUNK_DIM_IN_BLOCKS;
-				chunk_transform.y = cy * CHUNK_DIM_IN_BLOCKS;
-				chunk_transform.z = cz * CHUNK_DIM_IN_BLOCKS;
+			chunk_transform.x = chunk_x * 16;
+			chunk_transform.y = 0.0;
+			chunk_transform.z = chunk_z * 16;
 
-				draw_mesh(camera, &chunk_transform, &chunks[cx][cy][cz]->mesh);
-			}
+			draw_mesh(camera, &chunk_transform, &chunks[chunk_x][chunk_z]->mesh);
 		}
 	}
 }
 
-static Chunk *get_chunk_of_block(int x, int y, int z) {
+static Chunk *get_chunk_of_block(int x, int y, int z) { // we include y so that OOB y will return NULL
 
 	if (
 		x < 0 ||
 		y < 0 ||
 		z < 0 ||
-		x >= WORLD_DIM_IN_CHUNKS * CHUNK_DIM_IN_BLOCKS ||
-		y >= WORLD_DIM_IN_CHUNKS * CHUNK_DIM_IN_BLOCKS ||
-		z >= WORLD_DIM_IN_CHUNKS * CHUNK_DIM_IN_BLOCKS
+		x >= 1 * 16 ||
+		y >= 128 ||
+		z >= 1 * 16
 	)
 		return NULL;
 	
-	return chunks[x / CHUNK_DIM_IN_BLOCKS][y / CHUNK_DIM_IN_BLOCKS][z / CHUNK_DIM_IN_BLOCKS];
+	return chunks[x / 16][z / 16];
 }
 
 /*
@@ -152,7 +150,7 @@ unsigned char get_block_at(int x, int y, int z) {
 	if (!chunk)
 		return 0;
 	
-	return chunk->blocks[x % CHUNK_DIM_IN_BLOCKS][y % CHUNK_DIM_IN_BLOCKS][z % CHUNK_DIM_IN_BLOCKS];
+	return chunk->blocks[x % 16][y][z % 16];
 }
 
 void set_block_at(int x, int y, int z, unsigned char block) {
@@ -162,7 +160,7 @@ void set_block_at(int x, int y, int z, unsigned char block) {
 	if (!chunk)
 		return;
 
-	chunk->blocks[x % CHUNK_DIM_IN_BLOCKS][y % CHUNK_DIM_IN_BLOCKS][z % CHUNK_DIM_IN_BLOCKS] = block;
+	chunk->blocks[x % 16][y][z % 16] = block;
 
 	remesh_chunk(chunk);
 }
@@ -174,7 +172,7 @@ void set_delay_remesh_block_at(int x, int y, int z, unsigned char block) {
 	if (!chunk)
 		return;
 
-	chunk->blocks[x % CHUNK_DIM_IN_BLOCKS][y % CHUNK_DIM_IN_BLOCKS][z % CHUNK_DIM_IN_BLOCKS] = block;
+	chunk->blocks[x % 16][y][z % 16] = block;
 
 	// save chunk for delayed remeshing if it's not already saved
 	if (!contains_ezarray(&delayed_remesh_chunks, &chunk, sizeof(Chunk *)))

@@ -1,5 +1,5 @@
-#ifndef CHUNK_H
-#define CHUNK_H
+#ifndef TERRAIN_H
+#define TERRAIN_H
 
 #include "ez_array.h"
 
@@ -11,9 +11,6 @@
 
 #define BT_IS_FULLBLOCK(block_type) ((block_type).flags & 0b00000001)
 #define BT_IS_COLLIDABLE(block_type) ((block_type).flags & 0b00000010)
-
-#define WORLD_DIM_IN_CHUNKS 8
-#define CHUNK_DIM_IN_BLOCKS 16
 
 typedef struct {
 

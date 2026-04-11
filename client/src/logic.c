@@ -1,5 +1,5 @@
 #include "header.h"
-#include "chunk.h"
+#include "terrain.h"
 #include "logic.h"
 #include "append_block_to_mesh.h"
 
