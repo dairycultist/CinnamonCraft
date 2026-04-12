@@ -8,10 +8,8 @@ else
 	$(error Unsupported OS: $(UNAME))
 endif
 
-client_app: client/src/* client/res/*
-	@gcc -o client_app client/src/*.c $(GCCFLAGS) $(shell pkg-config --cflags --libs sdl2 SDL2_image)
-
-# server_app next
+client_app: src/* res/*
+	@gcc -o client_app src/*.c $(GCCFLAGS) $(shell pkg-config --cflags --libs sdl2 SDL2_image)
 
 run: client_app
 	@./client_app

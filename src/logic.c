@@ -47,13 +47,13 @@ void on_start() {
 	camera.y = 30;
 
 	// create a mesh for testing
-	miku_mesh = create_mesh_from_obj("client/res/miku.obj", load_texture("client/res/dirt.png"));
+	miku_mesh = create_mesh_from_obj("res/miku.obj", load_texture("res/dirt.png"));
 	miku_transform.x = 8;
 	miku_transform.z = 8;
 	miku_transform.y = 30;
 
 	// create a sprite mesh for testing
-	sprite_mesh = create_sprite_mesh(0.0f, 0.0f, 0.2f, 0.4f, load_texture("client/res/dirt.png"));
+	sprite_mesh = create_sprite_mesh(0.0f, 0.0f, 0.2f, 0.4f, load_texture("res/dirt.png"));
 }
 
 void on_terminate() {

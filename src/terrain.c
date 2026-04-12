@@ -67,7 +67,7 @@ void initialize_chunk_system(void (*chunk_populator)(int x, int y, int z)) {
 
 	populator = chunk_populator;
 
-	blockmap_texture = load_texture("client/res/blockmap.png");
+	blockmap_texture = load_texture("res/blockmap.png");
 	
 	for (int chunk_x = 0; chunk_x < 1; chunk_x++)
 		for (int chunk_z = 0; chunk_z < 1; chunk_z++) {

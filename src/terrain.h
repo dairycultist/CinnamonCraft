@@ -14,12 +14,15 @@
 
 typedef struct {
 
-	// other stuff like mining level, dropped item, maybe function pointer for append_block_to_mesh
-
 	// this function determines what mesh/UV a block gets (including face culling)
 	void (*append_block_to_mesh)(EZArray *mesh_data, int *vertex_count, int x, int y, int z);
 
-	// TODO add flipx, flipy, flipz (used by append_block_to_mesh)
+	// TODO stuff like:
+	// - mining level
+	// - dropped item
+	// - orientation (used by append_block_to_mesh)
+	// - vanilla metadata
+
 	// 1 "fullblock": adjacent blocks will cull the faces that touch it
 	// 2 "collidable": has full-block collision
 	// 4

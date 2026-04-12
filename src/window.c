@@ -1,3 +1,14 @@
+/*
+ * Creates the window and server connection. For now, only the server connection is abstracted away from
+ * other files; Other files still need to know about SDL (rendering, keycodes, etc).
+ */
+
+#include <stdio.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <string.h>
+
 #include "header.h"
 #include "logic.h"
 
@@ -8,6 +19,21 @@ static void log_error(const char *msg) {
 	} else {
 		fprintf(stderr, "\n%s: %s\n\n", msg, SDL_GetError());
 	}
+}
+
+#define SERVER_IP "127.0.0.1"
+#define SERVER_PORT 25565
+
+static int sock;
+
+void send_packet() {
+
+}
+
+void read_packet() { // into buffer
+	
+	// char buffer[1024] = {0};
+	// read(sock, buffer, 1024);
 }
 
 int main() {
@@ -52,6 +78,35 @@ int main() {
 	// let programmer initialize stuff
 	on_start();
 
+	// initialize server connection
+	sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock < 0) {
+		log_error("Could not create socket");
+        return 1;
+    }
+
+	struct sockaddr_in serv_addr;
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(SERVER_PORT);
+
+    if (inet_pton(AF_INET, SERVER_IP, &serv_addr.sin_addr) <= 0) {
+		log_error("Invalid address");
+        return 1;
+    }
+
+    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+        log_error("Could not connect to server");
+        return 1;
+    }
+
+	// MVP client
+	// 1. Pre login packet https://pixelbrush.dev/beta-wiki/networking/packets/002-pre-login
+	// 2. Login packet https://pixelbrush.dev/beta-wiki/networking/packets/001-login
+	// 3. Send KeepAlives forever https://pixelbrush.dev/beta-wiki/networking/packets/000-keep-alive
+	
+	send(sock, "\02\00\01\00\46", 5, 0);
+	send(sock, "\01\00\00\00\14\00\01\00\46\00\00\00\00\00\00\00\00\00", 18, 0);
+
 	// process events until window is closed
 	SDL_Event event;
 	int running = TRUE;
@@ -80,6 +135,8 @@ int main() {
 	}
 
 	// free everything
+	close(sock);
+
 	on_terminate();
 
 	SDL_DestroyWindow(window);
