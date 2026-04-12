@@ -1,4 +1,5 @@
-#include "header.h"
+#include "window.h"
+#include "render.h"
 #include "terrain.h"
 #include "logic.h"
 #include "append_block_to_mesh.h"

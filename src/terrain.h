@@ -1,6 +1,7 @@
 #ifndef TERRAIN_H
 #define TERRAIN_H
 
+#include "render.h"
 #include "ez_array.h"
 
 // only 256 texture indices and 256 block types can exist right now

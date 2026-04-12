@@ -1,4 +1,5 @@
-#include "header.h"
+#include "window.h"
+#include "render.h"
 #include "ez_array.h"
 
 // all 3D objects use the same hardcoded shader for simplicity

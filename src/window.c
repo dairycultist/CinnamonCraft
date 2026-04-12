@@ -9,7 +9,8 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "header.h"
+#include "window.h"
+#include "render.h"
 #include "logic.h"
 
 static void log_error(const char *msg) {

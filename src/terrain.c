@@ -2,7 +2,7 @@
  * Abstraction layer for terrain. Outside files (ideally) won't have to know about chunks at all.
  */
 
-#include "header.h"
+#include "window.h"
 #include "terrain.h"
 
 #include <math.h>
