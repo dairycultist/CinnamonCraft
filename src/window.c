@@ -23,18 +23,50 @@ static void log_error(const char *msg) {
 
 #define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 25565
+#define USERNAME "test"
 
 static int sock;
 
-void send_packet() {
+void send_pid(unsigned char pid) {
+
+	send(sock, &pid, 1, 0);
+}
+
+void send_string16(const char *string) {
+
+	unsigned char zero = 0x00;
+	int len = strlen(string);
+	unsigned char len_lower = (unsigned char) len;
+
+	// send length of string in characters (unsigned short, big-endian)
+	send(sock, &zero, 1, 0);
+	send(sock, &len_lower, 1, 0);
+
+	// UCS-2 (16-bit words) is just ascii for the first 256 values, convenient
+	for (int i = 0; i < len; i++) {
+		
+		send(sock, "\00", 1, 0);
+		send(sock, string + i, 1, 0);
+	}
+}
+
+void send_integer(int value) {
 
 }
 
-void read_packet() { // into buffer
+void send_long(long value) {
+
+}
+
+void send_byte(char value) {
+
+}
+
+// void read_packet() { // into buffer
 	
-	// char buffer[1024] = {0};
-	// read(sock, buffer, 1024);
-}
+// 	// char buffer[1024] = {0};
+// 	// read(sock, buffer, 1024);
+// }
 
 int main() {
 
@@ -94,18 +126,19 @@ int main() {
         return 1;
     }
 
-    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+    if (connect(sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
         log_error("Could not connect to server");
         return 1;
     }
-
-	// MVP client
-	// 1. Pre login packet https://pixelbrush.dev/beta-wiki/networking/packets/002-pre-login
-	// 2. Login packet https://pixelbrush.dev/beta-wiki/networking/packets/001-login
-	// 3. Send KeepAlives forever https://pixelbrush.dev/beta-wiki/networking/packets/000-keep-alive
 	
-	send(sock, "\02\00\01\00\46", 5, 0);
-	send(sock, "\01\00\00\00\14\00\01\00\46\00\00\00\00\00\00\00\00\00", 18, 0);
+	// log in
+	send_pid(pid_PreLogin);
+	send_string16(USERNAME);
+
+	send_pid(pid_Login);
+	send(sock, "\00\00\00\14", 4, 0);
+	send_string16(USERNAME);
+	send(sock, "\00\00\00\00\00\00\00\00\00", 9, 0);
 
 	// process events until window is closed
 	SDL_Event event;
