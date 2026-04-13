@@ -2,13 +2,6 @@
  * Creates the window. Other files still need to know about SDL (rendering, keycodes, etc).
  */
 
-#include <stdio.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <string.h>
-#include <stdint.h>
-
 #include "window.h"
 #include "render.h"
 #include "logic.h"

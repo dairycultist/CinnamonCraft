@@ -18,7 +18,7 @@ typedef struct { // remember, only this file can access this struct
 
 static Texture *blockmap_texture;
 
-static Chunk *chunks[1][1]; // finite for now
+static Chunk *chunks[4];
 
 static EZArray delayed_remesh_chunks; // when you want to set a bunch of blocks, remeshing after each is slow and redundant, so you save them to remesh once at the end
 
@@ -69,38 +69,39 @@ void initialize_chunk_system(void (*chunk_populator)(int x, int y, int z)) {
 
 	blockmap_texture = load_texture("res/blockmap.png");
 	
-	for (int chunk_x = 0; chunk_x < 1; chunk_x++)
-		for (int chunk_z = 0; chunk_z < 1; chunk_z++) {
+	for (int chunk_x = 0; chunk_x < 2; chunk_x++) {
+		for (int chunk_z = 0; chunk_z < 2; chunk_z++) {
 
-			chunks[chunk_x][chunk_z] = malloc(sizeof(Chunk));
+			int i = chunk_x + 2 * chunk_z;
+
+			chunks[i] = malloc(sizeof(Chunk));
 			
-			retexture_mesh(&chunks[chunk_x][chunk_z]->mesh, blockmap_texture);
+			retexture_mesh(&chunks[i]->mesh, blockmap_texture);
 
-			chunks[chunk_x][chunk_z]->chunk_x = chunk_x;
-			chunks[chunk_x][chunk_z]->chunk_z = chunk_z;
+			chunks[i]->chunk_x = chunk_x;
+			chunks[i]->chunk_z = chunk_z;
 		}
+	}
 	
 	// populate chunks (finite)
-	for (int chunk_x = 0; chunk_x < 1; chunk_x++) {
-		for (int chunk_z = 0; chunk_z < 1; chunk_z++) {
+	for (int i = 0; i < 4; i++) {
 
-			// populate single chunk
-			for (int x = 0; x < 16; x++) {
-				for (int y = 0; y < 128; y++) {
-					for (int z = 0; z < 16; z++) {
+		// populate single chunk
+		for (int x = 0; x < 16; x++) {
+			for (int y = 0; y < 128; y++) {
+				for (int z = 0; z < 16; z++) {
 
-						populator(
-							x + chunk_x * 16,
-							y,
-							z + chunk_z * 16
-						);
-					}
+					populator(
+						x + chunks[i]->chunk_x * 16,
+						y,
+						z + chunks[i]->chunk_z * 16
+					);
 				}
 			}
-
-			// remesh the chunk
-			remesh_delayed_chunks();
 		}
+
+		// remesh the chunk
+		remesh_delayed_chunks();
 	}
 }
 
@@ -109,31 +110,28 @@ void draw_chunks(const Transform *camera) {
 	int chunk_x, chunk_z;
 	Transform chunk_transform = {};
 
-	for (chunk_x = 0; chunk_x < 1; chunk_x++) {
-		for (chunk_z = 0; chunk_z < 1; chunk_z++) {
+	for (int i = 0; i < 4; i++) {
 
-			chunk_transform.x = chunk_x * 16;
-			chunk_transform.y = 0.0;
-			chunk_transform.z = chunk_z * 16;
+		chunk_transform.x = chunks[i]->chunk_x * 16;
+		chunk_transform.y = 0.0;
+		chunk_transform.z = chunks[i]->chunk_z * 16;
 
-			draw_mesh(camera, &chunk_transform, &chunks[chunk_x][chunk_z]->mesh);
-		}
+		draw_mesh(camera, &chunk_transform, &chunks[i]->mesh);
 	}
 }
 
-static Chunk *get_chunk_of_block(int x, int y, int z) { // we include y so that OOB y will return NULL
+static Chunk *get_chunk_of_block(int x, int y, int z) {
 
-	if (
-		x < 0 ||
-		y < 0 ||
-		z < 0 ||
-		x >= 1 * 16 ||
-		y >= 128 ||
-		z >= 1 * 16
-	)
+	if (y < 0 || y >= 128) // we include y so that OOB y will return NULL
 		return NULL;
 	
-	return chunks[x / 16][z / 16];
+	for (int i = 0; i < 4; i++) {
+
+		if (chunks[i]->chunk_x == (int) floor(x / 16.0) && chunks[i]->chunk_z == (int) floor(z / 16.0))
+			return chunks[i];
+	}
+
+	return NULL;
 }
 
 /*
