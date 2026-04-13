@@ -4,26 +4,21 @@
 #include "logic.h"
 #include "append_block_to_mesh.h"
 
+// player
 static Transform camera;
 static float vertical_velocity;
 
-static Transform miku_transform;
-
-static Mesh *miku_mesh;
-
-static Mesh *sprite_mesh;
-
-static int left     = FALSE;
-static int right    = FALSE;
-static int forward  = FALSE;
-static int backward = FALSE;
-static int up       = FALSE;
-static int down     = FALSE;
-static int attack   = FALSE;
+static int left, right, forward, backward, up, down;
+static int attack;
 
 static int BOOL_look_block;
 static int look_block_x, look_block_y, look_block_z;
 static unsigned short look_block_ticks_to_break;
+
+// misc
+static Transform miku_transform;
+static Mesh *miku_mesh;
+static Mesh *sprite_mesh;
 
 static void chunk_populator(int x, int y, int z) {
 
@@ -43,6 +38,7 @@ void on_start() {
 	glClearColor(0.2f, 0.2f, 0.23f, 1.0f);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 
+	// position player
 	camera.x = 8;
 	camera.z = 8;
 	camera.y = 30;
@@ -62,16 +58,27 @@ void on_terminate() {
 	free(miku_mesh);
 }
 
-void process_tick() {
+void process_tick(Sint32 mouse_dx, Sint32 mouse_dy) {
 
 	miku_transform.yaw += 0.01;
 
+	// player camera
+	camera.pitch += mouse_dy * 0.01;
+	camera.yaw += mouse_dx * 0.01;
+
+	// clamp camera pitch
+	if (camera.pitch > M_PI / 2) {
+		camera.pitch = M_PI / 2;
+	} else if (camera.pitch < -M_PI / 2) {
+		camera.pitch = -M_PI / 2;
+	}
+
 	// player control
-	#define PLAYER_WL 0.4
+	#define PLAYER_RADIUS 0.4
 	#define PLAYER_H 1.7
 	#define PLAYER_CAM_H 1.4
 
-	#define PLAYER_IS_COLLIDING does_aabb_intersect_blocks(camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_WL, PLAYER_H)
+	#define PLAYER_IS_COLLIDING does_aabb_intersect_blocks(camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_RADIUS, PLAYER_H)
 
 	// move in direction of input (crucially, splitting movement into its components to allow for sliding)
 	// if colliding, step in opposite direction in small increments until no longer collision (or completely undid movement + a little to prevent float-error related stuckage)
@@ -184,20 +191,7 @@ void process_tick() {
 
 void process_event(SDL_Event event) {
 
-	if (event.type == SDL_MOUSEMOTION) {
-
-		camera.pitch += event.motion.yrel * 0.01;
-		camera.yaw += event.motion.xrel * 0.01;
-
-		// clamp camera pitch
-		if (camera.pitch > M_PI / 2) {
-			camera.pitch = M_PI / 2;
-		} else if (camera.pitch < -M_PI / 2) {
-			camera.pitch = -M_PI / 2;
-		}
-	}
-
-	else if (event.type == SDL_MOUSEBUTTONDOWN) {
+	if (event.type == SDL_MOUSEBUTTONDOWN) {
 
 		if (event.button.button == 1) { // LMB
 			attack = TRUE;

@@ -61,23 +61,36 @@ int main() {
 	SDL_Event event;
 	int running = TRUE;
 
+	Sint32 mouse_dx = 0.0,
+	       mouse_dy = 0.0;
+
 	while (running) {
+
+		mouse_dx = 0.0;
+		mouse_dy = 0.0;
 
 		while (SDL_PollEvent(&event)) {
 
 			if (event.type == SDL_QUIT) {
+
 				running = FALSE;
+
 			} else if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED) {
 
 				glViewport(0, 0, event.window.data1, event.window.data2);
 				initialize_perspective(event.window.data1 / (float) event.window.data2);
 			
+			} else if (event.type == SDL_MOUSEMOTION) {
+
+				mouse_dx = event.motion.xrel;
+				mouse_dy = event.motion.yrel;
+
 			} else {
 				process_event(event);
 			}
 		}
 
-		process_tick();
+		process_tick(mouse_dx, mouse_dy);
 
 		SDL_GL_SwapWindow(window);
 		SDL_Delay(1000 / 60);

@@ -1,5 +1,8 @@
 /*
  * Abstraction layer for terrain. Outside files (ideally) won't have to know about chunks at all.
+ *
+ * Known bug: On init, chunk meshes remesh before all the chunks are present, leading to extra faces
+ * where they end up being occluded (until you force a remesh by breaking a block in that chunk).
  */
 
 #include "window.h"
