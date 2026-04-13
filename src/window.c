@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "window.h"
 #include "render.h"
@@ -24,7 +25,6 @@ static void log_error(const char *msg) {
 
 #define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 25565
-#define USERNAME "test"
 
 static int sock;
 
@@ -35,13 +35,12 @@ void send_pid(unsigned char pid) {
 
 void send_string16(const char *string) {
 
-	unsigned char zero = 0x00;
 	int len = strlen(string);
-	unsigned char len_lower = (unsigned char) len;
 
 	// send length of string in characters (unsigned short, big-endian)
-	send(sock, &zero, 1, 0);
-	send(sock, &len_lower, 1, 0);
+	uint16_t big_endian_len = htons((uint16_t) len);
+
+	send(sock, &big_endian_len, 2, 0);
 
 	// UCS-2 (16-bit words) is just ascii for the first 256 values, convenient
 	for (int i = 0; i < len; i++) {
@@ -53,6 +52,9 @@ void send_string16(const char *string) {
 
 void send_integer(int value) {
 
+	uint32_t big_endian_value = htonl((uint32_t) value);
+	
+	send(sock, &big_endian_value, 4, 0);
 }
 
 void send_long(long value) {
@@ -61,13 +63,15 @@ void send_long(long value) {
 
 void send_byte(char value) {
 
+	send(sock, &value, 1, 0);
 }
 
-// void read_packet() { // into buffer
+unsigned char read_pid() {
 	
-// 	// char buffer[1024] = {0};
-// 	// read(sock, buffer, 1024);
-// }
+	unsigned char pid;
+	read(sock, &pid, 1);
+	return pid;
+}
 
 int main() {
 
@@ -107,9 +111,6 @@ int main() {
 	// initialize rendering
 	initialize_shaders();
 	initialize_perspective(2.0);
-	
-	// let programmer initialize stuff
-	on_start();
 
 	// initialize server connection
 	sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -131,15 +132,9 @@ int main() {
         log_error("Could not connect to server");
         return 1;
     }
-	
-	// log in
-	send_pid(pid_PreLogin);
-	send_string16(USERNAME);
 
-	send_pid(pid_Login);
-	send(sock, "\00\00\00\14", 4, 0);
-	send_string16(USERNAME);
-	send(sock, "\00\00\00\00\00\00\00\00\00", 9, 0);
+	// logical start
+	on_start();
 
 	// process events until window is closed
 	SDL_Event event;
