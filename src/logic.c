@@ -33,22 +33,8 @@ static void chunk_populator(int x, int y, int z) {
 	);
 }
 
-#define USERNAME "test"
-
 void on_start() {
 
-	// log in
-	send_pid(pid_PreLogin);
-	send_string16(USERNAME);
-
-	send_pid(pid_Login);
-	send_integer(14);
-	send_string16(USERNAME);
-	send_integer(0); // should be a long, but that's not implemented yet so two ints it is
-	send_integer(0);
-	send_byte(0);
-
-	// other stuff
 	register_block_type((BlockType) { ABTM_grass, 0b00000011, 0, 1, 2, 60 });
 	register_block_type((BlockType) { ABTM_block, 0b00000011, 3, 3, 3, 20 });
 

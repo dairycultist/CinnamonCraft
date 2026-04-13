@@ -1,10 +1,12 @@
 # CinnamonCraft
 
-Minecraft beta client written in C + OpenGL.
+Minecraft beta 1.7.3 clone written in C + OpenGL.
 
-not a faithful (features aren't the same) nor rigourous (features are missing) recreation of the vanilla client
+not a faithful (features aren't the same) nor rigourous (features are missing) recreation of vanilla 
 
 featherweight! open-source! C!!
+
+[this is potent](https://fixvx.com/Enderman/status/2043252852961780151?s=20)
 
 ## Features
 
@@ -13,7 +15,6 @@ featherweight! open-source! C!!
 
 ## Planned
 
-- Basic server connection (sends player movement, recieves chunks + other players, etc)
 - Entities (with .obj model support)
-- Pathfinding tools
 - Inventory and item system
+- Etc.

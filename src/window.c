@@ -1,6 +1,5 @@
 /*
- * Creates the window and server connection. For now, only the server connection is abstracted away from
- * other files; Other files still need to know about SDL (rendering, keycodes, etc).
+ * Creates the window. Other files still need to know about SDL (rendering, keycodes, etc).
  */
 
 #include <stdio.h>
@@ -21,56 +20,6 @@ static void log_error(const char *msg) {
 	} else {
 		fprintf(stderr, "\n%s: %s\n\n", msg, SDL_GetError());
 	}
-}
-
-#define SERVER_IP "127.0.0.1"
-#define SERVER_PORT 25565
-
-static int sock;
-
-void send_pid(unsigned char pid) {
-
-	send(sock, &pid, 1, 0);
-}
-
-void send_string16(const char *string) {
-
-	int len = strlen(string);
-
-	// send length of string in characters (unsigned short, big-endian)
-	uint16_t big_endian_len = htons((uint16_t) len);
-
-	send(sock, &big_endian_len, 2, 0);
-
-	// UCS-2 (16-bit words) is just ascii for the first 256 values, convenient
-	for (int i = 0; i < len; i++) {
-		
-		send(sock, "\00", 1, 0);
-		send(sock, string + i, 1, 0);
-	}
-}
-
-void send_integer(int value) {
-
-	uint32_t big_endian_value = htonl((uint32_t) value);
-	
-	send(sock, &big_endian_value, 4, 0);
-}
-
-void send_long(long value) {
-
-}
-
-void send_byte(char value) {
-
-	send(sock, &value, 1, 0);
-}
-
-unsigned char read_pid() {
-	
-	unsigned char pid;
-	read(sock, &pid, 1);
-	return pid;
 }
 
 int main() {
@@ -112,27 +61,6 @@ int main() {
 	initialize_shaders();
 	initialize_perspective(2.0);
 
-	// initialize server connection
-	sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock < 0) {
-		log_error("Could not create socket");
-        return 1;
-    }
-
-	struct sockaddr_in serv_addr;
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(SERVER_PORT);
-
-    if (inet_pton(AF_INET, SERVER_IP, &serv_addr.sin_addr) <= 0) {
-		log_error("Invalid address");
-        return 1;
-    }
-
-    if (connect(sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
-        log_error("Could not connect to server");
-        return 1;
-    }
-
 	// logical start
 	on_start();
 
@@ -164,8 +92,6 @@ int main() {
 	}
 
 	// free everything
-	close(sock);
-
 	on_terminate();
 
 	SDL_DestroyWindow(window);
