@@ -64,11 +64,17 @@ int main() {
 	Sint32 mouse_dx = 0.0,
 	       mouse_dy = 0.0;
 
+	static int left = FALSE, right = FALSE, forward = FALSE, backward = FALSE, up = FALSE, down = FALSE;
+	static int attack = FALSE, use = FALSE;
+
 	while (running) {
 
 		mouse_dx = 0.0;
 		mouse_dy = 0.0;
 
+		use = FALSE; // TODO replace with logical cooldown (for block placement)
+
+		// input
 		while (SDL_PollEvent(&event)) {
 
 			if (event.type == SDL_QUIT) {
@@ -85,12 +91,61 @@ int main() {
 				mouse_dx = event.motion.xrel;
 				mouse_dy = event.motion.yrel;
 
-			} else {
-				process_event(event);
+			} else if (event.type == SDL_KEYDOWN && event.key.repeat == 0) {
+
+				if (event.key.keysym.scancode == SDL_SCANCODE_A) {
+					left = TRUE;
+				} else if (event.key.keysym.scancode == SDL_SCANCODE_D) {
+					right = TRUE;
+				} else if (event.key.keysym.scancode == SDL_SCANCODE_W) {
+					forward = TRUE;
+				} else if (event.key.keysym.scancode == SDL_SCANCODE_S) {
+					backward = TRUE;
+				} else if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
+					up = TRUE;
+				} else if (event.key.keysym.scancode == SDL_SCANCODE_LSHIFT) {
+					down = TRUE;
+				} else if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+					SDL_SetRelativeMouseMode(!SDL_GetRelativeMouseMode());
+				}
+
+			} else if (event.type == SDL_KEYUP) {
+
+				if (event.key.keysym.scancode == SDL_SCANCODE_A) {
+					left = FALSE;
+				} else if (event.key.keysym.scancode == SDL_SCANCODE_D) {
+					right = FALSE;
+				} else if (event.key.keysym.scancode == SDL_SCANCODE_W) {
+					forward = FALSE;
+				} else if (event.key.keysym.scancode == SDL_SCANCODE_S) {
+					backward = FALSE;
+				} else if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
+					up = FALSE;
+				} else if (event.key.keysym.scancode == SDL_SCANCODE_LSHIFT) {
+					down = FALSE;
+				}
+
+			} else if (event.type == SDL_MOUSEBUTTONDOWN) {
+
+				if (event.button.button == 1) { // LMB
+					attack = TRUE;
+				} else if (event.button.button == 3) { // RMB
+					use = TRUE;
+				}
+			}
+
+			else if (event.type == SDL_MOUSEBUTTONUP) {
+
+				if (event.button.button == 1) { // LMB
+					attack = FALSE;
+				} else if (event.button.button == 3) { // RMB
+					use = FALSE;
+				}
 			}
 		}
 
-		process_tick(mouse_dx, mouse_dy);
+		// tick
+		process_tick(mouse_dx, mouse_dy, left, right, forward, backward, up, down, attack, use);
 
 		SDL_GL_SwapWindow(window);
 		SDL_Delay(1000 / 60);

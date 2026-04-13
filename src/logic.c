@@ -8,9 +8,6 @@
 static Transform camera;
 static float vertical_velocity;
 
-static int left, right, forward, backward, up, down;
-static int attack;
-
 static int BOOL_look_block;
 static int look_block_x, look_block_y, look_block_z;
 static unsigned short look_block_ticks_to_break;
@@ -58,11 +55,11 @@ void on_terminate() {
 	free(miku_mesh);
 }
 
-void process_tick(Sint32 mouse_dx, Sint32 mouse_dy) {
+void process_tick(Sint32 mouse_dx, Sint32 mouse_dy, int left, int right, int forward, int backward, int up, int down, int attack, int use) {
 
 	miku_transform.yaw += 0.01;
 
-	// player camera
+	// player camera control
 	camera.pitch += mouse_dy * 0.01;
 	camera.yaw += mouse_dx * 0.01;
 
@@ -71,6 +68,15 @@ void process_tick(Sint32 mouse_dx, Sint32 mouse_dy) {
 		camera.pitch = M_PI / 2;
 	} else if (camera.pitch < -M_PI / 2) {
 		camera.pitch = -M_PI / 2;
+	}
+
+	// placing blocks
+	if (use) {
+
+		int hit_x, hit_y, hit_z;
+
+		if (raycast_blocks(&camera, 5.0, TRUE, &hit_x, &hit_y, &hit_z))
+			set_block_at(hit_x, hit_y, hit_z, 1);
 	}
 
 	// player control
@@ -187,67 +193,4 @@ void process_tick(Sint32 mouse_dx, Sint32 mouse_dy) {
 	draw_mesh(&camera, &miku_transform, miku_mesh);
 	draw_chunks(&camera);
 	draw_sprite_mesh(sprite_mesh);
-}
-
-void process_event(SDL_Event event) {
-
-	if (event.type == SDL_MOUSEBUTTONDOWN) {
-
-		if (event.button.button == 1) { // LMB
-			attack = TRUE;
-		}
-
-		else if (event.button.button == 3) { // RMB
-
-			int hit_x, hit_y, hit_z;
-
-			if (raycast_blocks(&camera, 5.0, TRUE, &hit_x, &hit_y, &hit_z)) {
-
-				set_block_at(hit_x, hit_y, hit_z, 1);
-			}
-		}
-	}
-
-	else if (event.type == SDL_MOUSEBUTTONUP) {
-
-		if (event.button.button == 1) { // LMB
-			attack = FALSE;
-		}
-	}
-
-	else if (event.type == SDL_KEYDOWN && event.key.repeat == 0) {
-
-		if (event.key.keysym.scancode == SDL_SCANCODE_A) {
-			left = TRUE;
-		} else if (event.key.keysym.scancode == SDL_SCANCODE_D) {
-			right = TRUE;
-		} else if (event.key.keysym.scancode == SDL_SCANCODE_W) {
-			forward = TRUE;
-		} else if (event.key.keysym.scancode == SDL_SCANCODE_S) {
-			backward = TRUE;
-		} else if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
-			up = TRUE;
-		} else if (event.key.keysym.scancode == SDL_SCANCODE_LSHIFT) {
-			down = TRUE;
-		} else if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
-			SDL_SetRelativeMouseMode(!SDL_GetRelativeMouseMode());
-		}
-	}
-
-	else if (event.type == SDL_KEYUP) {
-
-		if (event.key.keysym.scancode == SDL_SCANCODE_A) {
-			left = FALSE;
-		} else if (event.key.keysym.scancode == SDL_SCANCODE_D) {
-			right = FALSE;
-		} else if (event.key.keysym.scancode == SDL_SCANCODE_W) {
-			forward = FALSE;
-		} else if (event.key.keysym.scancode == SDL_SCANCODE_S) {
-			backward = FALSE;
-		} else if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
-			up = FALSE;
-		} else if (event.key.keysym.scancode == SDL_SCANCODE_LSHIFT) {
-			down = FALSE;
-		}
-	}
 }
