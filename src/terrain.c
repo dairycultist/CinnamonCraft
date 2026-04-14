@@ -3,6 +3,8 @@
  *
  * Known bug: On init, chunk meshes remesh before all the chunks are present, leading to extra faces
  * where they end up being occluded (until you force a remesh by breaking a block in that chunk).
+ *
+ * Known bug: Breaking blocks at the edge of a chunk doesn't update the neighboring chunk.
  */
 
 #include "window.h"

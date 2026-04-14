@@ -6,7 +6,9 @@ not a faithful (features aren't the same) nor rigourous (features are missing) r
 
 featherweight! open-source! C!!
 
-[this is potent](https://fixvx.com/Enderman/status/2043252852961780151?s=20)
+[this is potent](https://x.com/Enderman/status/2043252852961780151?s=20)
+
+[controller-focused for couch gaming](https://x.com/Enderman/status/2043675818350502049?s=20)
 
 ## Features
 
@@ -15,6 +17,7 @@ featherweight! open-source! C!!
 
 ## Planned
 
+- GUI system (including text)
 - Entities (with .obj model support)
 - Inventory and item system
 - Etc.
