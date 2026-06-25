@@ -2,7 +2,7 @@
 #include "renderer.h"
 #include "ez_array.h"
 
-static char *vertex3D =
+static const char *vertex3D =
 "#version 150 core\n"
 "uniform mat4 position_matrix;\n"
 "uniform mat4 normal_matrix;\n"
@@ -17,7 +17,7 @@ static char *vertex3D =
     "frag_UV = UV;\n" // pass along UV
 "}";
 
-static char *fragment3D =
+static const char *fragment3D =
 "#version 150 core\n"
 "uniform sampler2D tex;\n"
 "in vec3 normal_camera;\n"
@@ -29,14 +29,14 @@ static char *fragment3D =
 	"if (outColor.a == 0) { discard; }" // texture clip transparency
 "}";
 
-static char *vertexSky =
+static const char *vertexSky =
 "#version 150 core\n"
 "in vec2 position;\n"
 "void main() {\n"
     "gl_Position = vec4(position.xy, -1.0, 1.0);\n" // get final position
 "}";
 
-static char *fragmentSky =
+static const char *fragmentSky =
 "#version 150 core\n"
 "uniform vec2 rotation;\n" // pitch [-1, 1] yaw [0, 1]
 "out vec4 outColor;\n"
@@ -44,7 +44,7 @@ static char *fragmentSky =
 	"outColor = vec4(abs(rotation.x), rotation.y, 0.0, 1.0);\n"
 "}";
 
-static char *vertex2D =
+static const char *vertex2D =
 "#version 150 core\n"
 "in vec2 position;\n"
 "in vec2 UV;\n"
@@ -54,7 +54,7 @@ static char *vertex2D =
     "frag_UV = UV;\n" // pass along UV
 "}";
 
-static char *fragment2D =
+static const char *fragment2D =
 "#version 150 core\n"
 "uniform sampler2D tex;\n"
 "in vec2 frag_UV;\n"
@@ -546,52 +546,26 @@ void draw_sprite_mesh(const Mesh *mesh) {
 	glDrawArrays(GL_TRIANGLES, 0, mesh->vertex_count);
 }
 
+static void create_shader_program(GLuint *const program_out, const char *vertex_code, const char *fragment_code) {
+
+	*program_out = glCreateProgram();
+
+	GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertex_shader, 1, (const char *const *) &vertex_code, NULL);
+	glCompileShader(vertex_shader);
+	glAttachShader(*program_out, vertex_shader);
+
+	GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragment_shader, 1, (const char *const *) &fragment_code, NULL);
+	glCompileShader(fragment_shader);
+	glAttachShader(*program_out, fragment_shader);
+
+	glLinkProgram(*program_out);
+}
+
 void initialize_renderer() {
 
-	GLuint vertex_shader, fragment_shader;
-
-	// create 3D shader program
-	shader3D_program = glCreateProgram();
-
-	vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertex_shader, 1, (const char *const *) &vertex3D, NULL);
-	glCompileShader(vertex_shader);
-	glAttachShader(shader3D_program, vertex_shader);
-
-	fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment_shader, 1, (const char *const *) &fragment3D, NULL);
-	glCompileShader(fragment_shader);
-	glAttachShader(shader3D_program, fragment_shader);
-
-	glLinkProgram(shader3D_program);
-
-	// create sky shader program
-	shaderSky_program = glCreateProgram();
-
-	vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertex_shader, 1, (const char *const *) &vertexSky, NULL);
-	glCompileShader(vertex_shader);
-	glAttachShader(shaderSky_program, vertex_shader);
-
-	fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment_shader, 1, (const char *const *) &fragmentSky, NULL);
-	glCompileShader(fragment_shader);
-	glAttachShader(shaderSky_program, fragment_shader);
-
-	glLinkProgram(shaderSky_program);
-
-	// create 2D shader program
-	shader2D_program = glCreateProgram();
-
-	vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertex_shader, 1, (const char *const *) &vertex2D, NULL);
-	glCompileShader(vertex_shader);
-	glAttachShader(shader2D_program, vertex_shader);
-
-	fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment_shader, 1, (const char *const *) &fragment2D, NULL);
-	glCompileShader(fragment_shader);
-	glAttachShader(shader2D_program, fragment_shader);
-
-	glLinkProgram(shader2D_program);
+	create_shader_program(&shader3D_program, vertex3D, fragment3D);
+	create_shader_program(&shaderSky_program, vertexSky, fragmentSky);
+	create_shader_program(&shader2D_program, vertex2D, fragment2D);
 }
