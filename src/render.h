@@ -29,18 +29,17 @@ typedef struct {
 Texture *load_texture(const char *path);
 
 // 3D
-Mesh *create_mesh(const unsigned char *mesh_data, const int mesh_bytecount, const int mesh_vertcount, const Texture *texture);
-Mesh *create_mesh_from_obj(const char *obj_path, const Texture *texture);
+Mesh *create_mesh(const unsigned char *mesh_data, const int mesh_bytecount, const int mesh_vertcount, Texture *texture);
+Mesh *create_mesh_from_obj(const char *obj_path, Texture *texture);
 void draw_mesh(const Transform *camera, const Transform *transform, const Mesh *mesh);
-
 void remesh_mesh(Mesh *mesh, const unsigned char *mesh_data, const int mesh_bytecount, const int mesh_vertcount);
-void retexture_mesh(Mesh *mesh, const Texture *texture); // rename to mesh_bind_texture
 
 // 2D
-Mesh *create_sprite_mesh(float u, float v, float h, const Texture *texture);
+Mesh *create_sprite_mesh(float u, float v, float h, Texture *texture);
 void draw_sprite_mesh(const Mesh *mesh);
 
 // both 2D and 3D
+void mesh_set_texture(Mesh *mesh, Texture *texture);
 void free_mesh(Mesh *mesh);
 
 void initialize_shaders();

@@ -23,7 +23,7 @@ typedef struct { // remember, only this file can access this struct
 
 static Texture *blockmap_texture;
 
-static Chunk *chunks[4];
+static Chunk *chunks[WORLD_SIZE_IN_CHUNKS * WORLD_SIZE_IN_CHUNKS];
 
 static EZArray delayed_remesh_chunks; // when you want to set a bunch of blocks, remeshing after each is slow and redundant, so you save them to remesh once at the end
 
@@ -74,14 +74,14 @@ void initialize_chunk_system(void (*chunk_populator)(int x, int y, int z)) {
 
 	blockmap_texture = load_texture("res/blockmap.png");
 	
-	for (int chunk_x = 0; chunk_x < 2; chunk_x++) {
-		for (int chunk_z = 0; chunk_z < 2; chunk_z++) {
+	for (int chunk_x = 0; chunk_x < WORLD_SIZE_IN_CHUNKS; chunk_x++) {
+		for (int chunk_z = 0; chunk_z < WORLD_SIZE_IN_CHUNKS; chunk_z++) {
 
-			int i = chunk_x + 2 * chunk_z;
+			int i = chunk_x + WORLD_SIZE_IN_CHUNKS * chunk_z;
 
 			chunks[i] = malloc(sizeof(Chunk));
 			
-			retexture_mesh(&chunks[i]->mesh, blockmap_texture);
+			mesh_set_texture(&chunks[i]->mesh, blockmap_texture);
 
 			chunks[i]->chunk_x = chunk_x;
 			chunks[i]->chunk_z = chunk_z;
@@ -89,7 +89,7 @@ void initialize_chunk_system(void (*chunk_populator)(int x, int y, int z)) {
 	}
 	
 	// populate chunks (finite)
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < WORLD_SIZE_IN_CHUNKS * WORLD_SIZE_IN_CHUNKS; i++) {
 
 		// populate single chunk
 		for (int x = 0; x < 16; x++) {
@@ -115,7 +115,7 @@ void draw_chunks(const Transform *camera) {
 	int chunk_x, chunk_z;
 	Transform chunk_transform = {};
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < WORLD_SIZE_IN_CHUNKS * WORLD_SIZE_IN_CHUNKS; i++) {
 
 		chunk_transform.x = chunks[i]->chunk_x * 16;
 		chunk_transform.y = 0.0;
@@ -130,7 +130,7 @@ static Chunk *get_chunk_of_block(int x, int y, int z) {
 	if (y < 0 || y >= 128) // we include y so that OOB y will return NULL
 		return NULL;
 	
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < WORLD_SIZE_IN_CHUNKS * WORLD_SIZE_IN_CHUNKS; i++) {
 
 		if (chunks[i]->chunk_x == (int) floor(x / 16.0) && chunks[i]->chunk_z == (int) floor(z / 16.0))
 			return chunks[i];

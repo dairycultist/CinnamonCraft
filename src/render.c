@@ -142,12 +142,15 @@ void remesh_mesh(Mesh *mesh, const unsigned char *mesh_data, const int mesh_byte
 	// debind vertex array
 	glBindVertexArray(0);
 
-	// assign to mesh (TODO free previous VAO if it exists)
+	// assign to mesh, freeing previous VAO if it exists
+	if (mesh->vertex_array)
+		glDeleteVertexArrays(1, &mesh->vertex_array);
+
 	mesh->vertex_array = vertex_array;
 	mesh->vertex_count = mesh_vertcount;
 }
 
-void retexture_mesh(Mesh *mesh, const Texture *texture) {
+void mesh_set_texture(Mesh *mesh, Texture *texture) {
 
 	mesh->texture = texture;
 }
@@ -159,17 +162,17 @@ void free_mesh(Mesh *mesh) {
 }
 
 // returns NULL on error
-Mesh *create_mesh(const unsigned char *mesh_data, const int mesh_bytecount, const int mesh_vertcount, const Texture *texture) {
+Mesh *create_mesh(const unsigned char *mesh_data, const int mesh_bytecount, const int mesh_vertcount, Texture *texture) {
 
 	Mesh *mesh = malloc(sizeof(Mesh));
 
 	remesh_mesh(mesh, mesh_data, mesh_bytecount, mesh_vertcount);	
-	retexture_mesh(mesh, texture);
+	mesh_set_texture(mesh, texture);
 
 	return mesh;
 }
 
-Mesh *create_mesh_from_obj(const char *obj_path, const Texture *texture) {
+Mesh *create_mesh_from_obj(const char *obj_path, Texture *texture) {
 
 	// read obj file
 	FILE *file = fopen(obj_path, "r");
@@ -415,7 +418,7 @@ void draw_mesh(const Transform *camera, const Transform *transform, const Mesh *
 }
 
 // returns NULL on error
-Mesh *create_sprite_mesh(float u, float v, float h, const Texture *texture) {
+Mesh *create_sprite_mesh(float u, float v, float h, Texture *texture) {
 	
 	const float w = h * WINDOW_HEIGHT / WINDOW_WIDTH * texture->h / texture->w;
 
