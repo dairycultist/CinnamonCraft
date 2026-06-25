@@ -47,7 +47,7 @@ void on_start() {
 	miku_transform.y = 30;
 
 	// create a sprite mesh for testing
-	sprite_mesh = create_sprite_mesh(0.0f, 0.0f, 0.2f, 0.4f, load_texture("res/dirt.png"));
+	sprite_mesh = create_sprite_mesh(0.0f, 0.0f, 0.4f, load_texture("res/dirt.png"));
 }
 
 void on_terminate() {

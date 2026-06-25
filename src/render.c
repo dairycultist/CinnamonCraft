@@ -65,18 +65,21 @@ Texture *load_texture(const char *path) {
 
 	Texture *texture = malloc(sizeof(Texture));
 
-	texture->surface = IMG_Load(path);
+	SDL_Surface *surface = IMG_Load(path);
+	
+	texture->w = surface->w;
+	texture->h = surface->h;
 
 	// flip texture vertically to match OpenGL spec
-	unsigned char *pixels = (unsigned char *) texture->surface->pixels;
-	int pixelBytes = texture->surface->format->BytesPerPixel;
+	unsigned char *pixels = (unsigned char *) surface->pixels;
+	int pixelBytes = surface->format->BytesPerPixel;
 
-	for (int y = 0; y < texture->surface->h / 2; y++) {
+	for (int y = 0; y < surface->h / 2; y++) {
 
-		for (int x = 0; x < texture->surface->w; x++) {
+		for (int x = 0; x < surface->w; x++) {
 
-			int top = x + y * texture->surface->h;
-			int bottom = x + (texture->surface->w * texture->surface->h - (y + 1) * texture->surface->h);
+			int top = x + y * surface->h;
+			int bottom = x + (surface->w * surface->h - (y + 1) * surface->h);
 
 			for (int i=0; i<pixelBytes; i++) {
 
@@ -86,6 +89,26 @@ Texture *load_texture(const char *path) {
 			}
 		}
 	}
+
+	// create texture object
+	glGenTextures(1, &texture->texture);
+
+	// bind texture (to active texture 2D)
+	glBindTexture(GL_TEXTURE_2D, texture->texture);
+
+	// wrap repeat
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// filter linear
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	// write texture data
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+
+	// clean up
+	SDL_FreeSurface(surface);
 
 	return texture;
 }
@@ -126,26 +149,7 @@ void remesh_mesh(Mesh *mesh, const unsigned char *mesh_data, const int mesh_byte
 
 void retexture_mesh(Mesh *mesh, const Texture *texture) {
 
-	// create texture object
-	GLuint texture_object;
-	glGenTextures(1, &texture_object);
-
-	// bind texture (to active texture 2D)
-	glBindTexture(GL_TEXTURE_2D, texture_object);
-
-	// wrap repeat
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	// filter linear
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	// write texture data
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
-
-	// assign to mesh (TODO free previous texture object if it exists)
-	mesh->texture = texture_object;
+	mesh->texture = texture;
 }
 
 void free_mesh(Mesh *mesh) {
@@ -354,7 +358,7 @@ void draw_mesh(const Transform *camera, const Transform *transform, const Mesh *
 
 	// bind the mesh's vertex mesh and texture
 	glBindVertexArray(mesh->vertex_array);
-	glBindTexture(GL_TEXTURE_2D, mesh->texture);
+	glBindTexture(GL_TEXTURE_2D, mesh->texture->texture);
 
 	// model matrix (converts from model space to world space)
 	generate_rotation_matrices(
@@ -411,8 +415,10 @@ void draw_mesh(const Transform *camera, const Transform *transform, const Mesh *
 }
 
 // returns NULL on error
-Mesh *create_sprite_mesh(float u, float v, float w, float h, const Texture *texture) {
+Mesh *create_sprite_mesh(float u, float v, float h, const Texture *texture) {
 	
+	const float w = h * WINDOW_HEIGHT / WINDOW_WIDTH * texture->h / texture->w;
+
 	const float mesh_data[] = {
 		u,     v,     0.0f, 0.0f,
 		u + w, v,     1.0f, 0.0f,
@@ -448,29 +454,11 @@ Mesh *create_sprite_mesh(float u, float v, float w, float h, const Texture *text
 	// debind vertex array
 	glBindVertexArray(0);
 
-	// create texture object
-	GLuint texture_object;
-	glGenTextures(1, &texture_object);
-
-	// bind texture (to active texture 2D)
-	glBindTexture(GL_TEXTURE_2D, texture_object);
-
-	// wrap repeat
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	// filter linear
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	// write texture data
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
-
 	// create final mesh object to return
 	Mesh *mesh = malloc(sizeof(Mesh));
 	mesh->vertex_array = vertex_array;
 	mesh->vertex_count = mesh_vertcount;
-	mesh->texture = texture_object;
+	mesh->texture = texture;
 
 	return mesh;
 }
@@ -479,7 +467,7 @@ void draw_sprite_mesh(const Mesh *mesh) {
 
 	// bind the mesh's vertex mesh and texture
 	glBindVertexArray(mesh->vertex_array);
-	glBindTexture(GL_TEXTURE_2D, mesh->texture);
+	glBindTexture(GL_TEXTURE_2D, mesh->texture->texture);
 
 	// load the 2D shader program
 	glUseProgram(shader2D_program);

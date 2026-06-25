@@ -13,4 +13,6 @@
 
 #define FOV 90
 
+#define WORLD_SIZE_IN_CHUNKS 48
+
 #endif

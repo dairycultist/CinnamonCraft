@@ -7,24 +7,24 @@ typedef struct {
 	float y;
 	float z;
 	float pitch;
-	// no one needs roll
 	float yaw;
 
 } Transform;
 
 typedef struct {
 
-	GLuint vertex_array; // "VAO"
-	uint vertex_count;
+	int w, h;
 	GLuint texture;
 
-} Mesh;
+} Texture;
 
 typedef struct {
 
-	SDL_Surface *surface;
+	GLuint vertex_array; // "VAO"
+	uint vertex_count;
+	Texture *texture;
 
-} Texture;
+} Mesh;
 
 Texture *load_texture(const char *path);
 
@@ -32,11 +32,12 @@ Texture *load_texture(const char *path);
 Mesh *create_mesh(const unsigned char *mesh_data, const int mesh_bytecount, const int mesh_vertcount, const Texture *texture);
 Mesh *create_mesh_from_obj(const char *obj_path, const Texture *texture);
 void draw_mesh(const Transform *camera, const Transform *transform, const Mesh *mesh);
+
 void remesh_mesh(Mesh *mesh, const unsigned char *mesh_data, const int mesh_bytecount, const int mesh_vertcount);
-void retexture_mesh(Mesh *mesh, const Texture *texture);
+void retexture_mesh(Mesh *mesh, const Texture *texture); // rename to mesh_bind_texture
 
 // 2D
-Mesh *create_sprite_mesh(float u, float v, float w, float h, const Texture *texture); // TODO only pass w, have h be dynamically calculated (including after window resize)
+Mesh *create_sprite_mesh(float u, float v, float h, const Texture *texture);
 void draw_sprite_mesh(const Mesh *mesh);
 
 // both 2D and 3D
