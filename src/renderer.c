@@ -32,16 +32,19 @@ static const char *fragment3D =
 static const char *vertexSky =
 "#version 150 core\n"
 "in vec2 position;\n"
+"out float height;\n" // [-1, 1]
 "void main() {\n"
     "gl_Position = vec4(position.xy, -1.0, 1.0);\n" // get final position
+	"height = position.y;\n"
 "}";
 
 static const char *fragmentSky =
 "#version 150 core\n"
 "uniform vec2 rotation;\n" // pitch [-1, 1] yaw [0, 1]
+"in float height;\n"
 "out vec4 outColor;\n"
 "void main() {\n"
-	"outColor = vec4(abs(rotation.x), rotation.y, 0.0, 1.0);\n"
+	"outColor = mix(vec4(0.4, 0.55, 1.0, 1.0), vec4(0.58, 0.73, 1.0, 1.0), clamp((height * 10.0) * 0.5 + 0.5 + 5.0 * tan(rotation.x * 1.57), 0.0, 1.0));\n"
 "}";
 
 static const char *vertex2D =
@@ -478,7 +481,7 @@ void draw_sky_mesh(const Transform *camera, const Mesh *mesh) {
 
 	glBindVertexArray(mesh->vertex_array);
 	glUseProgram(shaderSky_program);
-	glUniform2f(glGetUniformLocation(shaderSky_program, "rotation"), (GLfloat) camera->pitch * 2.0 / M_PI, (GLfloat) fmod(fmod(camera->yaw / 2.0 / M_PI, 1.0) + 1.0, 1.0));
+	glUniform2f(glGetUniformLocation(shaderSky_program, "rotation"), (GLfloat) -camera->pitch * 2.0 / M_PI, (GLfloat) fmod(fmod(camera->yaw / 2.0 / M_PI, 1.0) + 1.0, 1.0));
 
 	glDrawArrays(GL_TRIANGLES, 0, mesh->vertex_count);
 
