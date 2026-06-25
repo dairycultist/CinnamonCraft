@@ -1,8 +1,7 @@
 #include "window.h"
-#include "render.h"
+#include "renderer.h"
 #include "terrain.h"
-#include "logic.h"
-#include "append_block_to_mesh.h"
+#include "player.h"
 
 // player
 static Transform camera;
@@ -17,23 +16,7 @@ static Transform miku_transform;
 static Mesh *miku_mesh;
 static Mesh *sprite_mesh;
 
-static void chunk_populator(int x, int y, int z) {
-
-	set_delay_remesh_block_at(
-		x, y, z,
-		sin(x * 0.1) * 16 + 16 < y ? 0 : (y < 20 ? 2 : 1)
-	);
-}
-
-void on_start() {
-
-	register_block_type((BlockType) { ABTM_grass, 0b00000011, 0, 1, 2, 60 });
-	register_block_type((BlockType) { ABTM_block, 0b00000011, 3, 3, 3, 20 });
-
-	initialize_chunk_system(chunk_populator);
-	
-	glClearColor(0.2f, 0.2f, 0.23f, 1.0f);
-	SDL_SetRelativeMouseMode(SDL_TRUE);
+void initialize_player() {
 
 	// position player
 	camera.x = 8;
@@ -50,12 +33,7 @@ void on_start() {
 	sprite_mesh = create_sprite_mesh(0.0f, 0.0f, 0.4f, load_texture("res/dirt.png"));
 }
 
-void on_terminate() {
-
-	free(miku_mesh);
-}
-
-void process_tick(Sint32 mouse_dx, Sint32 mouse_dy, int left, int right, int forward, int backward, int up, int down, int attack, int use) {
+void player_process_tick(Sint32 mouse_dx, Sint32 mouse_dy, int left, int right, int forward, int backward, int up, int down, int attack, int use) {
 
 	miku_transform.yaw += 0.01;
 
@@ -81,10 +59,10 @@ void process_tick(Sint32 mouse_dx, Sint32 mouse_dy, int left, int right, int for
 
 	// player control
 	#define PLAYER_RADIUS 0.4
-	#define PLAYER_H 1.7
+	#define PLAYER_HEIGHT 1.7
 	#define PLAYER_CAM_H 1.4
 
-	#define PLAYER_IS_COLLIDING does_aabb_intersect_blocks(camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_RADIUS, PLAYER_H)
+	#define PLAYER_IS_COLLIDING does_aabb_intersect_blocks(camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_RADIUS, PLAYER_HEIGHT)
 
 	// move in direction of input (crucially, splitting movement into its components to allow for sliding)
 	// if colliding, step in opposite direction in small increments until no longer collision (or completely undid movement + a little to prevent float-error related stuckage)

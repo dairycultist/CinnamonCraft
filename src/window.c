@@ -1,10 +1,7 @@
-/*
- * Creates the window. Other files still need to know about SDL (rendering, keycodes, etc).
- */
-
 #include "window.h"
-#include "render.h"
-#include "logic.h"
+#include "renderer.h"
+#include "terrain.h"
+#include "player.h"
 
 static void log_error(const char *msg) {
 	
@@ -43,18 +40,19 @@ int main() {
 	glewExperimental = GL_TRUE;
 	glewInit();
 
-	// enable depth buffer
 	glEnable(GL_DEPTH_TEST);
 
-	// enable backface culling
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CCW);
 
-	// initialize rendering
-	initialize_shaders();
+	glClearColor(0.2f, 0.2f, 0.23f, 1.0f);
 
-	// logical start
-	on_start();
+	SDL_SetRelativeMouseMode(SDL_TRUE);
+
+	// initialize our stuff
+	initialize_renderer();
+	initialize_terrain();
+	initialize_player();
 
 	// process events until window is closed
 	SDL_Event event;
@@ -139,19 +137,13 @@ int main() {
 		}
 
 		// tick
-		process_tick(mouse_dx, mouse_dy, left, right, forward, backward, up, down, attack, use);
+		player_process_tick(mouse_dx, mouse_dy, left, right, forward, backward, up, down, attack, use);
 
 		SDL_GL_SwapWindow(window);
 		SDL_Delay(1000 / 60);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	// free everything
-	on_terminate();
-
-	SDL_DestroyWindow(window);
-	SDL_GL_DeleteContext(context);
-	SDL_Quit();
-
+	// exit (everything frees automatically, so)
 	return 0;
 }

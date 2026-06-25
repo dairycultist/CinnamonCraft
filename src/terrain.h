@@ -1,7 +1,7 @@
 #ifndef TERRAIN_H
 #define TERRAIN_H
 
-#include "render.h"
+#include "renderer.h"
 #include "ez_array.h"
 
 // only 256 texture indices and 256 block types can exist
@@ -29,16 +29,12 @@ typedef struct {
 	// 64
 	// 128
 	unsigned char flags;
-
-	unsigned char tex_top;
-	unsigned char tex_side;
-	unsigned char tex_bottom;
 	unsigned short ticks_to_break;
+	unsigned char tex_indices[4]; // how these are actually rendered onto the block is determined by append_block_to_mesh
 
 } BlockType;
 
-void initialize_chunk_system(void (*chunk_populator)(int x, int y, int z)); // chunk populator doesn't need to account for remeshes
-void register_block_type(BlockType block_type);
+void initialize_terrain();
 BlockType *get_block_type(unsigned char id);
 
 void draw_chunks(const Transform *camera);

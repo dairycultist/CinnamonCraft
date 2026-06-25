@@ -1,5 +1,5 @@
 #include "window.h"
-#include "render.h"
+#include "renderer.h"
 #include "ez_array.h"
 
 // all 3D objects use the same hardcoded shader for simplicity
@@ -479,7 +479,7 @@ void draw_sprite_mesh(const Mesh *mesh) {
 	glDrawArrays(GL_TRIANGLES, 0, mesh->vertex_count);
 }
 
-void initialize_shaders() {
+void initialize_renderer() {
 
 	GLuint vertex_shader, fragment_shader;
 

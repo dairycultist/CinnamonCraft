@@ -1,5 +1,5 @@
-#ifndef RENDER_H
-#define RENDER_H
+#ifndef RENDERER_H
+#define RENDERER_H
 
 typedef struct {
 
@@ -42,6 +42,6 @@ void draw_sprite_mesh(const Mesh *mesh);
 void mesh_set_texture(Mesh *mesh, Texture *texture);
 void free_mesh(Mesh *mesh);
 
-void initialize_shaders();
+void initialize_renderer();
 
 #endif

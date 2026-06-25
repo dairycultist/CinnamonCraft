@@ -1,5 +1,6 @@
 #include "window.h"
 #include "terrain.h"
+#include "append_block_to_mesh.h"
 
 #include <math.h>
 
@@ -18,15 +19,19 @@ static Chunk *chunks[WORLD_SIZE_IN_CHUNKS * WORLD_SIZE_IN_CHUNKS];
 
 static EZArray delayed_remesh_chunks; // when you want to set a bunch of blocks, remeshing after each is slow and redundant, so you save them to remesh once at the end
 
-static void (*populator)(int x, int y, int z);
-
 // block type registry
-static BlockType block_types[256] = { (BlockType) { NULL, 0b00000000, 0, 0, 0, 0 } }; // first block is always air
-static unsigned char block_type_count = 1;
+static BlockType block_types[256] = {
+	(BlockType) { NULL, 0b00000000, 0, 0, 0, 0 },				// air
+	(BlockType) { ABTM_grass, 0b00000011, 60, { 0, 1, 2 } },	// grass
+	(BlockType) { ABTM_block, 0b00000011, 20, { 3, 3, 3 } }		// stone
+};
 
-void register_block_type(BlockType block_type) {
+static void populator(int x, int y, int z) {
 
-	block_types[block_type_count++] = block_type;
+	set_delay_remesh_block_at(
+		x, y, z,
+		sin(x * 0.1) * 16 + 16 < y ? 0 : (y < 20 ? 2 : 1)
+	);
 }
 
 BlockType *get_block_type(unsigned char id) {
@@ -59,9 +64,7 @@ static void remesh_chunk(Chunk *chunk) {
 	remesh_mesh(&chunk->mesh, mesh_data.data, mesh_data.bytecount, vertex_count);
 }
 
-void initialize_chunk_system(void (*chunk_populator)(int x, int y, int z)) {
-
-	populator = chunk_populator;
+void initialize_terrain() {
 
 	blockmap_texture = load_texture("res/blockmap.png");
 	
