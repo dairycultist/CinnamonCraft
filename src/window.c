@@ -45,7 +45,7 @@ int main() {
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CCW);
 
-	glClearColor(0.2f, 0.2f, 0.23f, 1.0f);
+	glClearColor(1.0f, 0.188f, 0.647f, 1.0f); // since the sky is rendered as a mesh, set the clear color to hot pink so it's obvious
 
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 
@@ -58,16 +58,16 @@ int main() {
 	SDL_Event event;
 	int running = TRUE;
 
-	Sint32 mouse_dx = 0.0,
-	       mouse_dy = 0.0;
+	Sint32 camera_dx = 0.0,
+	       camera_dy = 0.0;
 
 	static int left = FALSE, right = FALSE, forward = FALSE, backward = FALSE, up = FALSE, down = FALSE;
 	static int attack = FALSE, use = FALSE;
 
 	while (running) {
 
-		mouse_dx = 0.0;
-		mouse_dy = 0.0;
+		camera_dx = 0.0;
+		camera_dy = 0.0;
 
 		use = FALSE; // TODO replace with logical cooldown (for block placement)
 
@@ -80,8 +80,8 @@ int main() {
 			
 			} else if (event.type == SDL_MOUSEMOTION) {
 
-				mouse_dx = event.motion.xrel;
-				mouse_dy = event.motion.yrel;
+				camera_dx = event.motion.xrel;
+				camera_dy = event.motion.yrel;
 
 			} else if (event.type == SDL_KEYDOWN && event.key.repeat == 0) {
 
@@ -135,9 +135,9 @@ int main() {
 				}
 			}
 		}
-
-		// tick
-		player_process_tick(mouse_dx, mouse_dy, left, right, forward, backward, up, down, attack, use);
+		
+		// player stuff (drawing their perspective, handling their input, etc)
+		player_process_tick(camera_dx, camera_dy, left, right, forward, backward, up, down, attack, use);
 
 		SDL_GL_SwapWindow(window);
 		SDL_Delay(1000 / 60);

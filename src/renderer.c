@@ -2,7 +2,6 @@
 #include "renderer.h"
 #include "ez_array.h"
 
-// all 3D objects use the same hardcoded shader for simplicity
 static char *vertex3D =
 "#version 150 core\n"
 "uniform mat4 position_matrix;\n"
@@ -30,7 +29,21 @@ static char *fragment3D =
 	"if (outColor.a == 0) { discard; }" // texture clip transparency
 "}";
 
-// same for 2D sprites
+static char *vertexSky =
+"#version 150 core\n"
+"in vec2 position;\n"
+"void main() {\n"
+    "gl_Position = vec4(position.xy, -1.0, 1.0);\n" // get final position
+"}";
+
+static char *fragmentSky =
+"#version 150 core\n"
+"uniform vec2 rotation;\n" // pitch [-1, 1] yaw [0, 1]
+"out vec4 outColor;\n"
+"void main() {\n"
+	"outColor = vec4(abs(rotation.x), rotation.y, 0.0, 1.0);\n"
+"}";
+
 static char *vertex2D =
 "#version 150 core\n"
 "in vec2 position;\n"
@@ -51,6 +64,7 @@ static char *fragment2D =
 "}";
 
 static GLuint shader3D_program;
+static GLuint shaderSky_program;
 static GLuint shader2D_program;
 
 // hardcoded values of near plane = 0.01, far plane = 100
@@ -417,7 +431,60 @@ void draw_mesh(const Transform *camera, const Transform *transform, const Mesh *
 	glDrawArrays(GL_TRIANGLES, 0, mesh->vertex_count);
 }
 
-// returns NULL on error
+Mesh *create_sky_mesh() {
+
+	const float mesh_data[] = {
+		-1.0f, -1.0f,
+		 1.0f, -1.0f,
+		-1.0f,  1.0f,
+		 1.0f, -1.0f,
+		 1.0f,  1.0f,
+		-1.0f,  1.0f,
+	};
+
+	static const int mesh_vertcount = 6;
+	static const int mesh_bytecount = sizeof(float) * 2 * mesh_vertcount;
+
+	// make vertex array
+	GLuint vertex_array;
+	glGenVertexArrays(1, &vertex_array);
+	glBindVertexArray(vertex_array);
+
+	// make vertex buffer (stored by vertex_array)
+	GLuint vertex_buffer;
+	glGenBuffers(1, &vertex_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);								// make it the active buffer
+	glBufferData(GL_ARRAY_BUFFER, mesh_bytecount, mesh_data, GL_STATIC_DRAW);	// copy vertex data into the active buffer
+
+	// link active vertex data and shader attributes
+	GLint pos_attrib = glGetAttribLocation(shaderSky_program, "position");
+	glVertexAttribPointer(pos_attrib, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+	glEnableVertexAttribArray(pos_attrib); // requires a VAO to be bound
+
+	// debind vertex array
+	glBindVertexArray(0);
+
+	// create final mesh object to return
+	Mesh *mesh = malloc(sizeof(Mesh));
+	mesh->vertex_array = vertex_array;
+	mesh->vertex_count = mesh_vertcount;
+
+	return mesh;
+}
+
+void draw_sky_mesh(const Transform *camera, const Mesh *mesh) {
+
+	glDisable(GL_DEPTH_TEST);
+
+	glBindVertexArray(mesh->vertex_array);
+	glUseProgram(shaderSky_program);
+	glUniform2f(glGetUniformLocation(shaderSky_program, "rotation"), (GLfloat) camera->pitch * 2.0 / M_PI, (GLfloat) fmod(fmod(camera->yaw / 2.0 / M_PI, 1.0) + 1.0, 1.0));
+
+	glDrawArrays(GL_TRIANGLES, 0, mesh->vertex_count);
+
+	glEnable(GL_DEPTH_TEST);
+}
+
 Mesh *create_sprite_mesh(float u, float v, float h, Texture *texture) {
 	
 	const float w = h * WINDOW_HEIGHT / WINDOW_WIDTH * texture->h / texture->w;
@@ -483,9 +550,7 @@ void initialize_renderer() {
 
 	GLuint vertex_shader, fragment_shader;
 
-	/*
-	 * create 3D shader program
-	 */
+	// create 3D shader program
 	shader3D_program = glCreateProgram();
 
 	vertex_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -498,11 +563,24 @@ void initialize_renderer() {
 	glCompileShader(fragment_shader);
 	glAttachShader(shader3D_program, fragment_shader);
 
-	glLinkProgram(shader3D_program); // apply changes to shader program (not gonna call "glUseProgram" yet bc not drawing)
+	glLinkProgram(shader3D_program);
 
-	/*
-	 * create 2D shader program
-	 */
+	// create sky shader program
+	shaderSky_program = glCreateProgram();
+
+	vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertex_shader, 1, (const char *const *) &vertexSky, NULL);
+	glCompileShader(vertex_shader);
+	glAttachShader(shaderSky_program, vertex_shader);
+
+	fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragment_shader, 1, (const char *const *) &fragmentSky, NULL);
+	glCompileShader(fragment_shader);
+	glAttachShader(shaderSky_program, fragment_shader);
+
+	glLinkProgram(shaderSky_program);
+
+	// create 2D shader program
 	shader2D_program = glCreateProgram();
 
 	vertex_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -515,5 +593,5 @@ void initialize_renderer() {
 	glCompileShader(fragment_shader);
 	glAttachShader(shader2D_program, fragment_shader);
 
-	glLinkProgram(shader2D_program); // apply changes to shader program
+	glLinkProgram(shader2D_program);
 }

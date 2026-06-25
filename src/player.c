@@ -15,6 +15,7 @@ static unsigned short look_block_ticks_to_break;
 static Transform miku_transform;
 static Mesh *miku_mesh;
 static Mesh *sprite_mesh;
+static Mesh *sky_mesh;
 
 void initialize_player() {
 
@@ -31,15 +32,17 @@ void initialize_player() {
 
 	// create a sprite mesh for testing
 	sprite_mesh = create_sprite_mesh(0.0f, 0.0f, 0.4f, load_texture("res/dirt.png"));
+
+	sky_mesh = create_sky_mesh();
 }
 
-void player_process_tick(Sint32 mouse_dx, Sint32 mouse_dy, int left, int right, int forward, int backward, int up, int down, int attack, int use) {
+void player_process_tick(Sint32 camera_dx, Sint32 camera_dy, int left, int right, int forward, int backward, int up, int down, int attack, int use) {
 
 	miku_transform.yaw += 0.01;
 
 	// player camera control
-	camera.pitch += mouse_dy * 0.01;
-	camera.yaw += mouse_dx * 0.01;
+	camera.pitch += camera_dy * 0.01;
+	camera.yaw += camera_dx * 0.01;
 
 	// clamp camera pitch
 	if (camera.pitch > M_PI / 2) {
@@ -154,7 +157,7 @@ void player_process_tick(Sint32 mouse_dx, Sint32 mouse_dy, int left, int right, 
 		}
 	}
 
-	// update look block every tick (since any movement, i.e. mouse, running,
+	// update look block every tick (since any movement, i.e. camera turning, running,
 	// being knocked back, etc, and also having broken a block, can influence it)
 	int prev_look_block_x = look_block_x;
 	int prev_look_block_y = look_block_y;
@@ -167,8 +170,13 @@ void player_process_tick(Sint32 mouse_dx, Sint32 mouse_dy, int left, int right, 
 		look_block_ticks_to_break = get_block_type(get_block_at(look_block_x, look_block_y, look_block_z))->ticks_to_break;
 	}
 
-	// draw everything
+	// render the sky as just a sprite covering the whole screen
+	draw_sky_mesh(&camera, sky_mesh);
+
+	// draw worldly stuff
 	draw_mesh(&camera, &miku_transform, miku_mesh);
 	draw_chunks(&camera);
+
+	// draw UI
 	draw_sprite_mesh(sprite_mesh);
 }

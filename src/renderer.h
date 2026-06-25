@@ -34,6 +34,10 @@ Mesh *create_mesh_from_obj(const char *obj_path, Texture *texture);
 void draw_mesh(const Transform *camera, const Transform *transform, const Mesh *mesh);
 void remesh_mesh(Mesh *mesh, const unsigned char *mesh_data, const int mesh_bytecount, const int mesh_vertcount);
 
+// sky
+Mesh *create_sky_mesh();
+void draw_sky_mesh(const Transform *camera, const Mesh *mesh);
+
 // 2D
 Mesh *create_sprite_mesh(float u, float v, float h, Texture *texture);
 void draw_sprite_mesh(const Mesh *mesh);

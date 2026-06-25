@@ -4,7 +4,7 @@
 
 #include <math.h>
 
-typedef struct { // remember, only this file can access this struct
+typedef struct { // only this file knows Chunks even exist
 
 	Mesh mesh;
 	unsigned char blocks[16][128][16]; // array of bytes indexing into block_types
@@ -21,7 +21,7 @@ static EZArray delayed_remesh_chunks; // when you want to set a bunch of blocks,
 
 // block type registry
 static BlockType block_types[256] = {
-	(BlockType) { NULL, 0b00000000, 0, 0, 0, 0 },				// air
+	(BlockType) { NULL, 0b00000000 },							// air
 	(BlockType) { ABTM_grass, 0b00000011, 60, { 0, 1, 2 } },	// grass
 	(BlockType) { ABTM_block, 0b00000011, 20, { 3, 3, 3 } }		// stone
 };
