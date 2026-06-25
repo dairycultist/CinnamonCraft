@@ -31,7 +31,7 @@ int main() {
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
 	// create the window
-	SDL_Window *window = SDL_CreateWindow("CinnamonCraft", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 400, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+	SDL_Window *window = SDL_CreateWindow("CinnamonCraft", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL);
 
 	if (!window) {
         log_error("Could not create window");
@@ -52,7 +52,6 @@ int main() {
 
 	// initialize rendering
 	initialize_shaders();
-	initialize_perspective(2.0);
 
 	// logical start
 	on_start();
@@ -80,11 +79,6 @@ int main() {
 			if (event.type == SDL_QUIT) {
 
 				running = FALSE;
-
-			} else if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED) {
-
-				glViewport(0, 0, event.window.data1, event.window.data2);
-				initialize_perspective(event.window.data1 / (float) event.window.data2);
 			
 			} else if (event.type == SDL_MOUSEMOTION) {
 

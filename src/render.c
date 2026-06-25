@@ -52,7 +52,14 @@ static char *fragment2D =
 
 static GLuint shader3D_program;
 static GLuint shader2D_program;
-static GLfloat proj_matrix[4][4] = {0};
+
+// hardcoded values of near plane = 0.01, far plane = 100
+#define PROJ_MATRIX (GLfloat[][4]) {\
+    { WINDOW_HEIGHT / (float) WINDOW_WIDTH / tan(FOV * M_PI / 360.0), 0, 0, 0 },\
+    { 0, 1.0 / tan(FOV * M_PI / 360.0), 0, 0 },\
+    { 0, 0, -1.00020002, -1.0 },\
+    { 0, 0, -0.0200020002, 0 }\
+}
 
 Texture *load_texture(const char *path) {
 
@@ -380,8 +387,8 @@ void draw_mesh(const Transform *camera, const Transform *transform, const Mesh *
 	mat4_mult(yaw_matrix, view_matrix, view_matrix);
 	mat4_mult(pitch_matrix, view_matrix, view_matrix);
 
-	// final position matrix (proj_matrix * view_matrix * model_matrix)
-	mat4_mult(proj_matrix, view_matrix, position_matrix);
+	// final position matrix (PROJ_MATRIX * view_matrix * model_matrix)
+	mat4_mult(PROJ_MATRIX, view_matrix, position_matrix);
 	mat4_mult(position_matrix, model_matrix, position_matrix);
 
 	// normal matrix (applied to normals to account for mesh rotation)
@@ -518,24 +525,4 @@ void initialize_shaders() {
 	glAttachShader(shader2D_program, fragment_shader);
 
 	glLinkProgram(shader2D_program); // apply changes to shader program
-}
-
-void initialize_perspective(const float aspectRatio) {
-
-	#define DEG2RAD (M_PI / 180)
-
-	// perspective projection matrix (converts from view space to clip space)
-	const float fovY = 90;
-	const float front = 0.01; // near plane
-	const float back = 100;   // far plane
-
-	float tangent = tan(fovY / 2 * DEG2RAD); // tangent of half fovY
-	float top = front * tangent;             // half height of near plane
-	float right = top * aspectRatio;         // half width of near plane
-
-	proj_matrix[0][0] = front / right;
-	proj_matrix[1][1] = front / top;
-	proj_matrix[2][2] = -(back + front) / (back - front);
-	proj_matrix[2][3] = -1.0;
-	proj_matrix[3][2] = -(2.0 * back * front) / (back - front);
 }

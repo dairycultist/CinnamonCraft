@@ -43,6 +43,5 @@ void draw_sprite_mesh(const Mesh *mesh);
 void free_mesh(Mesh *mesh);
 
 void initialize_shaders();
-void initialize_perspective(const float aspectRatio);
 
 #endif
