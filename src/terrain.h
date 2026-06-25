@@ -4,11 +4,7 @@
 #include "render.h"
 #include "ez_array.h"
 
-// only 256 texture indices and 256 block types can exist right now
-
-/*
- * Abstraction layer for all block/chunk related actions.
- */
+// only 256 texture indices and 256 block types can exist
 
 #define BT_IS_FULLBLOCK(block_type) ((block_type).flags & 0b00000001)
 #define BT_IS_COLLIDABLE(block_type) ((block_type).flags & 0b00000010)
@@ -46,6 +42,11 @@ void register_block_type(BlockType block_type);
 BlockType *get_block_type(unsigned char id);
 
 void draw_chunks(const Transform *camera);
+
+// The following functions are globally positioned. Other files needn't
+// consider where chunk boundaries are or that chunks exist at all.
+
+// TODO int is_chunk_loaded(int cx, int cy, int cz)
 
 unsigned char get_block_at(int x, int y, int z);
 void set_block_at(int x, int y, int z, unsigned char block);

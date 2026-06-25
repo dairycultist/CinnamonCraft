@@ -1,12 +1,3 @@
-/*
- * Abstraction layer for terrain. Outside files (ideally) won't have to know about chunks at all.
- *
- * Known bug: On init, chunk meshes remesh before all the chunks are present, leading to extra faces
- * where they end up being occluded (until you force a remesh by breaking a block in that chunk).
- *
- * Known bug: Breaking blocks at the edge of a chunk doesn't update the neighboring chunk.
- */
-
 #include "window.h"
 #include "terrain.h"
 
@@ -104,10 +95,11 @@ void initialize_chunk_system(void (*chunk_populator)(int x, int y, int z)) {
 				}
 			}
 		}
-
-		// remesh the chunk
-		remesh_delayed_chunks();
 	}
+
+	// remesh every chunk at once (can't do right after populating because it needs
+	// its neighbor to be loaded to be able to remesh at its chunk boundary properly)
+	remesh_delayed_chunks();
 }
 
 void draw_chunks(const Transform *camera) {
@@ -139,13 +131,6 @@ static Chunk *get_chunk_of_block(int x, int y, int z) {
 	return NULL;
 }
 
-/*
- * The following functions (from chunk.h!) are globally positioned!
- * No need for other files to consider where chunk boundaries are.
- */
-
-// TODO int is_chunk_loaded(int cx, int cy, int cz)
-
 unsigned char get_block_at(int x, int y, int z) {
 
 	Chunk *chunk = get_chunk_of_block(x, y, z);
@@ -166,6 +151,28 @@ void set_block_at(int x, int y, int z, unsigned char block) {
 	chunk->blocks[x % 16][y][z % 16] = block;
 
 	remesh_chunk(chunk);
+
+	// if block was at the edge of a chunk, also remesh the adjacent chunk(s)
+	if (x % 16 == 0) {
+		chunk = get_chunk_of_block(x - 1, y, z);
+		if (chunk)
+			remesh_chunk(chunk);
+	}
+	if (x % 16 == 15) {
+		chunk = get_chunk_of_block(x + 1, y, z);
+		if (chunk)
+			remesh_chunk(chunk);
+	}
+	if (z % 16 == 0) {
+		chunk = get_chunk_of_block(x, y, z - 1);
+		if (chunk)
+			remesh_chunk(chunk);
+	}
+	if (z % 16 == 15) {
+		chunk = get_chunk_of_block(x, y, z + 1);
+		if (chunk)
+			remesh_chunk(chunk);
+	}
 }
 
 void set_delay_remesh_block_at(int x, int y, int z, unsigned char block) {
