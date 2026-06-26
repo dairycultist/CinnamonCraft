@@ -1,7 +1,9 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "io.h"
+
 void initialize_player();
-void player_process_tick(Sint32 camera_dx, Sint32 camera_dy, int left, int right, int forward, int backward, int up, int down, int attack, int use);
+void player_process_tick(Input *input);
 
 #endif

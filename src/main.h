@@ -1,5 +1,5 @@
-#ifndef WINDOW_H
-#define WINDOW_H
+#ifndef MAIN_H
+#define MAIN_H
 
 #include <GL/glew.h>
 #include <SDL2/SDL.h>

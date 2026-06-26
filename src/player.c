@@ -1,4 +1,4 @@
-#include "window.h"
+#include "main.h"
 #include "renderer.h"
 #include "terrain.h"
 #include "player.h"
@@ -36,13 +36,13 @@ void initialize_player() {
 	sky_mesh = create_sky_mesh();
 }
 
-void player_process_tick(Sint32 camera_dx, Sint32 camera_dy, int left, int right, int forward, int backward, int up, int down, int attack, int use) {
+void player_process_tick(Input *input) {
 
 	miku_transform.yaw += 0.01;
 
 	// player camera control
-	camera.pitch += camera_dy * 0.01;
-	camera.yaw += camera_dx * 0.01;
+	camera.pitch += input->camera_dy * 0.01;
+	camera.yaw += input->camera_dx * 0.01;
 
 	// clamp camera pitch
 	if (camera.pitch > M_PI / 2) {
@@ -52,7 +52,7 @@ void player_process_tick(Sint32 camera_dx, Sint32 camera_dy, int left, int right
 	}
 
 	// placing blocks
-	if (use) {
+	if (input->use) {
 
 		int hit_x, hit_y, hit_z;
 
@@ -69,7 +69,7 @@ void player_process_tick(Sint32 camera_dx, Sint32 camera_dy, int left, int right
 
 	// move in direction of input (crucially, splitting movement into its components to allow for sliding)
 	// if colliding, step in opposite direction in small increments until no longer collision (or completely undid movement + a little to prevent float-error related stuckage)
-	if (left) {
+	if (input->left) {
 
 		camera.z -= sin(camera.yaw) * 0.1;
 
@@ -81,7 +81,7 @@ void player_process_tick(Sint32 camera_dx, Sint32 camera_dy, int left, int right
 		for (int i=0; PLAYER_IS_COLLIDING && i < 11; i++)
 			camera.x += cos(camera.yaw) * 0.01;
 
-	} else if (right) {
+	} else if (input->right) {
 
 		camera.z += sin(camera.yaw) * 0.1;
 
@@ -94,7 +94,7 @@ void player_process_tick(Sint32 camera_dx, Sint32 camera_dy, int left, int right
 			camera.x -= cos(camera.yaw) * 0.01;
 	}
 
-	if (forward) {
+	if (input->forward) {
 
 		camera.z -= cos(camera.yaw) * 0.1;
 
@@ -106,7 +106,7 @@ void player_process_tick(Sint32 camera_dx, Sint32 camera_dy, int left, int right
 		for (int i=0; PLAYER_IS_COLLIDING && i < 11; i++)
 			camera.x -= sin(camera.yaw) * 0.01;
 
-	} else if (backward) {
+	} else if (input->backward) {
 
 		camera.z += cos(camera.yaw) * 0.1;
 
@@ -130,7 +130,7 @@ void player_process_tick(Sint32 camera_dx, Sint32 camera_dy, int left, int right
 		}
 
 		// jump (only when grounded)
-		if (up && vertical_velocity < 0) {
+		if (input->up && vertical_velocity < 0) {
 			vertical_velocity = 0.2;
 		} else {
 			vertical_velocity = -0.01;
@@ -143,7 +143,7 @@ void player_process_tick(Sint32 camera_dx, Sint32 camera_dy, int left, int right
 	}
 
 	// breaking blocks
-	if (BOOL_look_block && attack) {
+	if (BOOL_look_block && input->attack) {
 
 		printf("%d\n", look_block_ticks_to_break);
 

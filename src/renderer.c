@@ -1,4 +1,4 @@
-#include "window.h"
+#include "main.h"
 #include "renderer.h"
 #include "ez_array.h"
 

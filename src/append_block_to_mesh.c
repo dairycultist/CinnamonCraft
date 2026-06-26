@@ -1,4 +1,4 @@
-#include "window.h"
+#include "main.h"
 #include "terrain.h"
 #include "append_block_to_mesh.h"
 
