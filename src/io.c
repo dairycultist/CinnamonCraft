@@ -1,9 +1,3 @@
-// literally just an abstraction layer for SDL + OpenGL
-
-// if you want to port this game to something that doesn't support SDL/OpenGL, or
-// otherwise handles rendering, input, file loading, etc differently, you should
-// only have to reimplement this file
-
 #include "main.h"
 #include "io.h"
 #include "ez_array.h"

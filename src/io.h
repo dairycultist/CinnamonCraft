@@ -1,6 +1,15 @@
 #ifndef IO_H
 #define IO_H
 
+// exposes helpers for receiving player input, model manipulation and rendering, etc
+
+// abstracts away all that hardware-specific stuff (graphical context/renderer, the
+// file system, what physical inputs map to which game inputs, etc)
+
+// if you want to port this game to something that doesn't support SDL/OpenGL, or
+// otherwise handles rendering, input, file loading, etc differently, you should
+// only have to reimplement io.c
+
 typedef struct {
 
     int camera_dx, camera_dy;
@@ -12,11 +21,8 @@ typedef struct {
 
 typedef struct {
 
-	float x;
-	float y;
-	float z;
-	float pitch;
-	float yaw;
+	float x, y, z;
+	float pitch, yaw;
 
 } Transform;
 

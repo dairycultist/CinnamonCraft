@@ -1,6 +1,8 @@
 #ifndef EZ_ARRAY_H
 #define EZ_ARRAY_H
 
+// helper data structure
+
 typedef struct {
 
 	unsigned char *data;

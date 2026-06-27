@@ -1,6 +1,9 @@
 #ifndef TERRAIN_H
 #define TERRAIN_H
 
+// exposes terrain manipulation (i.e. the blocks)
+// abstracts away chunks
+
 #include "io.h"
 #include "ez_array.h"
 
@@ -35,20 +38,22 @@ typedef struct {
 } BlockType;
 
 void initialize_terrain();
+
 BlockType *get_block_type(unsigned char id);
 
 void draw_chunks(const Transform *camera);
 
-// The following functions are globally positioned. Other files needn't
-// consider where chunk boundaries are or that chunks exist at all.
+// the following functions are globally positioned and chunk-agnostic
 
-// TODO int is_chunk_loaded(int cx, int cy, int cz)
-
+// block manipulation
 unsigned char get_block_at(int x, int y, int z);
 void set_block_at(int x, int y, int z, unsigned char block);
+
+// remeshing
 void set_delay_remesh_block_at(int x, int y, int z, unsigned char block);
 void remesh_delayed_chunks();
 
+// collision
 int does_point_intersect_blocks(float x, float y, float z);
 int does_aabb_intersect_blocks(float x, float y, float z, float wl, float h);
 int raycast_blocks(const Transform *origin, float max_dist, int return_surface, int *out_x, int *out_y, int *out_z);
