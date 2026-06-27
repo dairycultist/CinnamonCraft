@@ -33,7 +33,7 @@ typedef struct {
 	// 128
 	unsigned char flags;
 	unsigned short ticks_to_break;
-	unsigned char atlas_indices[4]; // how these are actually rendered onto the block is determined by append_block_to_mesh
+	atlas_index_t atlas_indices[4]; // how these are actually rendered onto the block is determined by append_block_to_mesh
 
 } BlockType;
 
@@ -58,7 +58,6 @@ static int full_block_collider(float dx, float dy, float dz) {
 }
 
 // block type registry
-// only 256 texture indices and 256 block types can exist
 static BlockType block_types[256] = {
 	(BlockType) { NULL, NULL, 0b00000000 },											// air
 	(BlockType) { ABTM_grass, full_block_collider, 0b00000011, 60, { 0, 1, 2 } },	// grass
@@ -217,7 +216,7 @@ int is_block_fullblock(block_t block) {
 	return BT_IS_FULLBLOCK(block_types[block]);
 }
 
-unsigned char get_block_atlas_index(block_t block, int i) {
+atlas_index_t get_block_atlas_index(block_t block, int i) {
 
 	return block_types[block].atlas_indices[i];
 }
@@ -268,16 +267,34 @@ int does_aabb_intersect_blocks(float x, float y, float z, float wl, float h) {
 	wl /= 2;
 
 	for (float block_x = x - wl; block_x <= x + wl; block_x += AABB_COLLISION_DS) {
+	for (float block_z = z - wl; block_z <= z + wl; block_z += AABB_COLLISION_DS) {
+	for (float block_y = y;      block_y <= y + h;  block_y += AABB_COLLISION_DS) {
 
-		for (float block_z = z - wl; block_z <= z + wl; block_z += AABB_COLLISION_DS) {
+		if (does_point_intersect_blocks(block_x, block_y, block_z))
+			return 1;
+	}}}
 
-			for (float block_y = y; block_y <= y + h; block_y += AABB_COLLISION_DS) {
+	return 0;
+}
 
-				if (does_point_intersect_blocks(block_x, block_y, block_z))
-					return 1;
-			}
-		}
-	}
+int would_aabb_intersect_block_at(int x, int y, int z, block_t block, float aabb_x, float aabb_y, float aabb_z, float aabb_wl, float aabb_h) {
+
+	BlockType *block_type = &block_types[block];
+
+	if (!BT_IS_COLLIDABLE(*block_type))
+		return 0;
+
+	for (float block_x = fmax(x, aabb_x - aabb_wl); block_x <= fmin(x + 1, aabb_x + aabb_wl); block_x += AABB_COLLISION_DS) {
+	for (float block_z = fmax(z, aabb_z - aabb_wl); block_z <= fmin(z + 1, aabb_z + aabb_wl); block_z += AABB_COLLISION_DS) {
+	for (float block_y = fmax(y, aabb_y);           block_y <= fmin(y + 1, aabb_y + aabb_h);  block_y += AABB_COLLISION_DS) {
+
+		if (block_type->does_local_point_collide(
+				fmod(fmod(block_x, 1.0) + 1.0, 1.0),
+				fmod(fmod(block_y, 1.0) + 1.0, 1.0),
+				fmod(fmod(block_z, 1.0) + 1.0, 1.0)
+			))
+			return 1;
+	}}}
 
 	return 0;
 }

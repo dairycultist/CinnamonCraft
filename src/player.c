@@ -40,6 +40,10 @@ void initialize_player() {
 
 void player_process_tick(Input *input) {
 
+	#define PLAYER_RADIUS 0.4
+	#define PLAYER_HEIGHT 1.7
+	#define PLAYER_CAM_H 1.4
+
 	miku_transform.yaw += 0.01;
 
 	// player camera control
@@ -58,15 +62,11 @@ void player_process_tick(Input *input) {
 
 		int hit_x, hit_y, hit_z;
 
-		if (raycast_blocks(&camera, 5.0, 1, &hit_x, &hit_y, &hit_z))
+		if (raycast_blocks(&camera, 5.0, 1, &hit_x, &hit_y, &hit_z) && !would_aabb_intersect_block_at(hit_x, hit_y, hit_z, 1, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_RADIUS, PLAYER_HEIGHT))
 			set_block_at(hit_x, hit_y, hit_z, 1);
 	}
 
 	// player control
-	#define PLAYER_RADIUS 0.4
-	#define PLAYER_HEIGHT 1.7
-	#define PLAYER_CAM_H 1.4
-
 	#define PLAYER_IS_COLLIDING does_aabb_intersect_blocks(camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_RADIUS, PLAYER_HEIGHT)
 
 	// move in direction of input (crucially, splitting movement into its components to allow for sliding)
