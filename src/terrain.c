@@ -284,6 +284,8 @@ int would_aabb_intersect_block_at(int x, int y, int z, block_t block, float aabb
 	if (!BT_IS_COLLIDABLE(*block_type))
 		return 0;
 
+	aabb_wl /= 2;
+
 	for (float block_x = fmax(x, aabb_x - aabb_wl); block_x <= fmin(x + 1, aabb_x + aabb_wl); block_x += AABB_COLLISION_DS) {
 	for (float block_z = fmax(z, aabb_z - aabb_wl); block_z <= fmin(z + 1, aabb_z + aabb_wl); block_z += AABB_COLLISION_DS) {
 	for (float block_y = fmax(y, aabb_y);           block_y <= fmin(y + 1, aabb_y + aabb_h);  block_y += AABB_COLLISION_DS) {

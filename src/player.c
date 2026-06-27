@@ -5,6 +5,12 @@
 #include <stdio.h>
 #include <math.h>
 
+#define PLAYER_RADIUS 0.4
+#define PLAYER_HEIGHT 1.7
+#define PLAYER_CAM_H 1.4
+
+#define PLAYER_AABB camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_RADIUS, PLAYER_HEIGHT
+
 // player
 static Transform camera;
 static float vertical_velocity;
@@ -40,10 +46,6 @@ void initialize_player() {
 
 void player_process_tick(Input *input) {
 
-	#define PLAYER_RADIUS 0.4
-	#define PLAYER_HEIGHT 1.7
-	#define PLAYER_CAM_H 1.4
-
 	miku_transform.yaw += 0.01;
 
 	// player camera control
@@ -62,37 +64,35 @@ void player_process_tick(Input *input) {
 
 		int hit_x, hit_y, hit_z;
 
-		if (raycast_blocks(&camera, 5.0, 1, &hit_x, &hit_y, &hit_z) && !would_aabb_intersect_block_at(hit_x, hit_y, hit_z, 1, camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_RADIUS, PLAYER_HEIGHT))
+		if (raycast_blocks(&camera, 5.0, 1, &hit_x, &hit_y, &hit_z) && !would_aabb_intersect_block_at(hit_x, hit_y, hit_z, 1, PLAYER_AABB))
 			set_block_at(hit_x, hit_y, hit_z, 1);
 	}
 
-	// player control
-	#define PLAYER_IS_COLLIDING does_aabb_intersect_blocks(camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_RADIUS, PLAYER_HEIGHT)
-
-	// move in direction of input (crucially, splitting movement into its components to allow for sliding)
-	// if colliding, step in opposite direction in small increments until no longer collision (or completely undid movement + a little to prevent float-error related stuckage)
+	// move in direction of input (splitting movement into its components to allow for sliding)
+	// if colliding, step in opposite direction in small increments until no longer collision
+	// (or completely undid movement + a little to prevent float-error related stuckage)
 	if (input->left) {
 
 		camera.z -= sin(camera.yaw) * 0.1;
 
-		for (int i=0; PLAYER_IS_COLLIDING && i < 11; i++)
+		for (int i=0; does_aabb_intersect_blocks(PLAYER_AABB) && i < 11; i++)
 			camera.z += sin(camera.yaw) * 0.01;
 
 		camera.x -= cos(camera.yaw) * 0.1;
 
-		for (int i=0; PLAYER_IS_COLLIDING && i < 11; i++)
+		for (int i=0; does_aabb_intersect_blocks(PLAYER_AABB) && i < 11; i++)
 			camera.x += cos(camera.yaw) * 0.01;
 
 	} else if (input->right) {
 
 		camera.z += sin(camera.yaw) * 0.1;
 
-		for (int i=0; PLAYER_IS_COLLIDING && i < 11; i++)
+		for (int i=0; does_aabb_intersect_blocks(PLAYER_AABB) && i < 11; i++)
 			camera.z -= sin(camera.yaw) * 0.01;
 
 		camera.x += cos(camera.yaw) * 0.1;
 
-		for (int i=0; PLAYER_IS_COLLIDING && i < 11; i++)
+		for (int i=0; does_aabb_intersect_blocks(PLAYER_AABB) && i < 11; i++)
 			camera.x -= cos(camera.yaw) * 0.01;
 	}
 
@@ -100,33 +100,33 @@ void player_process_tick(Input *input) {
 
 		camera.z -= cos(camera.yaw) * 0.1;
 
-		for (int i=0; PLAYER_IS_COLLIDING && i < 11; i++)
+		for (int i=0; does_aabb_intersect_blocks(PLAYER_AABB) && i < 11; i++)
 			camera.z += cos(camera.yaw) * 0.01;
 
 		camera.x += sin(camera.yaw) * 0.1;
 
-		for (int i=0; PLAYER_IS_COLLIDING && i < 11; i++)
+		for (int i=0; does_aabb_intersect_blocks(PLAYER_AABB) && i < 11; i++)
 			camera.x -= sin(camera.yaw) * 0.01;
 
 	} else if (input->backward) {
 
 		camera.z += cos(camera.yaw) * 0.1;
 
-		for (int i=0; PLAYER_IS_COLLIDING && i < 11; i++)
+		for (int i=0; does_aabb_intersect_blocks(PLAYER_AABB) && i < 11; i++)
 			camera.z -= cos(camera.yaw) * 0.01;
 
 		camera.x -= sin(camera.yaw) * 0.1;
 
-		for (int i=0; PLAYER_IS_COLLIDING && i < 11; i++)
+		for (int i=0; does_aabb_intersect_blocks(PLAYER_AABB) && i < 11; i++)
 			camera.x += sin(camera.yaw) * 0.01;
 	}
 
 	// vertical movement
 	camera.y += vertical_velocity;
 
-	if (PLAYER_IS_COLLIDING) {
+	if (does_aabb_intersect_blocks(PLAYER_AABB)) {
 
-		for (int i=0; PLAYER_IS_COLLIDING && i < 11; i++) {
+		for (int i=0; does_aabb_intersect_blocks(PLAYER_AABB) && i < 11; i++) {
 
 			camera.y -= vertical_velocity / 10;
 		}
