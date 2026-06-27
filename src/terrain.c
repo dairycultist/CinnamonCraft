@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define BT_IS_FULLBLOCK(block_type) ((block_type).flags & 0b00000001)
-#define BT_IS_COLLIDABLE(block_type) ((block_type).flags & 0b00000010)
+#define MASK_FULLBLOCK 0b00000001
+#define MASK_COLLIDABLE 0b00000010
 
 typedef struct {
 
@@ -213,7 +213,7 @@ void set_block_at(int x, int y, int z, block_t block) {
 
 int is_block_fullblock(block_t block) {
 
-	return BT_IS_FULLBLOCK(block_types[block]);
+	return block_types[block].flags & MASK_FULLBLOCK;
 }
 
 atlas_index_t get_block_atlas_index(block_t block, int i) {
@@ -254,7 +254,7 @@ int does_point_intersect_blocks(float x, float y, float z) {
 
 	BlockType *block_type = &block_types[get_block_at(floor(x), floor(y), floor(z))];
 
-	return BT_IS_COLLIDABLE(*block_type) && block_type->does_local_point_collide(
+	return (block_type->flags & MASK_COLLIDABLE) && block_type->does_local_point_collide(
 		fmod(fmod(x, 1.0) + 1.0, 1.0),
 		fmod(fmod(y, 1.0) + 1.0, 1.0),
 		fmod(fmod(z, 1.0) + 1.0, 1.0)
@@ -281,20 +281,20 @@ int would_aabb_intersect_block_at(int x, int y, int z, block_t block, float aabb
 
 	BlockType *block_type = &block_types[block];
 
-	if (!BT_IS_COLLIDABLE(*block_type))
+	if (!(block_type->flags & MASK_COLLIDABLE))
 		return 0;
 
 	aabb_wl /= 2;
 
-	for (float block_x = fmax(x, aabb_x - aabb_wl); block_x <= fmin(x + 1, aabb_x + aabb_wl); block_x += AABB_COLLISION_DS) {
-	for (float block_z = fmax(z, aabb_z - aabb_wl); block_z <= fmin(z + 1, aabb_z + aabb_wl); block_z += AABB_COLLISION_DS) {
-	for (float block_y = fmax(y, aabb_y);           block_y <= fmin(y + 1, aabb_y + aabb_h);  block_y += AABB_COLLISION_DS) {
+	aabb_x -= x;
+	aabb_y -= y;
+	aabb_z -= z;
 
-		if (block_type->does_local_point_collide(
-				fmod(fmod(block_x, 1.0) + 1.0, 1.0),
-				fmod(fmod(block_y, 1.0) + 1.0, 1.0),
-				fmod(fmod(block_z, 1.0) + 1.0, 1.0)
-			))
+	for (float dx = fmax(0, aabb_x - aabb_wl); dx <= fmin(1, aabb_x + aabb_wl); dx += AABB_COLLISION_DS) {
+	for (float dz = fmax(0, aabb_z - aabb_wl); dz <= fmin(1, aabb_z + aabb_wl); dz += AABB_COLLISION_DS) {
+	for (float dy = fmax(0, aabb_y);           dy <= fmin(1, aabb_y + aabb_h);  dy += AABB_COLLISION_DS) {
+
+		if (block_type->does_local_point_collide(dx, dy, dz))
 			return 1;
 	}}}
 
