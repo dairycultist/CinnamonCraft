@@ -51,6 +51,6 @@ void remesh_delayed_chunks();
 
 int does_point_intersect_blocks(float x, float y, float z);
 int does_aabb_intersect_blocks(float x, float y, float z, float wl, float h);
-int raycast_blocks(const Transform *origin, float max_dist, int bool_surface, int *out_x, int *out_y, int *out_z);
+int raycast_blocks(const Transform *origin, float max_dist, int return_surface, int *out_x, int *out_y, int *out_z);
 
 #endif

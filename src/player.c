@@ -2,11 +2,14 @@
 #include "terrain.h"
 #include "player.h"
 
+#include <stdio.h>
+#include <math.h>
+
 // player
 static Transform camera;
 static float vertical_velocity;
 
-static int BOOL_look_block;
+static int looking_at_block;
 static int look_block_x, look_block_y, look_block_z;
 static unsigned short look_block_ticks_to_break;
 
@@ -55,7 +58,7 @@ void player_process_tick(Input *input) {
 
 		int hit_x, hit_y, hit_z;
 
-		if (raycast_blocks(&camera, 5.0, TRUE, &hit_x, &hit_y, &hit_z))
+		if (raycast_blocks(&camera, 5.0, 1, &hit_x, &hit_y, &hit_z))
 			set_block_at(hit_x, hit_y, hit_z, 1);
 	}
 
@@ -142,7 +145,7 @@ void player_process_tick(Input *input) {
 	}
 
 	// breaking blocks
-	if (BOOL_look_block && input->attack) {
+	if (looking_at_block && input->attack) {
 
 		printf("%d\n", look_block_ticks_to_break);
 
@@ -162,9 +165,9 @@ void player_process_tick(Input *input) {
 	int prev_look_block_y = look_block_y;
 	int prev_look_block_z = look_block_z;
 
-	BOOL_look_block = raycast_blocks(&camera, 5.0, FALSE, &look_block_x, &look_block_y, &look_block_z);
+	looking_at_block = raycast_blocks(&camera, 5.0, 0, &look_block_x, &look_block_y, &look_block_z);
 
-	if (BOOL_look_block && (prev_look_block_x != look_block_x || prev_look_block_y != look_block_y || prev_look_block_z != look_block_z)) {
+	if (looking_at_block && (prev_look_block_x != look_block_x || prev_look_block_y != look_block_y || prev_look_block_z != look_block_z)) {
 
 		look_block_ticks_to_break = get_block_type(get_block_at(look_block_x, look_block_y, look_block_z))->ticks_to_break;
 	}

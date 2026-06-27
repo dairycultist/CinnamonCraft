@@ -24,9 +24,9 @@ typedef void *Texture;
 typedef void *Mesh;
 
 void initialize_io();
-int io_keep_program_alive();
-void io_populate_input(Input *input);
-void io_present();
+int game_is_running();
+void populate_input(Input *input);
+void present();
 
 Texture load_texture(const char *path);
 // TODO free_texture
@@ -48,7 +48,5 @@ void draw_sprite_mesh(const Mesh mesh);
 // both 2D and 3D
 void mesh_set_texture(Mesh mesh, Texture texture);
 void free_mesh(Mesh mesh);
-
-void initialize_renderer();
 
 #endif

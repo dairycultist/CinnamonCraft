@@ -2,6 +2,7 @@
 #include "terrain.h"
 #include "append_block_to_mesh.h"
 
+#include <stdlib.h>
 #include <math.h>
 
 typedef struct { // only this file knows Chunks even exist
@@ -219,16 +220,16 @@ int does_aabb_intersect_blocks(float x, float y, float z, float wl, float h) {
 			for (int block_y = floor(y); block_y <= floor(y + h); block_y++) {
 
 				if (does_point_intersect_blocks(block_x, block_y, block_z))
-					return TRUE;
+					return 1;
 			}
 		}
 	}
 
-	return FALSE;
+	return 0;
 }
 
-// returns TRUE if it hit a block, in which case it populates the output parameters with the position of the block
-int raycast_blocks(const Transform *origin, float max_dist, int bool_surface, int *out_x, int *out_y, int *out_z) {
+// returns true if it hit a block, in which case it populates the output parameters with the position of the block
+int raycast_blocks(const Transform *origin, float max_dist, int return_surface, int *out_x, int *out_y, int *out_z) {
 
 	#define STEP_SIZE 0.1
 
@@ -244,7 +245,7 @@ int raycast_blocks(const Transform *origin, float max_dist, int bool_surface, in
 		
 		if (does_point_intersect_blocks(x, y, z)) {
 
-			if (bool_surface) {
+			if (return_surface) {
 
 				x -= dx;
 				y -= dy;
@@ -255,7 +256,7 @@ int raycast_blocks(const Transform *origin, float max_dist, int bool_surface, in
 			*out_y = floor(y);
 			*out_z = floor(z);
 
-			return TRUE;
+			return 1;
 		}
 
 		x += dx;
@@ -263,5 +264,5 @@ int raycast_blocks(const Transform *origin, float max_dist, int bool_surface, in
 		z += dz;
 	}
 
-	return FALSE;
+	return 0;
 }
