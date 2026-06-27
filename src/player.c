@@ -169,7 +169,7 @@ void player_process_tick(Input *input) {
 
 	if (looking_at_block && (prev_look_block_x != look_block_x || prev_look_block_y != look_block_y || prev_look_block_z != look_block_z)) {
 
-		look_block_ticks_to_break = get_block_type(get_block_at(look_block_x, look_block_y, look_block_z))->ticks_to_break;
+		look_block_ticks_to_break = get_block_ticks_to_break(get_block_at(look_block_x, look_block_y, look_block_z));
 	}
 
 	// render the sky as just a sprite covering the whole screen

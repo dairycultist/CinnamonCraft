@@ -1,5 +1,6 @@
 #include "main.h"
 #include "terrain.h"
+#include "ez_array.h"
 #include "append_block_to_mesh.h"
 
 // stole this from nash so I don't have to use rand(). it's deterministic!
@@ -12,26 +13,25 @@ unsigned int r_hash(unsigned int seed) {
 }
 
 #define GET_SPRITEMAP_UV(index, u_sml, v_sml, u_big, v_big) u_sml = ((index) % 16) / 16.; v_sml = ((index) / 16) / 16.; u_big = (((index) + 1) % 16) / 16.; v_big = ((index) / 16 + 1) / 16.
-#define BT_AT(x, y, z) (get_block_type(get_block_at(x, y, z)))
 
 // all the functions below serve as possible values for BlockType's function pointer append_block_to_mesh
 
-// tex_indices [ top side bottom ]
+// atlas_indices [ top side bottom ]
 void ABTM_block(EZArray *mesh_data, int *vertex_count, int x, int y, int z) {
 
 	int local_x = x % 16;
 	int local_y = y;
 	int local_z = z % 16;
 
-	BlockType *block_type = BT_AT(x, y, z);
+	block_t block = get_block_at(x, y, z);
 
 	float u_sml, v_sml, u_big, v_big;
 
 	// get UV for sides
-	GET_SPRITEMAP_UV(block_type->tex_indices[1], u_sml, v_sml, u_big, v_big);
+	GET_SPRITEMAP_UV(get_block_atlas_index(block, 1), u_sml, v_sml, u_big, v_big);
 
 	// -x face
-	if (!BT_IS_FULLBLOCK(*BT_AT(x - 1, y, z))) {
+	if (!is_block_fullblock(get_block_at(x - 1, y, z))) {
 
 		float full_block_data[] = {
 			local_x, local_y, local_z,			-1, 0, 0,	u_big, v_sml,
@@ -47,7 +47,7 @@ void ABTM_block(EZArray *mesh_data, int *vertex_count, int x, int y, int z) {
 	}
 
 	// +x face
-	if (!BT_IS_FULLBLOCK(*BT_AT(x + 1, y, z))) {
+	if (!is_block_fullblock(get_block_at(x + 1, y, z))) {
 
 		float full_block_data[] = {
 			local_x + 1, local_y, local_z,			1, 0, 0,	u_sml, v_sml,
@@ -63,7 +63,7 @@ void ABTM_block(EZArray *mesh_data, int *vertex_count, int x, int y, int z) {
 	}
 
 	// -z face
-	if (!BT_IS_FULLBLOCK(*BT_AT(x, y, z - 1))) {
+	if (!is_block_fullblock(get_block_at(x, y, z - 1))) {
 
 		float full_block_data[] = {
 			local_x, local_y, local_z,			0, 0, -1,	u_sml, v_sml,
@@ -79,7 +79,7 @@ void ABTM_block(EZArray *mesh_data, int *vertex_count, int x, int y, int z) {
 	}
 
 	// +z face
-	if (!BT_IS_FULLBLOCK(*BT_AT(x, y, z + 1))) {
+	if (!is_block_fullblock(get_block_at(x, y, z + 1))) {
 
 		float full_block_data[] = {
 			local_x, local_y, local_z + 1,			0, 0, 1,	u_big, v_sml,
@@ -95,10 +95,10 @@ void ABTM_block(EZArray *mesh_data, int *vertex_count, int x, int y, int z) {
 	}
 
 	// -y face
-	if (!BT_IS_FULLBLOCK(*BT_AT(x, y - 1, z))) {
+	if (!is_block_fullblock(get_block_at(x, y - 1, z))) {
 
 		// get UV for bottom
-		GET_SPRITEMAP_UV(block_type->tex_indices[2], u_sml, v_sml, u_big, v_big);
+		GET_SPRITEMAP_UV(get_block_atlas_index(block, 2), u_sml, v_sml, u_big, v_big);
 
 		float full_block_data[] = {
 			local_x, local_y, local_z,			0, -1, 0,	u_sml, v_sml,
@@ -114,10 +114,10 @@ void ABTM_block(EZArray *mesh_data, int *vertex_count, int x, int y, int z) {
 	}
 
 	// +y face
-	if (!BT_IS_FULLBLOCK(*BT_AT(x, y + 1, z))) {
+	if (!is_block_fullblock(get_block_at(x, y + 1, z))) {
 
 		// get UV for top
-		GET_SPRITEMAP_UV(block_type->tex_indices[0], u_sml, v_sml, u_big, v_big);
+		GET_SPRITEMAP_UV(get_block_atlas_index(block, 0), u_sml, v_sml, u_big, v_big);
 
 		float full_block_data[] = {
 			local_x, 		local_y + 1, local_z,			0, 1, 0,	u_big, v_sml,

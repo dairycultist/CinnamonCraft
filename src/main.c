@@ -15,7 +15,6 @@ int main() {
 
 		populate_input(&input);
 		
-		// player stuff (drawing their perspective, handling their input, etc)
 		player_process_tick(&input);
 
 		present();

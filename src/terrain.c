@@ -1,14 +1,46 @@
 #include "main.h"
 #include "terrain.h"
+#include "ez_array.h"
 #include "append_block_to_mesh.h"
 
 #include <stdlib.h>
 #include <math.h>
 
+#define BT_IS_FULLBLOCK(block_type) ((block_type).flags & 0b00000001)
+#define BT_IS_COLLIDABLE(block_type) ((block_type).flags & 0b00000010)
+
+typedef struct {
+
+	// this function determines what mesh/UV a block gets (including face culling)
+	void (*append_block_to_mesh)(EZArray *mesh_data, int *vertex_count, int x, int y, int z);
+
+	// dx, dy, and dz can be assumed to ALWAYS have the range [0, 1]
+	int (*does_local_point_collide)(float dx, float dy, float dz);
+
+	// TODO stuff like:
+	// - mining level
+	// - dropped item
+	// - orientation (used by append_block_to_mesh)
+	// - vanilla metadata
+
+	// 1 "fullblock": adjacent blocks will cull the faces that touch it
+	// 2 "collidable": has full-block collision
+	// 4
+	// 8
+	// 16
+	// 32
+	// 64
+	// 128
+	unsigned char flags;
+	unsigned short ticks_to_break;
+	unsigned char atlas_indices[4]; // how these are actually rendered onto the block is determined by append_block_to_mesh
+
+} BlockType;
+
 typedef struct { // only this file knows Chunks even exist
 
 	Mesh mesh;
-	unsigned char blocks[16][128][16]; // array of bytes indexing into block_types
+	block_t blocks[16][128][16]; // array of bytes indexing into block_types
 
 	int chunk_x, chunk_z;
 
@@ -26,6 +58,7 @@ static int full_block_collider(float dx, float dy, float dz) {
 }
 
 // block type registry
+// only 256 texture indices and 256 block types can exist
 static BlockType block_types[256] = {
 	(BlockType) { NULL, NULL, 0b00000000 },											// air
 	(BlockType) { ABTM_grass, full_block_collider, 0b00000011, 60, { 0, 1, 2 } },	// grass
@@ -38,11 +71,6 @@ static void populator(int x, int y, int z) {
 		x, y, z,
 		sin(x * 0.1) * 16 + 16 < y ? 0 : (y < 20 ? 2 : 1)
 	);
-}
-
-BlockType *get_block_type(unsigned char id) {
-
-	return &block_types[id];
 }
 
 // remeshes based on the chunk's internal blocks
@@ -140,7 +168,7 @@ static Chunk *get_chunk_of_block(int x, int y, int z) {
 	return NULL;
 }
 
-unsigned char get_block_at(int x, int y, int z) {
+block_t get_block_at(int x, int y, int z) {
 
 	Chunk *chunk = get_chunk_of_block(x, y, z);
 
@@ -150,7 +178,7 @@ unsigned char get_block_at(int x, int y, int z) {
 	return chunk->blocks[x % 16][y][z % 16];
 }
 
-void set_block_at(int x, int y, int z, unsigned char block) {
+void set_block_at(int x, int y, int z, block_t block) {
 	
 	Chunk *chunk = get_chunk_of_block(x, y, z);
 
@@ -184,7 +212,22 @@ void set_block_at(int x, int y, int z, unsigned char block) {
 	}
 }
 
-void set_delay_remesh_block_at(int x, int y, int z, unsigned char block) {
+int is_block_fullblock(block_t block) {
+
+	return BT_IS_FULLBLOCK(block_types[block]);
+}
+
+unsigned char get_block_atlas_index(block_t block, int i) {
+
+	return block_types[block].atlas_indices[i];
+}
+
+unsigned short get_block_ticks_to_break(block_t block) {
+
+	return block_types[block].ticks_to_break;
+}
+
+void set_delay_remesh_block_at(int x, int y, int z, block_t block) {
 
 	Chunk *chunk = get_chunk_of_block(x, y, z);
 
