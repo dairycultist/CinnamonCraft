@@ -5,6 +5,7 @@
 // abstracts away chunks and the internal format of block types
 
 #include "io.h"
+#include "entity.h"
 
 // if this value is larger than the narrowest block collider, there will be significant gaps in AABB colliders
 // if this value is too small, it will impact performance
@@ -30,8 +31,8 @@ void remesh_delayed_chunks();
 
 // collision
 int does_point_intersect_blocks(float x, float y, float z);
-int does_aabb_intersect_blocks(float x, float y, float z, float wl, float h);
-int would_aabb_intersect_block_at(int x, int y, int z, block_t block, float aabb_x, float aabb_y, float aabb_z, float aabb_wl, float aabb_h);
+int does_aabb_intersect_blocks(AABB *aabb);
+int would_aabb_intersect_block_at(int x, int y, int z, block_t block, AABB *aabb);
 int raycast_blocks(const Transform *origin, float max_dist, int return_surface, int *out_x, int *out_y, int *out_z);
 
 #endif

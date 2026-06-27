@@ -9,10 +9,9 @@
 #define PLAYER_HEIGHT 1.7
 #define PLAYER_CAM_H 1.4
 
-#define PLAYER_AABB camera.x, camera.y - PLAYER_CAM_H, camera.z, PLAYER_RADIUS, PLAYER_HEIGHT
-
-// player
+// player (aabb determines position, camera just follows that; camera determines rotation)
 static Transform camera;
+static AABB aabb = { 0.0, 0.0, 0.0, PLAYER_RADIUS, PLAYER_HEIGHT };
 static float vertical_velocity;
 
 static int looking_at_block;
@@ -28,9 +27,9 @@ static Mesh sky_mesh;
 void initialize_player() {
 
 	// position player
-	camera.x = 8;
-	camera.z = 8;
-	camera.y = 30;
+	aabb.x = 8;
+	aabb.z = 8;
+	aabb.y = 30;
 
 	// create a mesh for testing
 	miku_mesh = create_mesh_from_obj("res/miku.obj", load_texture("res/dirt.png"));
@@ -64,84 +63,8 @@ void player_process_tick(Input *input) {
 
 		int hit_x, hit_y, hit_z;
 
-		if (raycast_blocks(&camera, 5.0, 1, &hit_x, &hit_y, &hit_z) && !would_aabb_intersect_block_at(hit_x, hit_y, hit_z, 1, PLAYER_AABB))
+		if (raycast_blocks(&camera, 5.0, 1, &hit_x, &hit_y, &hit_z) && !would_aabb_intersect_block_at(hit_x, hit_y, hit_z, 1, &aabb))
 			set_block_at(hit_x, hit_y, hit_z, 1);
-	}
-
-	// move in direction of input (splitting movement into its components to allow for sliding)
-	// if colliding, step in opposite direction in small increments until no longer collision
-	// (or completely undid movement + a little to prevent float-error related stuckage)
-	if (input->left) {
-
-		camera.z -= sin(camera.yaw) * 0.1;
-
-		for (int i=0; does_aabb_intersect_blocks(PLAYER_AABB) && i < 11; i++)
-			camera.z += sin(camera.yaw) * 0.01;
-
-		camera.x -= cos(camera.yaw) * 0.1;
-
-		for (int i=0; does_aabb_intersect_blocks(PLAYER_AABB) && i < 11; i++)
-			camera.x += cos(camera.yaw) * 0.01;
-
-	} else if (input->right) {
-
-		camera.z += sin(camera.yaw) * 0.1;
-
-		for (int i=0; does_aabb_intersect_blocks(PLAYER_AABB) && i < 11; i++)
-			camera.z -= sin(camera.yaw) * 0.01;
-
-		camera.x += cos(camera.yaw) * 0.1;
-
-		for (int i=0; does_aabb_intersect_blocks(PLAYER_AABB) && i < 11; i++)
-			camera.x -= cos(camera.yaw) * 0.01;
-	}
-
-	if (input->forward) {
-
-		camera.z -= cos(camera.yaw) * 0.1;
-
-		for (int i=0; does_aabb_intersect_blocks(PLAYER_AABB) && i < 11; i++)
-			camera.z += cos(camera.yaw) * 0.01;
-
-		camera.x += sin(camera.yaw) * 0.1;
-
-		for (int i=0; does_aabb_intersect_blocks(PLAYER_AABB) && i < 11; i++)
-			camera.x -= sin(camera.yaw) * 0.01;
-
-	} else if (input->backward) {
-
-		camera.z += cos(camera.yaw) * 0.1;
-
-		for (int i=0; does_aabb_intersect_blocks(PLAYER_AABB) && i < 11; i++)
-			camera.z -= cos(camera.yaw) * 0.01;
-
-		camera.x -= sin(camera.yaw) * 0.1;
-
-		for (int i=0; does_aabb_intersect_blocks(PLAYER_AABB) && i < 11; i++)
-			camera.x += sin(camera.yaw) * 0.01;
-	}
-
-	// vertical movement
-	camera.y += vertical_velocity;
-
-	if (does_aabb_intersect_blocks(PLAYER_AABB)) {
-
-		for (int i=0; does_aabb_intersect_blocks(PLAYER_AABB) && i < 11; i++) {
-
-			camera.y -= vertical_velocity / 10;
-		}
-
-		// jump (only when grounded)
-		if (input->up && vertical_velocity < 0) {
-			vertical_velocity = 0.2;
-		} else {
-			vertical_velocity = -0.01;
-		}
-
-	} else {
-
-		// gravity
-		vertical_velocity -= 0.01;
 	}
 
 	// breaking blocks
@@ -158,6 +81,87 @@ void player_process_tick(Input *input) {
 			look_block_ticks_to_break--;
 		}
 	}
+
+	// move in direction of input (splitting movement into its components to allow for sliding)
+	// if colliding, step in opposite direction in small increments until no longer collision
+	// (or completely undid movement + a little to prevent float-error related stuckage)
+	if (input->left) {
+
+		aabb.z -= sin(camera.yaw) * 0.1;
+
+		for (int i=0; does_aabb_intersect_blocks(&aabb) && i < 11; i++)
+			aabb.z += sin(camera.yaw) * 0.01;
+
+		aabb.x -= cos(camera.yaw) * 0.1;
+
+		for (int i=0; does_aabb_intersect_blocks(&aabb) && i < 11; i++)
+			aabb.x += cos(camera.yaw) * 0.01;
+
+	} else if (input->right) {
+
+		aabb.z += sin(camera.yaw) * 0.1;
+
+		for (int i=0; does_aabb_intersect_blocks(&aabb) && i < 11; i++)
+			aabb.z -= sin(camera.yaw) * 0.01;
+
+		aabb.x += cos(camera.yaw) * 0.1;
+
+		for (int i=0; does_aabb_intersect_blocks(&aabb) && i < 11; i++)
+			aabb.x -= cos(camera.yaw) * 0.01;
+	}
+
+	if (input->forward) {
+
+		aabb.z -= cos(camera.yaw) * 0.1;
+
+		for (int i=0; does_aabb_intersect_blocks(&aabb) && i < 11; i++)
+			aabb.z += cos(camera.yaw) * 0.01;
+
+		aabb.x += sin(camera.yaw) * 0.1;
+
+		for (int i=0; does_aabb_intersect_blocks(&aabb) && i < 11; i++)
+			aabb.x -= sin(camera.yaw) * 0.01;
+
+	} else if (input->backward) {
+
+		aabb.z += cos(camera.yaw) * 0.1;
+
+		for (int i=0; does_aabb_intersect_blocks(&aabb) && i < 11; i++)
+			aabb.z -= cos(camera.yaw) * 0.01;
+
+		aabb.x -= sin(camera.yaw) * 0.1;
+
+		for (int i=0; does_aabb_intersect_blocks(&aabb) && i < 11; i++)
+			aabb.x += sin(camera.yaw) * 0.01;
+	}
+
+	// vertical movement
+	aabb.y += vertical_velocity;
+
+	if (does_aabb_intersect_blocks(&aabb)) {
+
+		for (int i=0; does_aabb_intersect_blocks(&aabb) && i < 11; i++) {
+
+			aabb.y -= vertical_velocity / 10;
+		}
+
+		// jump (only when grounded)
+		if (input->up && vertical_velocity < 0) {
+			vertical_velocity = 0.2;
+		} else {
+			vertical_velocity = -0.01;
+		}
+
+	} else {
+
+		// gravity
+		vertical_velocity -= 0.01;
+	}
+
+	// update camera position
+	camera.x = aabb.x;
+	camera.y = aabb.y + PLAYER_CAM_H;
+	camera.z = aabb.z;
 
 	// update look block every tick (since any movement, i.e. camera turning, running,
 	// being knocked back, etc, and also having broken a block, can influence it)
