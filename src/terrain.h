@@ -7,6 +7,10 @@
 #include "io.h"
 #include "ez_array.h"
 
+// if it's larger than the narrowest block collider, there will be significant gaps in AABB colliders
+// if it's too small, it will impact performance
+#define AABB_COLLISION_DS 0.2
+
 // only 256 texture indices and 256 block types can exist
 
 #define BT_IS_FULLBLOCK(block_type) ((block_type).flags & 0b00000001)
@@ -16,6 +20,9 @@ typedef struct {
 
 	// this function determines what mesh/UV a block gets (including face culling)
 	void (*append_block_to_mesh)(EZArray *mesh_data, int *vertex_count, int x, int y, int z);
+
+	// dx, dy, and dz can be assumed to ALWAYS have the range [0, 1]
+	int (*does_local_point_collide)(float dx, float dy, float dz);
 
 	// TODO stuff like:
 	// - mining level

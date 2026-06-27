@@ -20,11 +20,16 @@ static Chunk *chunks[WORLD_SIZE_IN_CHUNKS * WORLD_SIZE_IN_CHUNKS];
 
 static EZArray delayed_remesh_chunks; // when you want to set a bunch of blocks, remeshing after each is slow and redundant, so you save them to remesh once at the end
 
+static int full_block_collider(float dx, float dy, float dz) {
+
+	return 1;
+}
+
 // block type registry
 static BlockType block_types[256] = {
-	(BlockType) { NULL, 0b00000000 },							// air
-	(BlockType) { ABTM_grass, 0b00000011, 60, { 0, 1, 2 } },	// grass
-	(BlockType) { ABTM_block, 0b00000011, 20, { 3, 3, 3 } }		// stone
+	(BlockType) { NULL, NULL, 0b00000000 },											// air
+	(BlockType) { ABTM_grass, full_block_collider, 0b00000011, 60, { 0, 1, 2 } },	// grass
+	(BlockType) { ABTM_block, full_block_collider, 0b00000011, 20, { 3, 3, 3 } }	// stone
 };
 
 static void populator(int x, int y, int z) {
@@ -205,7 +210,13 @@ void remesh_delayed_chunks() {
 
 int does_point_intersect_blocks(float x, float y, float z) {
 
-	return BT_IS_COLLIDABLE(block_types[get_block_at((int) x, (int) y, (int) z)]);
+	BlockType *block_type = &block_types[get_block_at(floor(x), floor(y), floor(z))];
+
+	return BT_IS_COLLIDABLE(*block_type) && block_type->does_local_point_collide(
+		fmod(fmod(x, 1.0) + 1.0, 1.0),
+		fmod(fmod(y, 1.0) + 1.0, 1.0),
+		fmod(fmod(z, 1.0) + 1.0, 1.0)
+	);
 }
 
 // the AABB is a rectangular prism with a square base centered on x,y,z (extruding up)
@@ -213,11 +224,11 @@ int does_aabb_intersect_blocks(float x, float y, float z, float wl, float h) {
 
 	wl /= 2;
 
-	for (int block_x = floor(x - wl); block_x <= floor(x + wl); block_x++) {
+	for (float block_x = x - wl; block_x <= x + wl; block_x += AABB_COLLISION_DS) {
 
-		for (int block_z = floor(z - wl); block_z <= floor(z + wl); block_z++) {
+		for (float block_z = z - wl; block_z <= z + wl; block_z += AABB_COLLISION_DS) {
 
-			for (int block_y = floor(y); block_y <= floor(y + h); block_y++) {
+			for (float block_y = y; block_y <= y + h; block_y += AABB_COLLISION_DS) {
 
 				if (does_point_intersect_blocks(block_x, block_y, block_z))
 					return 1;
