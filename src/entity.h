@@ -5,7 +5,7 @@
 typedef struct {
 
     float x, y, z;
-    float wl, h;
+    float r, h; // radius, height
 
 } AABB;
 

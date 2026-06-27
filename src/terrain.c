@@ -263,11 +263,9 @@ int does_point_intersect_blocks(float x, float y, float z) {
 
 int does_aabb_intersect_blocks(AABB *aabb) {
 
-	float wl = aabb->wl / 2.0;
-
-	for (float block_x = aabb->x - wl; block_x <= aabb->x + wl;       block_x += AABB_COLLISION_DS) {
-	for (float block_z = aabb->z - wl; block_z <= aabb->z + wl;       block_z += AABB_COLLISION_DS) {
-	for (float block_y = aabb->y;      block_y <= aabb->y + aabb->h;  block_y += AABB_COLLISION_DS) {
+	for (float block_x = aabb->x - aabb->r; block_x <= aabb->x + aabb->r; block_x += AABB_COLLISION_DS) {
+	for (float block_z = aabb->z - aabb->r; block_z <= aabb->z + aabb->r; block_z += AABB_COLLISION_DS) {
+	for (float block_y = aabb->y;           block_y <= aabb->y + aabb->h; block_y += AABB_COLLISION_DS) {
 
 		if (does_point_intersect_blocks(block_x, block_y, block_z))
 			return 1;
@@ -283,15 +281,13 @@ int would_aabb_intersect_block_at(int x, int y, int z, block_t block, AABB *aabb
 	if (!(block_type->flags & MASK_COLLIDABLE))
 		return 0;
 
-	float wl = aabb->wl / 2.0;
-
 	float aabb_x = aabb->x - x;
 	float aabb_y = aabb->y - y;
 	float aabb_z = aabb->z - z;
-	
-	for (float dx = fmax(0, aabb_x - wl); dx <= fmin(1, aabb_x + wl);      dx += AABB_COLLISION_DS) {
-	for (float dz = fmax(0, aabb_z - wl); dz <= fmin(1, aabb_z + wl);      dz += AABB_COLLISION_DS) {
-	for (float dy = fmax(0, aabb_y);      dy <= fmin(1, aabb_y + aabb->h); dy += AABB_COLLISION_DS) {
+
+	for (float dx = fmax(0, aabb_x - aabb->r); dx <= fmin(1, aabb_x + aabb->r); dx += AABB_COLLISION_DS) {
+	for (float dz = fmax(0, aabb_z - aabb->r); dz <= fmin(1, aabb_z + aabb->r); dz += AABB_COLLISION_DS) {
+	for (float dy = fmax(0, aabb_y);           dy <= fmin(1, aabb_y + aabb->h); dy += AABB_COLLISION_DS) {
 
 		if (block_type->does_local_point_collide(dx, dy, dz))
 			return 1;

@@ -7,7 +7,7 @@
 
 #define PLAYER_RADIUS 0.4
 #define PLAYER_HEIGHT 1.7
-#define PLAYER_CAM_H 1.4
+#define PLAYER_CAM_H 1.5
 
 // player (aabb determines position, camera just follows that; camera determines rotation)
 static Transform camera;
@@ -28,14 +28,14 @@ void initialize_player() {
 
 	// position player
 	aabb.x = 8;
-	aabb.z = 8;
 	aabb.y = 30;
+	aabb.z = 8;
 
 	// create a mesh for testing
 	miku_mesh = create_mesh_from_obj("res/miku.obj", load_texture("res/dirt.png"));
 	miku_transform.x = 8;
-	miku_transform.z = 8;
 	miku_transform.y = 30;
+	miku_transform.z = 8;
 
 	// create a sprite mesh for testing
 	sprite_mesh = create_sprite_mesh(0.0f, 0.0f, 0.4f, load_texture("res/dirt.png"));
