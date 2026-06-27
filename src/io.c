@@ -307,6 +307,12 @@ Texture load_texture(const char *path) {
 	return texture_gl;
 }
 
+void free_texture(Texture texture) {
+
+	glDeleteTextures(1, &((TextureGL *) texture)->obj);
+	free(texture);
+}
+
 void remesh_mesh(Mesh mesh, const unsigned char *mesh_data, const int mesh_bytecount, const int mesh_vertcount) {
 
 	// make vertex array
@@ -353,7 +359,7 @@ void mesh_set_texture(Mesh mesh, Texture texture) {
 
 void free_mesh(Mesh mesh) {
 
-	// TODO "free" mesh_gl->vertex_array, in however way that works in OpenGL
+	glDeleteVertexArrays(1, &((MeshGL *) mesh)->vertex_array);
 	free(mesh);
 }
 
