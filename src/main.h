@@ -1,9 +1,9 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include <GL/glew.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
 #define TRUE 1
 #define FALSE 0

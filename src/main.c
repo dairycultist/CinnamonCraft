@@ -1,7 +1,6 @@
 #include "main.h"
 
 #include "io.h"
-#include "renderer.h"
 #include "terrain.h"
 #include "player.h"
 

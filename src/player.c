@@ -1,5 +1,4 @@
 #include "main.h"
-#include "renderer.h"
 #include "terrain.h"
 #include "player.h"
 
@@ -13,9 +12,9 @@ static unsigned short look_block_ticks_to_break;
 
 // misc
 static Transform miku_transform;
-static Mesh *miku_mesh;
-static Mesh *sprite_mesh;
-static Mesh *sky_mesh;
+static Mesh miku_mesh;
+static Mesh sprite_mesh;
+static Mesh sky_mesh;
 
 void initialize_player() {
 

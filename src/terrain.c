@@ -13,7 +13,7 @@ typedef struct { // only this file knows Chunks even exist
 
 } Chunk;
 
-static Texture *blockmap_texture;
+static Texture blockmap_texture;
 
 static Chunk *chunks[WORLD_SIZE_IN_CHUNKS * WORLD_SIZE_IN_CHUNKS];
 
@@ -61,21 +61,21 @@ static void remesh_chunk(Chunk *chunk) {
 					);
 
 	// create mesh
-	remesh_mesh(&chunk->mesh, mesh_data.data, mesh_data.bytecount, vertex_count);
+	remesh_mesh(chunk->mesh, mesh_data.data, mesh_data.bytecount, vertex_count);
 }
 
 void initialize_terrain() {
 
 	blockmap_texture = load_texture("res/blockmap.png");
 	
+	// initialize chunks
 	for (int chunk_x = 0; chunk_x < WORLD_SIZE_IN_CHUNKS; chunk_x++) {
 		for (int chunk_z = 0; chunk_z < WORLD_SIZE_IN_CHUNKS; chunk_z++) {
 
 			int i = chunk_x + WORLD_SIZE_IN_CHUNKS * chunk_z;
 
 			chunks[i] = malloc(sizeof(Chunk));
-			
-			mesh_set_texture(&chunks[i]->mesh, blockmap_texture);
+			chunks[i]->mesh = create_mesh(NULL, 0, 0, blockmap_texture);
 
 			chunks[i]->chunk_x = chunk_x;
 			chunks[i]->chunk_z = chunk_z;
@@ -116,7 +116,7 @@ void draw_chunks(const Transform *camera) {
 		chunk_transform.y = 0.0;
 		chunk_transform.z = chunks[i]->chunk_z * 16;
 
-		draw_mesh(camera, &chunk_transform, &chunks[i]->mesh);
+		draw_mesh(camera, &chunk_transform, chunks[i]->mesh);
 	}
 }
 
