@@ -33,7 +33,7 @@ void initialize_player() {
 	aabb.z = 8;
 
 	// create a sprite mesh for testing
-	crosshair_mesh = create_sprite_mesh(0.0f, 0.0f, 0.5f, 0.5f, 0.4f, load_texture("res/crosshair_8.png"));
+	crosshair_mesh = create_sprite_mesh(0.0f, 0.0f, 0.5f, 0.5f, 64, load_texture("res/crosshair_8.png"));
 
 	sky_mesh = create_sky_mesh();
 }

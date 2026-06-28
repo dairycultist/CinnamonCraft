@@ -82,7 +82,7 @@ static const char *fragment2D =
 "in vec2 frag_UV;\n"
 "out vec4 outColor;\n"
 "void main() {\n"
-	"outColor = texture(tex, frag_UV);\n"
+	"outColor = texture(tex, frag_UV);\n" // we allow full transparency because 2D sprites are rendered painterly
 "}";
 
 // hardcoded values of near plane = 0.01, far plane = 100
@@ -155,6 +155,7 @@ void initialize_io() {
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CCW);
 	glClearColor(1.0f, 0.188f, 0.647f, 1.0f); // since the sky is rendered as a mesh, set the clear color to hot pink so it's obvious
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // only sprites enable blending
 
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 
@@ -666,9 +667,10 @@ void draw_sky_mesh(const Transform *camera, const Mesh mesh) {
 	glEnable(GL_DEPTH_TEST);
 }
 
-Mesh create_sprite_mesh(float u, float v, float anchor_u, float anchor_v, float h, Texture texture) {
+Mesh create_sprite_mesh(float u, float v, float anchor_u, float anchor_v, int h_pixels, Texture texture) {
 	
-	const float w = h * WINDOW_HEIGHT / WINDOW_WIDTH * ((TextureGL *) texture)->h / ((TextureGL *) texture)->w;
+	const float w = h_pixels / (float) WINDOW_WIDTH * ((TextureGL *) texture)->h / ((TextureGL *) texture)->w;
+	const float h = h_pixels / (float) WINDOW_HEIGHT;
 
 	u -= anchor_u * w;
 	v -= anchor_v * h;
@@ -727,5 +729,7 @@ void draw_sprite_mesh(const Mesh mesh) {
 	glUseProgram(shader2D_program);
 
 	// draw
+	glEnable(GL_BLEND);
 	glDrawArrays(GL_TRIANGLES, 0, ((MeshGL *) mesh)->vertex_count);
+	glDisable(GL_BLEND);
 }
