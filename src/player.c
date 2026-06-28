@@ -19,8 +19,6 @@ static int look_block_x, look_block_y, look_block_z;
 static unsigned short look_block_ticks_to_break;
 
 // misc
-static Transform miku_transform;
-static Mesh miku_mesh;
 static Mesh sprite_mesh;
 static Mesh sky_mesh;
 
@@ -31,12 +29,6 @@ void initialize_player() {
 	aabb.y = 30;
 	aabb.z = 8;
 
-	// create a mesh for testing
-	miku_mesh = create_mesh_from_obj("res/miku.obj", load_texture("res/dirt.png"));
-	miku_transform.x = 8;
-	miku_transform.y = 30;
-	miku_transform.z = 8;
-
 	// create a sprite mesh for testing
 	sprite_mesh = create_sprite_mesh(0.0f, 0.0f, 0.4f, load_texture("res/dirt.png"));
 
@@ -44,8 +36,6 @@ void initialize_player() {
 }
 
 void player_process_tick(Input *input) {
-
-	miku_transform.yaw += 0.01;
 
 	// player camera control
 	camera.pitch += input->camera_dy * 0.01;
@@ -180,8 +170,8 @@ void player_process_tick(Input *input) {
 	draw_sky_mesh(&camera, sky_mesh);
 
 	// draw worldly stuff
-	draw_mesh(&camera, &miku_transform, miku_mesh);
 	draw_chunks(&camera);
+	draw_entities(&camera);
 
 	// draw UI
 	draw_sprite_mesh(sprite_mesh);

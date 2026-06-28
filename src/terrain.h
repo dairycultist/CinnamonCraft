@@ -5,7 +5,7 @@
 // abstracts away chunks and the internal format of block types
 
 #include "io.h"
-#include "entity.h"
+#include "entities.h"
 
 // if this value is larger than the narrowest block collider, there will be significant gaps in AABB colliders
 // if this value is too small, it will impact performance

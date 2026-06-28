@@ -7,6 +7,7 @@ int main() {
 
 	initialize_io();
 	initialize_terrain();
+	initialize_entities();
 	initialize_player();
 
 	Input input = { 0 };
@@ -15,6 +16,7 @@ int main() {
 
 		populate_input(&input);
 		
+		entities_process_tick();
 		player_process_tick(&input);
 
 		present();
