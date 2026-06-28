@@ -12,7 +12,10 @@
 // player (aabb determines position, camera just follows that; camera determines rotation)
 static Transform camera;
 static AABB aabb = { 0.0, 0.0, 0.0, PLAYER_RADIUS, PLAYER_HEIGHT };
-static float vertical_velocity;
+
+static float dsway;  // sway is the local left-right axis
+static float dsurge; // surge is the local forward-backward axis
+static float dheave; // heave is the local up-down axis
 
 static int looking_at_block;
 static int look_block_x, look_block_y, look_block_z;
@@ -75,77 +78,52 @@ void player_process_tick(Input *input) {
 	// move in direction of input (splitting movement into its components to allow for sliding)
 	// if colliding, step in opposite direction in small increments until no longer collision
 	// (or completely undid movement + a little to prevent float-error related stuckage)
-	if (input->left) {
+	dsway = (dsway * 4.0 + (input->right - input->left) * 0.1) / 5.0;
+	dsurge = (dsurge * 4.0 + (input->backward - input->forward) * 0.1) / 5.0;
+	
+	// sway
+	aabb.z += dsway * sin(camera.yaw);
 
-		aabb.z -= sin(camera.yaw) * 0.1;
+	for (int i = 0; does_aabb_intersect_blocks(&aabb) && i <= 10; i++)
+		aabb.z -= dsway * sin(camera.yaw) * 0.1;
 
-		for (int i=0; does_aabb_intersect_blocks(&aabb) && i < 11; i++)
-			aabb.z += sin(camera.yaw) * 0.01;
+	aabb.x += dsway * cos(camera.yaw);
 
-		aabb.x -= cos(camera.yaw) * 0.1;
+	for (int i = 0; does_aabb_intersect_blocks(&aabb) && i <= 10; i++)
+	aabb.x -= dsway * cos(camera.yaw) * 0.1;
 
-		for (int i=0; does_aabb_intersect_blocks(&aabb) && i < 11; i++)
-			aabb.x += cos(camera.yaw) * 0.01;
+	// surge
+	aabb.z += dsurge * cos(camera.yaw);
 
-	} else if (input->right) {
+	for (int i = 0; does_aabb_intersect_blocks(&aabb) && i <= 10; i++)
+		aabb.z -= dsurge * cos(camera.yaw) * 0.1;
 
-		aabb.z += sin(camera.yaw) * 0.1;
+	aabb.x -= dsurge * sin(camera.yaw);
 
-		for (int i=0; does_aabb_intersect_blocks(&aabb) && i < 11; i++)
-			aabb.z -= sin(camera.yaw) * 0.01;
+	for (int i = 0; does_aabb_intersect_blocks(&aabb) && i <= 10; i++)
+		aabb.x += dsurge * sin(camera.yaw) * 0.1;
 
-		aabb.x += cos(camera.yaw) * 0.1;
-
-		for (int i=0; does_aabb_intersect_blocks(&aabb) && i < 11; i++)
-			aabb.x -= cos(camera.yaw) * 0.01;
-	}
-
-	if (input->forward) {
-
-		aabb.z -= cos(camera.yaw) * 0.1;
-
-		for (int i=0; does_aabb_intersect_blocks(&aabb) && i < 11; i++)
-			aabb.z += cos(camera.yaw) * 0.01;
-
-		aabb.x += sin(camera.yaw) * 0.1;
-
-		for (int i=0; does_aabb_intersect_blocks(&aabb) && i < 11; i++)
-			aabb.x -= sin(camera.yaw) * 0.01;
-
-	} else if (input->backward) {
-
-		aabb.z += cos(camera.yaw) * 0.1;
-
-		for (int i=0; does_aabb_intersect_blocks(&aabb) && i < 11; i++)
-			aabb.z -= cos(camera.yaw) * 0.01;
-
-		aabb.x -= sin(camera.yaw) * 0.1;
-
-		for (int i=0; does_aabb_intersect_blocks(&aabb) && i < 11; i++)
-			aabb.x += sin(camera.yaw) * 0.01;
-	}
-
-	// vertical movement
-	aabb.y += vertical_velocity;
+	// heave
+	aabb.y += dheave;
 
 	if (does_aabb_intersect_blocks(&aabb)) {
 
-		for (int i=0; does_aabb_intersect_blocks(&aabb) && i < 11; i++) {
+		for (int i = 0; does_aabb_intersect_blocks(&aabb) && i < 11; i++) {
 
-			aabb.y -= vertical_velocity / 10;
+			aabb.y -= dheave / 10;
 		}
 
 		// jump (only when grounded)
-		if (input->up && vertical_velocity < 0) {
-			vertical_velocity = 0.2;
+		if (input->up && dheave < 0) {
+			dheave = 0.2;
 		} else {
-			vertical_velocity = -0.01;
+			dheave = -0.01;
 		}
 
 	} else {
 
 		// gravity
-		vertical_velocity -= 0.01;
+		dheave -= 0.01;
 	}
 
 	// update camera position
