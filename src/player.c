@@ -78,40 +78,42 @@ void player_process_tick(Input *input) {
 	// move in direction of input (splitting movement into its components to allow for sliding)
 	// if colliding, step in opposite direction in small increments until no longer collision
 	// (or completely undid movement + a little to prevent float-error related stuckage)
-	dsway = (dsway * 4.0 + (input->right - input->left) * 0.1) / 5.0;
+	dsway  = (dsway  * 4.0 + (input->right    - input->left)    * 0.1) / 5.0;
 	dsurge = (dsurge * 4.0 + (input->backward - input->forward) * 0.1) / 5.0;
+	
+	// when dsway/dsurge are really small, dsway/dsurge / 10.0 == 0.0, so we end up clipping ever-so-slightly into the wall
+	// so prevent them from being really small
+	if (fabs(dsway) < 0.01)
+		dsway = 0.0;
+
+	if (fabs(dsurge) < 0.01)
+		dsurge = 0.0;
 	
 	// sway
 	aabb.z += dsway * sin(camera.yaw);
-
 	for (int i = 0; does_aabb_intersect_blocks(&aabb) && i <= 10; i++)
-		aabb.z -= dsway * sin(camera.yaw) * 0.1;
+		aabb.z -= dsway * sin(camera.yaw) / 10.0;
 
 	aabb.x += dsway * cos(camera.yaw);
-
 	for (int i = 0; does_aabb_intersect_blocks(&aabb) && i <= 10; i++)
-	aabb.x -= dsway * cos(camera.yaw) * 0.1;
+		aabb.x -= dsway * cos(camera.yaw) / 10.0;
 
 	// surge
 	aabb.z += dsurge * cos(camera.yaw);
-
 	for (int i = 0; does_aabb_intersect_blocks(&aabb) && i <= 10; i++)
-		aabb.z -= dsurge * cos(camera.yaw) * 0.1;
+		aabb.z -= dsurge * cos(camera.yaw) / 10.0;
 
 	aabb.x -= dsurge * sin(camera.yaw);
-
 	for (int i = 0; does_aabb_intersect_blocks(&aabb) && i <= 10; i++)
-		aabb.x += dsurge * sin(camera.yaw) * 0.1;
+		aabb.x += dsurge * sin(camera.yaw) / 10.0;
 
 	// heave
 	aabb.y += dheave;
 
 	if (does_aabb_intersect_blocks(&aabb)) {
 
-		for (int i = 0; does_aabb_intersect_blocks(&aabb) && i < 11; i++) {
-
-			aabb.y -= dheave / 10;
-		}
+		for (int i = 0; does_aabb_intersect_blocks(&aabb) && i <= 10; i++)
+			aabb.y -= dheave / 10.0;
 
 		// jump (only when grounded)
 		if (input->up && dheave < 0) {
