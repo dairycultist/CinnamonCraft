@@ -62,34 +62,6 @@ void player_process_tick(Input *input) {
 		camera.pitch = -M_PI / 2;
 	}
 
-	// placing blocks
-	if (input->use) {
-
-		int hit_x, hit_y, hit_z;
-
-		if (raycast_blocks(&camera, 5.0, 1, &hit_x, &hit_y, &hit_z) && !would_aabb_intersect_block_at(hit_x, hit_y, hit_z, 1, &aabb))
-			set_block_at(hit_x, hit_y, hit_z, 1);
-	}
-
-	// breaking blocks
-	if (looking_at_block && input->attack) {
-
-		if (lookblock_breakticks_left == 0) {
-
-			set_block_at(lookblock_x, lookblock_y, lookblock_z, 0);
-
-		} else {
-
-			lookblock_breakticks_left--;
-			mesh_set_texture(crosshair_mesh, crosshair_textures[8 - 8 * lookblock_breakticks_left / lookblock_breakticks_total]);
-		}
-
-	} else {
-
-		lookblock_breakticks_left = lookblock_breakticks_total;
-		mesh_set_texture(crosshair_mesh, crosshair_textures[0]);
-	}
-
 	// move in direction of input (splitting movement into its components to allow for sliding)
 	// if colliding, step in opposite direction in small increments until no longer collision
 	// (or completely undid movement + a little to prevent float-error related stuckage)
@@ -169,6 +141,34 @@ void player_process_tick(Input *input) {
 
 		lookblock_breakticks_total = get_block_ticks_to_break(get_block_at(lookblock_x, lookblock_y, lookblock_z));
 		lookblock_breakticks_left = lookblock_breakticks_total;
+	}
+
+	// placing blocks
+	if (input->use) {
+
+		int hit_x, hit_y, hit_z;
+
+		if (raycast_blocks(&camera, 5.0, 1, &hit_x, &hit_y, &hit_z) && !would_aabb_intersect_block_at(hit_x, hit_y, hit_z, 1, &aabb))
+			set_block_at(hit_x, hit_y, hit_z, 1);
+	}
+
+	// breaking blocks
+	if (looking_at_block && input->attack) {
+
+		if (lookblock_breakticks_left == 0) {
+
+			set_block_at(lookblock_x, lookblock_y, lookblock_z, 0);
+
+		} else {
+
+			lookblock_breakticks_left--;
+			mesh_set_texture(crosshair_mesh, crosshair_textures[8 - 8 * lookblock_breakticks_left / lookblock_breakticks_total]);
+		}
+
+	} else {
+
+		lookblock_breakticks_left = lookblock_breakticks_total;
+		mesh_set_texture(crosshair_mesh, crosshair_textures[0]);
 	}
 
 	// render the sky as just a sprite covering the whole screen

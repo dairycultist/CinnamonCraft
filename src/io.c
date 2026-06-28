@@ -43,7 +43,7 @@ static const char *fragment3D =
 "in vec2 frag_UV;\n"
 "out vec4 outColor;\n"
 "void main() {\n"
-	"float c = dot(normal_camera, vec3(0.7, 0.7, 0)) * 0.3 + 0.7;\n"
+	"float c = dot(normal_camera, vec3(0.436, 0.9, 0)) * 0.3 + 0.7;\n"
 	"outColor = texture(tex, frag_UV) * vec4(c, c, c, 1.0);\n"
 	"if (outColor.a == 0) { discard; }" // texture clip transparency
 "}";
