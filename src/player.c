@@ -83,29 +83,38 @@ void player_process_tick(Input *input) {
 	
 	// when dsway/dsurge are really small, dsway/dsurge / 10.0 == 0.0, so we end up clipping ever-so-slightly into the wall
 	// so prevent them from being really small
-	if (fabs(dsway) < 0.01)
-		dsway = 0.0;
-
-	if (fabs(dsurge) < 0.01)
-		dsurge = 0.0;
 	
 	// sway
-	aabb.z += dsway * sin(camera.yaw);
-	for (int i = 0; does_aabb_intersect_blocks(&aabb) && i <= 10; i++)
-		aabb.z -= dsway * sin(camera.yaw) / 10.0;
+	if (fabs(dsway) < 0.01) {
 
-	aabb.x += dsway * cos(camera.yaw);
-	for (int i = 0; does_aabb_intersect_blocks(&aabb) && i <= 10; i++)
-		aabb.x -= dsway * cos(camera.yaw) / 10.0;
+		dsway = 0.0;
+	
+	} else {
+
+		aabb.z += dsway * sin(camera.yaw);
+		for (int i = 0; does_aabb_intersect_blocks(&aabb) && i <= 10; i++)
+			aabb.z -= dsway * sin(camera.yaw) / 10.0;
+
+		aabb.x += dsway * cos(camera.yaw);
+		for (int i = 0; does_aabb_intersect_blocks(&aabb) && i <= 10; i++)
+			aabb.x -= dsway * cos(camera.yaw) / 10.0;
+	}
 
 	// surge
-	aabb.z += dsurge * cos(camera.yaw);
-	for (int i = 0; does_aabb_intersect_blocks(&aabb) && i <= 10; i++)
-		aabb.z -= dsurge * cos(camera.yaw) / 10.0;
+	if (fabs(dsurge) < 0.01) {
 
-	aabb.x -= dsurge * sin(camera.yaw);
-	for (int i = 0; does_aabb_intersect_blocks(&aabb) && i <= 10; i++)
-		aabb.x += dsurge * sin(camera.yaw) / 10.0;
+		dsurge = 0.0;
+
+	} else {
+		
+		aabb.z += dsurge * cos(camera.yaw);
+		for (int i = 0; does_aabb_intersect_blocks(&aabb) && i <= 10; i++)
+			aabb.z -= dsurge * cos(camera.yaw) / 10.0;
+
+		aabb.x -= dsurge * sin(camera.yaw);
+		for (int i = 0; does_aabb_intersect_blocks(&aabb) && i <= 10; i++)
+			aabb.x += dsurge * sin(camera.yaw) / 10.0;
+	}
 
 	// heave
 	aabb.y += dheave;

@@ -263,9 +263,10 @@ int does_point_intersect_blocks(float x, float y, float z) {
 
 int does_aabb_intersect_blocks(AABB *aabb) {
 
-	for (float block_x = aabb->x - aabb->r; block_x <= aabb->x + aabb->r; block_x += AABB_COLLISION_DS) {
-	for (float block_z = aabb->z - aabb->r; block_z <= aabb->z + aabb->r; block_z += AABB_COLLISION_DS) {
-	for (float block_y = aabb->y;           block_y <= aabb->y + aabb->h; block_y += AABB_COLLISION_DS) {
+	//                                                                     V for float imprecision from        V this
+	for (float block_x = aabb->x - aabb->r; block_x <= aabb->x + aabb->r + AABB_COLLISION_DS * 0.5; block_x += AABB_COLLISION_DS) {
+	for (float block_z = aabb->z - aabb->r; block_z <= aabb->z + aabb->r + AABB_COLLISION_DS * 0.5; block_z += AABB_COLLISION_DS) {
+	for (float block_y = aabb->y;           block_y <= aabb->y + aabb->h + AABB_COLLISION_DS * 0.5; block_y += AABB_COLLISION_DS) {
 
 		if (does_point_intersect_blocks(block_x, block_y, block_z))
 			return 1;
