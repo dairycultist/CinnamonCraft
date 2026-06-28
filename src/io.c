@@ -666,9 +666,12 @@ void draw_sky_mesh(const Transform *camera, const Mesh mesh) {
 	glEnable(GL_DEPTH_TEST);
 }
 
-Mesh create_sprite_mesh(float u, float v, float h, Texture texture) {
+Mesh create_sprite_mesh(float u, float v, float anchor_u, float anchor_v, float h, Texture texture) {
 	
 	const float w = h * WINDOW_HEIGHT / WINDOW_WIDTH * ((TextureGL *) texture)->h / ((TextureGL *) texture)->w;
+
+	u -= anchor_u * w;
+	v -= anchor_v * h;
 
 	const float mesh_data[] = {
 		u,     v,     0.0f, 0.0f,

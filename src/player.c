@@ -22,7 +22,7 @@ static int look_block_x, look_block_y, look_block_z;
 static unsigned short look_block_ticks_to_break;
 
 // misc
-static Mesh sprite_mesh;
+static Mesh crosshair_mesh;
 static Mesh sky_mesh;
 
 void initialize_player() {
@@ -33,7 +33,7 @@ void initialize_player() {
 	aabb.z = 8;
 
 	// create a sprite mesh for testing
-	sprite_mesh = create_sprite_mesh(0.0f, 0.0f, 0.4f, load_texture("res/dirt.png"));
+	crosshair_mesh = create_sprite_mesh(0.0f, 0.0f, 0.5f, 0.5f, 0.4f, load_texture("res/crosshair_8.png"));
 
 	sky_mesh = create_sky_mesh();
 }
@@ -163,5 +163,5 @@ void player_process_tick(Input *input) {
 	draw_entities(&camera);
 
 	// draw UI
-	draw_sprite_mesh(sprite_mesh);
+	draw_sprite_mesh(crosshair_mesh);
 }

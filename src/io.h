@@ -50,7 +50,10 @@ Mesh create_sky_mesh();
 void draw_sky_mesh(const Transform *camera, const Mesh mesh);
 
 // 2D meshes
-Mesh create_sprite_mesh(float u, float v, float h, Texture texture);
+// u/v [-1, 1] are the screen UV where the anchor should be aligned
+// anchor_u/anchor_v [0, 1] are the sprite UV of the anchor
+// h is height relative to window height (width is calculated automatically)
+Mesh create_sprite_mesh(float u, float v, float anchor_u, float anchor_v, float h, Texture texture);
 void draw_sprite_mesh(const Mesh mesh);
 
 // misc
