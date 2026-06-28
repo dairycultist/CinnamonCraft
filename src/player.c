@@ -18,11 +18,13 @@ static float dsurge; // surge is the local forward-backward axis
 static float dheave; // heave is the local up-down axis
 
 static int looking_at_block;
-static int look_block_x, look_block_y, look_block_z;
-static unsigned short look_block_ticks_to_break;
+static int lookblock_x, lookblock_y, lookblock_z;
+static unsigned short lookblock_breakticks_left;
+static unsigned short lookblock_breakticks_total;
 
 // misc
 static Mesh crosshair_mesh;
+static Texture crosshair_textures[9];
 static Mesh sky_mesh;
 
 void initialize_player() {
@@ -32,8 +34,17 @@ void initialize_player() {
 	aabb.y = 30;
 	aabb.z = 8;
 
-	// create a sprite mesh for testing
-	crosshair_mesh = create_sprite_mesh(0.0f, 0.0f, 0.5f, 0.5f, 64, load_texture("res/crosshair_8.png"));
+	// create the crosshair
+	crosshair_textures[0] = load_texture("res/crosshair_0.png");
+	crosshair_textures[1] = load_texture("res/crosshair_1.png");
+	crosshair_textures[2] = load_texture("res/crosshair_2.png");
+	crosshair_textures[3] = load_texture("res/crosshair_3.png");
+	crosshair_textures[4] = load_texture("res/crosshair_4.png");
+	crosshair_textures[5] = load_texture("res/crosshair_5.png");
+	crosshair_textures[6] = load_texture("res/crosshair_6.png");
+	crosshair_textures[7] = load_texture("res/crosshair_7.png");
+	crosshair_textures[8] = load_texture("res/crosshair_8.png");
+	crosshair_mesh = create_sprite_mesh(0.0f, 0.0f, 0.5f, 0.5f, 64, crosshair_textures[0]);
 
 	sky_mesh = create_sky_mesh();
 }
@@ -63,16 +74,20 @@ void player_process_tick(Input *input) {
 	// breaking blocks
 	if (looking_at_block && input->attack) {
 
-		printf("%d\n", look_block_ticks_to_break);
+		if (lookblock_breakticks_left == 0) {
 
-		if (look_block_ticks_to_break == 0) {
-
-			set_block_at(look_block_x, look_block_y, look_block_z, 0);
+			set_block_at(lookblock_x, lookblock_y, lookblock_z, 0);
 
 		} else {
 
-			look_block_ticks_to_break--;
+			lookblock_breakticks_left--;
+			mesh_set_texture(crosshair_mesh, crosshair_textures[8 - 8 * lookblock_breakticks_left / lookblock_breakticks_total]);
 		}
+
+	} else {
+
+		lookblock_breakticks_left = lookblock_breakticks_total;
+		mesh_set_texture(crosshair_mesh, crosshair_textures[0]);
 	}
 
 	// move in direction of input (splitting movement into its components to allow for sliding)
@@ -144,15 +159,16 @@ void player_process_tick(Input *input) {
 
 	// update look block every tick (since any movement, i.e. camera turning, running,
 	// being knocked back, etc, and also having broken a block, can influence it)
-	int prev_look_block_x = look_block_x;
-	int prev_look_block_y = look_block_y;
-	int prev_look_block_z = look_block_z;
+	int prev_lookblock_x = lookblock_x;
+	int prev_lookblock_y = lookblock_y;
+	int prev_lookblock_z = lookblock_z;
 
-	looking_at_block = raycast_blocks(&camera, 5.0, 0, &look_block_x, &look_block_y, &look_block_z);
+	looking_at_block = raycast_blocks(&camera, 5.0, 0, &lookblock_x, &lookblock_y, &lookblock_z);
 
-	if (looking_at_block && (prev_look_block_x != look_block_x || prev_look_block_y != look_block_y || prev_look_block_z != look_block_z)) {
+	if (looking_at_block && (prev_lookblock_x != lookblock_x || prev_lookblock_y != lookblock_y || prev_lookblock_z != lookblock_z)) {
 
-		look_block_ticks_to_break = get_block_ticks_to_break(get_block_at(look_block_x, look_block_y, look_block_z));
+		lookblock_breakticks_total = get_block_ticks_to_break(get_block_at(lookblock_x, lookblock_y, lookblock_z));
+		lookblock_breakticks_left = lookblock_breakticks_total;
 	}
 
 	// render the sky as just a sprite covering the whole screen
