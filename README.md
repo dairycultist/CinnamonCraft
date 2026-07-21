@@ -2,17 +2,14 @@
 
 Open source Minecraft beta 1.7.3 client written in C + OpenGL.
 
-featherweight! open-source! C!! CONSOLE + CONTROLLER + COUCH GAMING!!!!!
+## References
+
+I like the medieval fantasy vibe of Minecraft, so I wanna lean into that. I also like the old console-edition crafting menu (couch gaming omg)
 
 ![](https://pbs.twimg.com/media/HFsXpGGXsAAr-Cl?format=jpg&name=small)
 
 ![](https://i.redd.it/4orvszi8284c1.png)
 
-What to do to get basic login + movement + chunk loading
-- parse all packets, even if you ignore them
-- implement these packets https://pixelbrush.dev/beta-wiki/
-    - pre login
-    - login
-    - player pos and rot
-    - set chunk vis
-    - chunk
+![](https://i.redd.it/e6biyog703ne1.png)
+
+![](https://pbs.twimg.com/media/EkfTl0FVMAAaQ49.png)

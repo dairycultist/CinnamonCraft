@@ -17,6 +17,10 @@ unsigned int r_hash(unsigned int seed) {
 #define MASK_FULLBLOCK 0b00000001
 #define MASK_COLLIDABLE 0b00000010
 
+#define BLOCK_AIR 0
+#define BLOCK_GRASS 1
+#define BLOCK_STONE 2
+
 // block mesh types
 #define MESH_EMPTY 0
 #define MESH_TOP_AND_BOTTOM 1
@@ -71,9 +75,10 @@ static int full_block_collider(float dx, float dy, float dz) {
 
 // block type registry
 static BlockType block_types[256] = {
-	(BlockType) { 0 },																		// air
-	(BlockType) { full_block_collider, 0b00000011, 60, { MESH_TOP_AND_BOTTOM, 0, 1, 2 } },	// grass
-	(BlockType) { full_block_collider, 0b00000011, 20, { MESH_TOP_AND_BOTTOM, 3, 3, 3 } }	// stone
+
+	[ BLOCK_AIR ]	= (BlockType) { 0 },
+	[ BLOCK_GRASS ]	= (BlockType) { full_block_collider, 0b00000011, 60, { MESH_TOP_AND_BOTTOM, 0, 1, 2 } },
+	[ BLOCK_STONE ]	= (BlockType) { full_block_collider, 0b00000011, 20, { MESH_TOP_AND_BOTTOM, 3, 3, 3 } }
 };
 
 static void populator(int x, int y, int z) {
