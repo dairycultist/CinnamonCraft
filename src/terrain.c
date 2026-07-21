@@ -64,9 +64,11 @@ typedef struct { // only this file knows Chunks even exist
 
 static Texture blockmap_texture;
 
-static Chunk *chunks[MAX_CHUNK_COUNT]; // first-come, first-serve; empty spots are NULL
-
+// both of these store Chunk *
+static EZArray chunks; // first-come, first-serve; empty spots are NULL
 static EZArray delayed_remesh_chunks; // when you want to set a bunch of blocks, remeshing after each is slow and redundant, so you save them to remesh once at the end
+
+#define MAX_CHUNK_COUNT (chunks.bytecount / sizeof(Chunk *))
 
 static int full_block_collider(float dx, float dy, float dz) {
 
@@ -264,21 +266,21 @@ void draw_chunks(const Transform *camera) {
 
 	for (int i = 0; i < MAX_CHUNK_COUNT; i++) {
 
-		if (!chunks[i])
+		if (!INDEX_EZARRAY(chunks, Chunk *, i))
 			continue;
 
-		chunk_transform.x = chunks[i]->chunk_x * 16;
+		chunk_transform.x = INDEX_EZARRAY(chunks, Chunk *, i)->chunk_x * 16;
 		chunk_transform.y = 0.0;
-		chunk_transform.z = chunks[i]->chunk_z * 16;
+		chunk_transform.z = INDEX_EZARRAY(chunks, Chunk *, i)->chunk_z * 16;
 
-		draw_mesh(camera, &chunk_transform, chunks[i]->mesh);
+		draw_mesh(camera, &chunk_transform, INDEX_EZARRAY(chunks, Chunk *, i)->mesh);
 	}
 }
 
 static int get_chunk_index_at(int chunk_x, int chunk_z) {
 
 	for (int i = 0; i < MAX_CHUNK_COUNT; i++)
-		if (chunks[i] && chunks[i]->chunk_x == chunk_x && chunks[i]->chunk_z == chunk_z)
+		if (INDEX_EZARRAY(chunks, Chunk *, i) && INDEX_EZARRAY(chunks, Chunk *, i)->chunk_x == chunk_x && INDEX_EZARRAY(chunks, Chunk *, i)->chunk_z == chunk_z)
 			return i;
 
 	return -1;
@@ -287,7 +289,7 @@ static int get_chunk_index_at(int chunk_x, int chunk_z) {
 static int get_free_chunk_index() {
 
 	for (int i = 0; i < MAX_CHUNK_COUNT; i++)
-		if (!chunks[i])
+		if (!INDEX_EZARRAY(chunks, Chunk *, i))
 			return i;
 
 	return -1;
@@ -300,26 +302,33 @@ void create_chunk_at(int chunk_x, int chunk_z) {
 	if (i != -1)
 		return; // chunk already exists at that position
 
+	Chunk *chunk = malloc(sizeof(Chunk));
+	chunk->mesh = create_mesh(NULL, 0, 0, blockmap_texture);
+	chunk->chunk_x = chunk_x;
+	chunk->chunk_z = chunk_z;
+
 	i = get_free_chunk_index();
 
-	if (i == -1)
-		return; // no room for a new chunk
+	if (i == -1) { // append chunk
 
-	chunks[i] = malloc(sizeof(Chunk));
-	chunks[i]->mesh = create_mesh(NULL, 0, 0, blockmap_texture);
+		append_ezarray(&chunks, &chunk, sizeof(Chunk *));
 
-	chunks[i]->chunk_x = chunk_x;
-	chunks[i]->chunk_z = chunk_z;
+	} else { // insert chunk
+
+		INDEX_EZARRAY(chunks, Chunk *, i) = chunk;
+	}
 }
 
 void destroy_chunk_at(int chunk_x, int chunk_z) {
 
 	int i = get_chunk_index_at(chunk_x, chunk_z);
 
-	free_mesh(chunks[i]->mesh);
-	free(chunks[i]);
+	free_mesh(INDEX_EZARRAY(chunks, Chunk *, i)->mesh);
+	free(INDEX_EZARRAY(chunks, Chunk *, i));
 
-	chunks[i] = NULL;
+	INDEX_EZARRAY(chunks, Chunk *, i) = NULL;
+
+	// TODO should make sure that this chunk isn't stored in delayed_remesh_chunks
 }
 
 static Chunk *get_chunk_of_block(int x, int y, int z) {
@@ -329,7 +338,7 @@ static Chunk *get_chunk_of_block(int x, int y, int z) {
 	
 	int i = get_chunk_index_at((int) floor(x / 16.0), (int) floor(z / 16.0));
 
-	return i == -1 ? NULL : chunks[i];
+	return i == -1 ? NULL : INDEX_EZARRAY(chunks, Chunk *, i);
 }
 
 block_t get_block_at(int x, int y, int z) {
@@ -391,16 +400,14 @@ void set_delay_remesh_block_at(int x, int y, int z, block_t block) {
 	chunk->blocks[x % 16][y][z % 16] = block;
 
 	// save chunk for delayed remeshing if it's not already saved
-	if (!contains_ezarray(&delayed_remesh_chunks, &chunk, sizeof(Chunk *)))
+	if (index_of_ezarray(&delayed_remesh_chunks, &chunk, sizeof(Chunk *)) == -1)
 		append_ezarray(&delayed_remesh_chunks, &chunk, sizeof(Chunk *));
 }
 
 void remesh_delayed_chunks() {
 
-	Chunk **chunks = (Chunk **) delayed_remesh_chunks.data;
-
 	for (int i = 0; i < delayed_remesh_chunks.bytecount / sizeof(Chunk *); i++)
-		remesh_chunk(chunks[i]);
+		remesh_chunk(INDEX_EZARRAY(delayed_remesh_chunks, Chunk *, i));
 
 	clear_ezarray(&delayed_remesh_chunks);
 }

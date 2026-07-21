@@ -12,7 +12,9 @@ typedef struct {
 } EZArray;
 
 void append_ezarray(EZArray *array, void *data, int data_length);
-int contains_ezarray(EZArray *array, void *data, int data_length);
+int index_of_ezarray(EZArray *array, void *data, int data_length);
 void clear_ezarray(EZArray *array);
+
+#define INDEX_EZARRAY(array, type, i) (*((type*) ((array).data + (i) * sizeof(type))))
 
 #endif

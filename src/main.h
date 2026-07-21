@@ -11,7 +11,4 @@
 
 #define FOV 90
 
-// beyond this, the client will start dropping chunks
-#define MAX_CHUNK_COUNT 128
-
 #endif

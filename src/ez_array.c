@@ -22,13 +22,13 @@ void append_ezarray(EZArray *array, void *data, int data_length) {
 	array->bytecount += data_length;
 }
 
-int contains_ezarray(EZArray *array, void *data, int data_length) {
+int index_of_ezarray(EZArray *array, void *data, int data_length) {
 
 	for (int i = 0; i < array->bytecount; i += data_length)
 		if (!memcmp(data, array->data + i, data_length))
-			return 1;
+			return i;
 
-	return 0;
+	return -1;
 }
 
 void clear_ezarray(EZArray *array) {
