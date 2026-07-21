@@ -4,6 +4,8 @@
 #include "terrain.h"
 #include "player.h"
 
+#include <stdio.h>
+
 int main() {
 
 	initialize_io();
@@ -18,7 +20,7 @@ int main() {
 
 	Input input = { 0 };
 
-	// drain the packet queue every tick (3 frames)
+	int frames_until_tick = 3;
 
 	// todo (for movement + chunk loading)
 	// - player pos and rot
@@ -27,6 +29,22 @@ int main() {
 
 	while (game_is_running()) {
 
+		if (--frames_until_tick == 0) {
+
+			frames_until_tick = 3;
+
+			// drain the packet queue every tick
+			int limit = 20;
+
+			Packet packet;
+			packet_t type;
+			
+			while (--limit > 0 && (type = read_packet(&packet)) != PKT_EOB) {
+				
+				printf("%d\n", type);
+			}
+		}
+
 		populate_input(&input);
 		
 		entities_process_tick();
@@ -34,8 +52,10 @@ int main() {
 
 		present();
 	}
-	
+
 	send_packet(PKT_DISCONNECT, (Packet) { .disconnect = { "disconnect.quitting" } });
+
+	// sometimes the socket closes so fast that this final packet doesn't get through (if you sleep it works), kinda lame but idc rn
 
 	return 0;
 }

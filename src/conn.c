@@ -4,6 +4,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 
 #include "main.h"
 #include "conn.h"
@@ -76,6 +77,9 @@ void send_packet(packet_t type, Packet data) {
             send_string16(data.pre_login.string);
             break;
 
+        case PKT_SET_TIME: break; // never sent by client
+        case PKT_SET_SPAWN_POSITION: break; // never sent by client
+
         case PKT_DISCONNECT:
             send_string16(data.disconnect.reason);
             break;
@@ -89,7 +93,20 @@ packet_t read_packet(Packet *out) {
 
     packet_t type;
 
-    READ_I8(&type);
+    int result = read(sock, &type, 1);
+
+    if (result == 0) {
+        strcpy(out->disconnect.reason, "Server shut down unexpectedly");
+        return PKT_DISCONNECT;
+    }
+
+    if (result == -1) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            return PKT_EOB;
+        } else {
+            // an actual error occurred, but I don't really care
+        }
+    }
 
     // should ideally parse all packets, even if you ignore them
     switch (type) {
@@ -105,12 +122,23 @@ packet_t read_packet(Packet *out) {
             read_string16(out->pre_login.string);
             break;
 
+        case PKT_SET_TIME:
+            READ_I64(&out->set_time.time);
+            break;
+
+        case PKT_SET_SPAWN_POSITION:
+            READ_I32(&out->set_spawn_position.x);
+            READ_I32(&out->set_spawn_position.y);
+            READ_I32(&out->set_spawn_position.z);
+            break;
+
         case PKT_DISCONNECT:
             read_string16(out->disconnect.reason);
             break;
 
         default:
-            break;
+            fprintf(stderr, "Received package 0x%02x which we don't know how to handle!", type);
+            exit(1);
     }
 
     return type;
@@ -119,7 +147,7 @@ packet_t read_packet(Packet *out) {
 void initialize_conn() {
 
 	// initialize server connection
-	sock = socket(AF_INET, SOCK_STREAM, 0);
+	sock = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     if (sock < 0) {
 		perror("Could not create socket");
         exit(1);
@@ -134,7 +162,7 @@ void initialize_conn() {
         exit(1);
     }
 
-    if (connect(sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+    if (connect(sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0 && errno != EINPROGRESS) {
         perror("Could not connect to server");
         exit(1);
     }

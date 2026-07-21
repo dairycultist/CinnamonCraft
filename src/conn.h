@@ -5,8 +5,8 @@
 
 typedef unsigned char packet_t;
 
-// returned by read_packet when there are no more packets in the queue (also lets us ignore packets that we haven't implemented yet)
-#define PKT_EOQ 0xFE
+// returned by read_packet when there are no more packets in the buffer
+#define PKT_EOB 0xFE
 
 // https://pixelbrush.dev/beta-wiki/networking/packets/001-login
 #define PKT_LOGIN 0x01
@@ -27,6 +27,22 @@ typedef struct {
 
 } PreLogin;
 
+// https://pixelbrush.dev/beta-wiki/networking/packets/004-set-time
+#define PKT_SET_TIME 0x04
+typedef struct {
+
+    int64_t time;
+
+} SetTime;
+
+// https://pixelbrush.dev/beta-wiki/networking/packets/006-set-spawn-position
+#define PKT_SET_SPAWN_POSITION 0x06
+typedef struct {
+
+    int32_t x, y, z;
+
+} SetSpawnPosition;
+
 // https://pixelbrush.dev/beta-wiki/networking/packets/255-disconnect
 #define PKT_DISCONNECT 0xFF
 typedef struct {
@@ -39,6 +55,8 @@ typedef union {
 
     Login login;
     PreLogin pre_login;
+    SetTime set_time;
+    SetSpawnPosition set_spawn_position;
     Disconnect disconnect;
 
 } Packet;
