@@ -18,10 +18,10 @@ static void populator(int x, int y, int z) {
 int main() {
 
 	initialize_io();
-	// initialize_conn();
+	initialize_conn();
 
-    // send_packet(PKT_PRE_LOGIN, (Packet) { .pre_login = { "Steve" } });
-    // send_packet(PKT_LOGIN, (Packet) { .login = { 14, "Steve" } });
+    send_packet(PKT_PRE_LOGIN, (Packet) { .pre_login = { "Steve" } });
+    send_packet(PKT_LOGIN, (Packet) { .login = { 14, "Steve" } });
 
 	initialize_terrain();
 
@@ -68,16 +68,16 @@ int main() {
 
 			frames_until_tick = 3;
 
-			// // drain the packet queue every tick
-			// int limit = 20;
+			// drain the packet queue every tick
+			int limit = 20;
 
-			// Packet packet;
-			// packet_t type;
+			Packet packet;
+			packet_t type;
 			
-			// while (--limit > 0 && (type = read_packet(&packet)) != PKT_EOB) {
+			while (--limit > 0 && (type = read_packet(&packet)) != PKT_EOB) {
 				
-			// 	printf("%d\n", type);
-			// }
+				printf("%d\n", type);
+			}
 		}
 
 		populate_input(&input);

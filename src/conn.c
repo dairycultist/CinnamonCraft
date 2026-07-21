@@ -77,8 +77,11 @@ void send_packet(packet_t type, Packet data) {
             send_string16(data.pre_login.string);
             break;
 
-        case PKT_SET_TIME: break; // never sent by client
+        case PKT_SET_TIME: break;           // never sent by client
         case PKT_SET_SPAWN_POSITION: break; // never sent by client
+        case PKT_SPAWN_ITEM: break;         // never sent by client
+        case PKT_SPAWN_MOB: break;          // never sent by client
+        case PKT_ENTITY_VELOCITY: break;    // never sent by client
 
         case PKT_DISCONNECT:
             send_string16(data.disconnect.reason);
@@ -130,6 +133,55 @@ packet_t read_packet(Packet *out) {
             READ_I32(&out->set_spawn_position.x);
             READ_I32(&out->set_spawn_position.y);
             READ_I32(&out->set_spawn_position.z);
+            break;
+
+        case PKT_SPAWN_ITEM:
+            READ_I32(&out->spawn_item.entity_id);
+            READ_I16(&out->spawn_item.item_id);
+            READ_I8(&out->spawn_item.item_amount);
+            READ_I16(&out->spawn_item.item_metadata);
+            READ_I32(&out->spawn_item.x);
+            READ_I32(&out->spawn_item.y);
+            READ_I32(&out->spawn_item.z);
+            READ_I8(&out->spawn_item.yaw);
+            READ_I8(&out->spawn_item.pitch);
+            READ_I8(&out->spawn_item.roll);
+            break;
+        
+        case PKT_SPAWN_MOB:
+            READ_I32(&out->spawn_mob.entity_id);
+            READ_I8(&out->spawn_mob.mob_type);
+            READ_I32(&out->spawn_mob.x);
+            READ_I32(&out->spawn_mob.y);
+            READ_I32(&out->spawn_mob.z);
+            READ_I8(&out->spawn_mob.yaw);
+            READ_I8(&out->spawn_mob.pitch);
+
+            // reading entity metadata is more annoying
+            int8_t header;
+            READ_I8(&header);
+            int8_t unused_buf[256];
+            while (header != 0x7F) {
+                
+                switch (header >> 5) {
+                    case 0: READ_I8(unused_buf); break;
+                    case 1: READ_I16(unused_buf); break;
+                    case 2: READ_I32(unused_buf); break;
+                    case 3: READ_I32(unused_buf); break; // technically float
+                    case 4: read_string16(unused_buf); break;
+                    case 5: READ_I16(unused_buf); READ_I8(unused_buf); READ_I16(unused_buf); break;
+                    case 6: READ_I32(unused_buf); READ_I32(unused_buf); READ_I32(unused_buf); break;
+                }
+
+                READ_I8(&header);
+            }
+            break;
+
+        case PKT_ENTITY_VELOCITY:
+            READ_I32(&out->entity_velocity.entity_id);
+            READ_I16(&out->entity_velocity.x_vel);
+            READ_I16(&out->entity_velocity.y_vel);
+            READ_I16(&out->entity_velocity.z_vel);
             break;
 
         case PKT_DISCONNECT:
