@@ -16,6 +16,11 @@ int main() {
 
 	// drain the packet queue every tick (3 frames)
 
+	// todo (for movement + chunk loading)
+	// - player pos and rot
+	// - set chunk vis
+	// - chunk
+
 	while (game_is_running()) {
 
 		populate_input(&input);

@@ -8,27 +8,25 @@
 #include "main.h"
 #include "conn.h"
 
-// What to do to get basic login + movement + chunk loading
-// - parse all packets, even if you ignore them
-// - implement these packets https://pixelbrush.dev/beta-wiki/
-//     - pre login
-//     - login
-//     - player pos and rot
-//     - set chunk vis
-//     - chunk
-
 static int sock; // close(sock);
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define htonll(x) __builtin_bswap64(x)
+#define ntohll(x) (x)
 #else
 #define htonll(x) (x)
+#define ntohll(x) __builtin_bswap64(x)
 #endif
 
 #define SEND_I8(value)  { int8_t  temp = value;         send(sock, &temp, 1, 0); }
-#define SEND_I16(value) { int16_t temp = htons(value);  send(sock, &temp, 2, 0); }
-#define SEND_I32(value) { int32_t temp = htonl(value);  send(sock, &temp, 4, 0); }
+#define SEND_I16(value) { int16_t temp = htons (value); send(sock, &temp, 2, 0); }
+#define SEND_I32(value) { int32_t temp = htonl (value); send(sock, &temp, 4, 0); }
 #define SEND_I64(value) { int64_t temp = htonll(value); send(sock, &temp, 8, 0); }
+
+#define READ_I8(buffer)  { read(sock, (buffer), 1); }
+#define READ_I16(buffer) { read(sock, (buffer), 2); int16_t temp = ntohs (*((int16_t *) (buffer))); memcpy((buffer), &temp, 2); }
+#define READ_I32(buffer) { read(sock, (buffer), 4); int32_t temp = ntohl (*((int32_t *) (buffer))); memcpy((buffer), &temp, 4); }
+#define READ_I64(buffer) { read(sock, (buffer), 8); int64_t temp = ntohll(*((int64_t *) (buffer))); memcpy((buffer), &temp, 8); }
 
 static void send_string16(const char *string) {
 
@@ -41,6 +39,22 @@ static void send_string16(const char *string) {
         SEND_I8(0x00);
         SEND_I8(string[i]);
     }
+}
+
+static void read_string16(char *out) {
+
+    int16_t len;
+
+    READ_I16(&len);
+
+    for (int i = 0; i < len; i++) {
+
+        READ_I8(out + i); // first one is always 0x00
+        READ_I8(out + i);
+    }
+
+    // null terminator
+    out[len] = '\0';
 }
 
 void send_packet(packet_t type, Packet data) {
@@ -68,12 +82,30 @@ void send_packet(packet_t type, Packet data) {
 }
 
 packet_t read_packet(Packet *out) {
-	
-	// char buffer[1024] = {0};
-	// read(sock, buffer, 1024);
-    // ntohs()
 
-    return 0;
+    packet_t type;
+
+    READ_I8(&type);
+
+    // should ideally parse all packets, even if you ignore them
+    switch (type) {
+
+        case PKT_LOGIN:
+            READ_I32(&out->login.int_val);
+            read_string16(out->login.string);
+            READ_I64(&out->login.long_val);
+            READ_I8(&out->login.byte_val);
+            break;
+
+        case PKT_PRE_LOGIN:
+            read_string16(out->pre_login.string);
+            break;
+
+        default:
+            break;
+    }
+
+    return type;
 }
 
 void initialize_conn() {

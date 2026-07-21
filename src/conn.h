@@ -13,7 +13,7 @@ typedef unsigned char packet_t;
 typedef struct {
 
     int32_t int_val;
-    const char *string;
+    char string[256];
     int64_t long_val;
     int8_t byte_val;
 
@@ -23,7 +23,7 @@ typedef struct {
 #define PKT_PRE_LOGIN 0x02
 typedef struct {
 
-    const char *string;
+    char string[256];
 
 } PreLogin;
 
