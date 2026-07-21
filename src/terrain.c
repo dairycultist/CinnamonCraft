@@ -64,7 +64,7 @@ typedef struct { // only this file knows Chunks even exist
 
 static Texture blockmap_texture;
 
-static Chunk *chunks[WORLD_SIZE_IN_CHUNKS * WORLD_SIZE_IN_CHUNKS];
+static Chunk *chunks[MAX_CHUNK_COUNT]; // first-come, first-serve; empty spots are NULL
 
 static EZArray delayed_remesh_chunks; // when you want to set a bunch of blocks, remeshing after each is slow and redundant, so you save them to remesh once at the end
 
@@ -80,14 +80,6 @@ static BlockType block_types[256] = {
 	[ BLOCK_GRASS ]	= (BlockType) { full_block_collider, 0b00000011, 60, { MESH_TOP_AND_BOTTOM, 0, 1, 2 } },
 	[ BLOCK_STONE ]	= (BlockType) { full_block_collider, 0b00000011, 20, { MESH_TOP_AND_BOTTOM, 3, 3, 3 } }
 };
-
-static void populator(int x, int y, int z) {
-
-	set_delay_remesh_block_at(
-		x, y, z,
-		sin(x * 0.1) * 16 + 16 < y ? 0 : (y < 20 ? 2 : 1)
-	);
-}
 
 static inline int is_block_fullblock(block_t block) {
 
@@ -264,50 +256,16 @@ static void remesh_chunk(Chunk *chunk) {
 void initialize_terrain() {
 
 	blockmap_texture = load_texture("res/blockmap.png");
-	
-	// initialize chunks
-	for (int chunk_x = 0; chunk_x < WORLD_SIZE_IN_CHUNKS; chunk_x++) {
-		for (int chunk_z = 0; chunk_z < WORLD_SIZE_IN_CHUNKS; chunk_z++) {
-
-			int i = chunk_x + WORLD_SIZE_IN_CHUNKS * chunk_z;
-
-			chunks[i] = malloc(sizeof(Chunk));
-			chunks[i]->mesh = create_mesh(NULL, 0, 0, blockmap_texture);
-
-			chunks[i]->chunk_x = chunk_x;
-			chunks[i]->chunk_z = chunk_z;
-		}
-	}
-	
-	// populate chunks (finite)
-	for (int i = 0; i < WORLD_SIZE_IN_CHUNKS * WORLD_SIZE_IN_CHUNKS; i++) {
-
-		// populate single chunk
-		for (int x = 0; x < 16; x++) {
-			for (int y = 0; y < 128; y++) {
-				for (int z = 0; z < 16; z++) {
-
-					populator(
-						x + chunks[i]->chunk_x * 16,
-						y,
-						z + chunks[i]->chunk_z * 16
-					);
-				}
-			}
-		}
-	}
-
-	// remesh every chunk at once (can't do right after populating because it needs
-	// its neighbor to be loaded to be able to remesh at its chunk boundary properly)
-	remesh_delayed_chunks();
 }
 
 void draw_chunks(const Transform *camera) {
 
-	int chunk_x, chunk_z;
 	Transform chunk_transform = {};
 
-	for (int i = 0; i < WORLD_SIZE_IN_CHUNKS * WORLD_SIZE_IN_CHUNKS; i++) {
+	for (int i = 0; i < MAX_CHUNK_COUNT; i++) {
+
+		if (!chunks[i])
+			continue;
 
 		chunk_transform.x = chunks[i]->chunk_x * 16;
 		chunk_transform.y = 0.0;
@@ -317,18 +275,61 @@ void draw_chunks(const Transform *camera) {
 	}
 }
 
+static int get_chunk_index_at(int chunk_x, int chunk_z) {
+
+	for (int i = 0; i < MAX_CHUNK_COUNT; i++)
+		if (chunks[i] && chunks[i]->chunk_x == chunk_x && chunks[i]->chunk_z == chunk_z)
+			return i;
+
+	return -1;
+}
+
+static int get_free_chunk_index() {
+
+	for (int i = 0; i < MAX_CHUNK_COUNT; i++)
+		if (!chunks[i])
+			return i;
+
+	return -1;
+}
+
+void create_chunk_at(int chunk_x, int chunk_z) {
+
+	int i = get_chunk_index_at(chunk_x, chunk_z);
+
+	if (i != -1)
+		return; // chunk already exists at that position
+
+	i = get_free_chunk_index();
+
+	if (i == -1)
+		return; // no room for a new chunk
+
+	chunks[i] = malloc(sizeof(Chunk));
+	chunks[i]->mesh = create_mesh(NULL, 0, 0, blockmap_texture);
+
+	chunks[i]->chunk_x = chunk_x;
+	chunks[i]->chunk_z = chunk_z;
+}
+
+void destroy_chunk_at(int chunk_x, int chunk_z) {
+
+	int i = get_chunk_index_at(chunk_x, chunk_z);
+
+	free_mesh(chunks[i]->mesh);
+	free(chunks[i]);
+
+	chunks[i] = NULL;
+}
+
 static Chunk *get_chunk_of_block(int x, int y, int z) {
 
 	if (y < 0 || y >= 128) // we include y so that OOB y will return NULL
 		return NULL;
 	
-	for (int i = 0; i < WORLD_SIZE_IN_CHUNKS * WORLD_SIZE_IN_CHUNKS; i++) {
+	int i = get_chunk_index_at((int) floor(x / 16.0), (int) floor(z / 16.0));
 
-		if (chunks[i]->chunk_x == (int) floor(x / 16.0) && chunks[i]->chunk_z == (int) floor(z / 16.0))
-			return chunks[i];
-	}
-
-	return NULL;
+	return i == -1 ? NULL : chunks[i];
 }
 
 block_t get_block_at(int x, int y, int z) {

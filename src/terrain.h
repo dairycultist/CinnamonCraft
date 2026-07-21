@@ -17,6 +17,9 @@ typedef unsigned char block_t;
 void initialize_terrain();
 void draw_chunks(const Transform *camera);
 
+void create_chunk_at(int chunk_x, int chunk_z);
+void destroy_chunk_at(int chunk_x, int chunk_z);
+
 // block manipulation
 block_t get_block_at(int x, int y, int z);
 void set_block_at(int x, int y, int z, block_t block);

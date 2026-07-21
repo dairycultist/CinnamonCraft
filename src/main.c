@@ -5,16 +5,51 @@
 #include "player.h"
 
 #include <stdio.h>
+#include <math.h>
+
+static void populator(int x, int y, int z) {
+
+	set_delay_remesh_block_at(
+		x, y, z,
+		sin(x * 0.1) * 16 + 16 < y ? 0 : (y < 20 ? 2 : 1)
+	);
+}
 
 int main() {
 
 	initialize_io();
-	initialize_conn();
+	// initialize_conn();
 
-    send_packet(PKT_PRE_LOGIN, (Packet) { .pre_login = { "Steve" } });
-    send_packet(PKT_LOGIN, (Packet) { .login = { 14, "Steve" } });
+    // send_packet(PKT_PRE_LOGIN, (Packet) { .pre_login = { "Steve" } });
+    // send_packet(PKT_LOGIN, (Packet) { .login = { 14, "Steve" } });
 
 	initialize_terrain();
+
+	// initialize chunks
+	for (int chunk_x = 0; chunk_x < 4; chunk_x++) {
+		for (int chunk_z = 0; chunk_z < 4; chunk_z++) {
+
+			create_chunk_at(chunk_x, chunk_z);
+
+			for (int x = 0; x < 16; x++) {
+				for (int y = 0; y < 128; y++) {
+					for (int z = 0; z < 16; z++) {
+
+						populator(
+							x + chunk_x * 16,
+							y,
+							z + chunk_z * 16
+						);
+					}
+				}
+			}
+		}
+	}
+
+	// remesh every chunk at once (can't do right after populating because it needs
+	// its neighbor to be loaded to be able to remesh at its chunk boundary properly)
+	remesh_delayed_chunks();
+
 	initialize_entities();
 	initialize_player();
 
@@ -33,16 +68,16 @@ int main() {
 
 			frames_until_tick = 3;
 
-			// drain the packet queue every tick
-			int limit = 20;
+			// // drain the packet queue every tick
+			// int limit = 20;
 
-			Packet packet;
-			packet_t type;
+			// Packet packet;
+			// packet_t type;
 			
-			while (--limit > 0 && (type = read_packet(&packet)) != PKT_EOB) {
+			// while (--limit > 0 && (type = read_packet(&packet)) != PKT_EOB) {
 				
-				printf("%d\n", type);
-			}
+			// 	printf("%d\n", type);
+			// }
 		}
 
 		populate_input(&input);
