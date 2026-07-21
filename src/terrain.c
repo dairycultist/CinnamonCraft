@@ -262,25 +262,30 @@ void initialize_terrain() {
 
 void draw_chunks(const Transform *camera) {
 
-	Transform chunk_transform = {};
+	Transform chunk_transform = {0};
+	Chunk *chunk;
 
 	for (int i = 0; i < MAX_CHUNK_COUNT; i++) {
 
-		if (!INDEX_EZARRAY(chunks, Chunk *, i))
+		chunk = INDEX_EZARRAY(chunks, Chunk *, i);
+
+		if (!chunk)
 			continue;
 
-		chunk_transform.x = INDEX_EZARRAY(chunks, Chunk *, i)->chunk_x * 16;
+		chunk_transform.x = chunk->chunk_x * 16;
 		chunk_transform.y = 0.0;
-		chunk_transform.z = INDEX_EZARRAY(chunks, Chunk *, i)->chunk_z * 16;
+		chunk_transform.z = chunk->chunk_z * 16;
 
-		draw_mesh(camera, &chunk_transform, INDEX_EZARRAY(chunks, Chunk *, i)->mesh);
+		draw_mesh(camera, &chunk_transform, chunk->mesh);
 	}
 }
 
 static int get_chunk_index_at(int chunk_x, int chunk_z) {
 
+	Chunk *chunk;
+
 	for (int i = 0; i < MAX_CHUNK_COUNT; i++)
-		if (INDEX_EZARRAY(chunks, Chunk *, i) && INDEX_EZARRAY(chunks, Chunk *, i)->chunk_x == chunk_x && INDEX_EZARRAY(chunks, Chunk *, i)->chunk_z == chunk_z)
+		if ((chunk = INDEX_EZARRAY(chunks, Chunk *, i)) && chunk->chunk_x == chunk_x && chunk->chunk_z == chunk_z)
 			return i;
 
 	return -1;
