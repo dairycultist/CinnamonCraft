@@ -11,9 +11,8 @@
 // if this value is too small, it will impact performance
 #define AABB_COLLISION_DS 0.2
 
-// only 256 texture indices and 256 block types can exist
+// only 256 block types can exist
 typedef unsigned char block_t;
-typedef unsigned char atlas_index_t;
 
 void initialize_terrain();
 void draw_chunks(const Transform *camera);
@@ -21,8 +20,6 @@ void draw_chunks(const Transform *camera);
 // block manipulation
 block_t get_block_at(int x, int y, int z);
 void set_block_at(int x, int y, int z, block_t block);
-int is_block_fullblock(block_t block);
-atlas_index_t get_block_atlas_index(block_t block, int i);
 unsigned short get_block_ticks_to_break(block_t block);
 
 // remeshing

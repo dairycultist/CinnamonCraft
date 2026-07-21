@@ -1,18 +1,27 @@
 #include "main.h"
 #include "terrain.h"
 #include "ez_array.h"
-#include "append_block_to_mesh.h"
 
 #include <stdlib.h>
 #include <math.h>
 
+// stole this from nash so I don't have to use rand(). it's deterministic!
+unsigned int r_hash(unsigned int seed) {
+	
+    seed ^= seed << 13;
+    seed ^= seed >> 17;
+    seed ^= seed << 5;
+    return seed;
+}
+
 #define MASK_FULLBLOCK 0b00000001
 #define MASK_COLLIDABLE 0b00000010
 
-typedef struct {
+// block mesh types
+#define MESH_EMPTY 0
+#define MESH_TOP_AND_BOTTOM 1
 
-	// this function determines what mesh/UV a block gets (including face culling)
-	void (*append_block_to_mesh)(EZArray *mesh_data, int *vertex_count, int x, int y, int z);
+typedef struct {
 
 	// dx, dy, and dz can be assumed to ALWAYS have the range [0, 1]
 	int (*does_local_point_collide)(float dx, float dy, float dz);
@@ -33,7 +42,10 @@ typedef struct {
 	// 128
 	unsigned char flags;
 	unsigned short ticks_to_break;
-	atlas_index_t atlas_indices[4]; // how these are actually rendered onto the block is determined by append_block_to_mesh
+
+	// first element is always the mesh type
+	// the use of latter elements is determined by the mesh type but is usually atlas indices
+	unsigned char mesh_data[4];
 
 } BlockType;
 
@@ -59,9 +71,9 @@ static int full_block_collider(float dx, float dy, float dz) {
 
 // block type registry
 static BlockType block_types[256] = {
-	(BlockType) { NULL, NULL, 0b00000000 },											// air
-	(BlockType) { ABTM_grass, full_block_collider, 0b00000011, 60, { 0, 1, 2 } },	// grass
-	(BlockType) { ABTM_block, full_block_collider, 0b00000011, 20, { 3, 3, 3 } }	// stone
+	(BlockType) { 0 },																		// air
+	(BlockType) { full_block_collider, 0b00000011, 60, { MESH_TOP_AND_BOTTOM, 0, 1, 2 } },	// grass
+	(BlockType) { full_block_collider, 0b00000011, 20, { MESH_TOP_AND_BOTTOM, 3, 3, 3 } }	// stone
 };
 
 static void populator(int x, int y, int z) {
@@ -70,6 +82,156 @@ static void populator(int x, int y, int z) {
 		x, y, z,
 		sin(x * 0.1) * 16 + 16 < y ? 0 : (y < 20 ? 2 : 1)
 	);
+}
+
+static inline int is_block_fullblock(block_t block) {
+
+	return block_types[block].flags & MASK_FULLBLOCK;
+}
+
+static inline unsigned char get_block_mesh_data(block_t block, int i) {
+
+	return block_types[block].mesh_data[i];
+}
+
+#define GET_SPRITEMAP_UV(index, u_sml, v_sml, u_big, v_big) u_sml = ((index) % 16) / 16.; v_sml = ((index) / 16) / 16.; u_big = (((index) + 1) % 16) / 16.; v_big = ((index) / 16 + 1) / 16.
+
+//                                                                                              [ -x, +x, -z, +z, -y (bottom), +y (top) ]
+static void helper_append_fullblock(EZArray *mesh_data, int *vertex_count, int x, int y, int z, unsigned char faces[6]) {
+
+	int local_x = x % 16;
+	int local_y = y;
+	int local_z = z % 16;
+
+	float u_sml, v_sml, u_big, v_big;
+
+	// -x face
+	if (!is_block_fullblock(get_block_at(x - 1, y, z))) {
+
+		GET_SPRITEMAP_UV(faces[0], u_sml, v_sml, u_big, v_big);
+
+		float full_block_data[] = {
+			local_x, local_y, local_z,			-1, 0, 0,	u_big, v_sml,
+			local_x, local_y, local_z + 1,		-1, 0, 0,	u_sml, v_sml,
+			local_x, local_y + 1, local_z,		-1, 0, 0,	u_big, v_big,
+			local_x, local_y + 1, local_z + 1,	-1, 0, 0,	u_sml, v_big,
+			local_x, local_y + 1, local_z,		-1, 0, 0,	u_big, v_big,
+			local_x, local_y, local_z + 1,		-1, 0, 0,	u_sml, v_sml,
+		};
+
+		append_ezarray(mesh_data, full_block_data, sizeof(float) * 8 * 6);
+		*vertex_count += 6;
+	}
+
+	// +x face
+	if (!is_block_fullblock(get_block_at(x + 1, y, z))) {
+
+		GET_SPRITEMAP_UV(faces[1], u_sml, v_sml, u_big, v_big);
+
+		float full_block_data[] = {
+			local_x + 1, local_y, local_z,			1, 0, 0,	u_sml, v_sml,
+			local_x + 1, local_y + 1, local_z,		1, 0, 0,	u_sml, v_big,
+			local_x + 1, local_y, local_z + 1,		1, 0, 0,	u_big, v_sml,
+			local_x + 1, local_y + 1, local_z + 1,	1, 0, 0,	u_big, v_big,
+			local_x + 1, local_y, local_z + 1,		1, 0, 0,	u_big, v_sml,
+			local_x + 1, local_y + 1, local_z,		1, 0, 0,	u_sml, v_big,
+		};
+
+		append_ezarray(mesh_data, full_block_data, sizeof(float) * 8 * 6);
+		*vertex_count += 6;
+	}
+
+	// -z face
+	if (!is_block_fullblock(get_block_at(x, y, z - 1))) {
+
+		GET_SPRITEMAP_UV(faces[2], u_sml, v_sml, u_big, v_big);
+
+		float full_block_data[] = {
+			local_x, local_y, local_z,			0, 0, -1,	u_sml, v_sml,
+			local_x, local_y + 1, local_z,		0, 0, -1,	u_sml, v_big,
+			local_x + 1, local_y, local_z,		0, 0, -1,	u_big, v_sml,
+			local_x + 1, local_y + 1, local_z,	0, 0, -1,	u_big, v_big,
+			local_x + 1, local_y, local_z,		0, 0, -1,	u_big, v_sml,
+			local_x, local_y + 1, local_z,		0, 0, -1,	u_sml, v_big,
+		};
+
+		append_ezarray(mesh_data, full_block_data, sizeof(float) * 8 * 6);
+		*vertex_count += 6;
+	}
+
+	// +z face
+	if (!is_block_fullblock(get_block_at(x, y, z + 1))) {
+
+		GET_SPRITEMAP_UV(faces[3], u_sml, v_sml, u_big, v_big);
+
+		float full_block_data[] = {
+			local_x, local_y, local_z + 1,			0, 0, 1,	u_big, v_sml,
+			local_x + 1, local_y, local_z + 1,		0, 0, 1,	u_sml, v_sml,
+			local_x, local_y + 1, local_z + 1,		0, 0, 1,	u_big, v_big,
+			local_x + 1, local_y + 1, local_z + 1,	0, 0, 1,	u_sml, v_big,
+			local_x, local_y + 1, local_z + 1,		0, 0, 1,	u_big, v_big,
+			local_x + 1, local_y, local_z + 1,		0, 0, 1,	u_sml, v_sml,
+		};
+
+		append_ezarray(mesh_data, full_block_data, sizeof(float) * 8 * 6);
+		*vertex_count += 6;
+	}
+
+	// -y face
+	if (!is_block_fullblock(get_block_at(x, y - 1, z))) {
+
+		GET_SPRITEMAP_UV(faces[4], u_sml, v_sml, u_big, v_big);
+
+		float full_block_data[] = {
+			local_x, local_y, local_z,			0, -1, 0,	u_sml, v_sml,
+			local_x + 1, local_y, local_z,		0, -1, 0,	u_sml, v_big,
+			local_x, local_y, local_z + 1,		0, -1, 0,	u_big, v_sml,
+			local_x + 1, local_y, local_z + 1,	0, -1, 0,	u_big, v_big,
+			local_x, local_y, local_z + 1,		0, -1, 0,	u_big, v_sml,
+			local_x + 1, local_y, local_z,		0, -1, 0,	u_sml, v_big,
+		};
+
+		append_ezarray(mesh_data, full_block_data, sizeof(float) * 8 * 6);
+		*vertex_count += 6;
+	}
+
+	// +y face
+	if (!is_block_fullblock(get_block_at(x, y + 1, z))) {
+
+		GET_SPRITEMAP_UV(faces[5], u_sml, v_sml, u_big, v_big);
+
+		float full_block_data[] = {
+			local_x, 		local_y + 1, local_z,			0, 1, 0,	u_big, v_sml,
+			local_x, 		local_y + 1, local_z + 1,		0, 1, 0,	u_sml, v_sml,
+			local_x + 1, 	local_y + 1, local_z,			0, 1, 0,	u_big, v_big,
+			local_x + 1, 	local_y + 1, local_z + 1,		0, 1, 0,	u_sml, v_big,
+			local_x + 1, 	local_y + 1, local_z,			0, 1, 0,	u_big, v_big,
+			local_x, 		local_y + 1, local_z + 1,		0, 1, 0,	u_sml, v_sml,
+		};
+
+		append_ezarray(mesh_data, full_block_data, sizeof(float) * 8 * 6);
+		*vertex_count += 6;
+	}
+}
+
+static void append_block_to_mesh(EZArray *mesh_data, int *vertex_count, int x, int y, int z) {
+
+	block_t block = get_block_at(x, y, z);
+
+	switch (get_block_mesh_data(block, 0)) {
+
+		case MESH_EMPTY: return;
+		case MESH_TOP_AND_BOTTOM: helper_append_fullblock(mesh_data, vertex_count, x, y, z, (unsigned char[6]) {
+				get_block_mesh_data(block, 2),
+				get_block_mesh_data(block, 2),
+				get_block_mesh_data(block, 2),
+				get_block_mesh_data(block, 2),
+				get_block_mesh_data(block, 3),
+				get_block_mesh_data(block, 1)
+			});
+			return;
+
+	}
 }
 
 // remeshes based on the chunk's internal blocks
@@ -82,16 +244,13 @@ static void remesh_chunk(Chunk *chunk) {
 	for (int x = 0; x < 16; x++)
 		for (int y = 0; y < 128; y++)
 			for (int z = 0; z < 16; z++)
-
-				// add mesh of this block (given it has a meshing function)
-				if (block_types[chunk->blocks[x][y][z]].append_block_to_mesh != NULL)
-					block_types[chunk->blocks[x][y][z]].append_block_to_mesh(
-						&mesh_data,
-						&vertex_count,
-						x + chunk->chunk_x * 16,
-						y,
-						z + chunk->chunk_z * 16
-					);
+				append_block_to_mesh(
+					&mesh_data,
+					&vertex_count,
+					x + chunk->chunk_x * 16,
+					y,
+					z + chunk->chunk_z * 16
+				);
 
 	// create mesh
 	remesh_mesh(chunk->mesh, mesh_data.data, mesh_data.bytecount, vertex_count);
@@ -209,16 +368,6 @@ void set_block_at(int x, int y, int z, block_t block) {
 		if (chunk)
 			remesh_chunk(chunk);
 	}
-}
-
-int is_block_fullblock(block_t block) {
-
-	return block_types[block].flags & MASK_FULLBLOCK;
-}
-
-atlas_index_t get_block_atlas_index(block_t block, int i) {
-
-	return block_types[block].atlas_indices[i];
 }
 
 unsigned short get_block_ticks_to_break(block_t block) {
