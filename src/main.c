@@ -8,6 +8,10 @@ int main() {
 
 	initialize_io();
 	initialize_conn();
+
+    send_packet(PKT_PRE_LOGIN, (Packet) { .pre_login = { "Steve" } });
+    send_packet(PKT_LOGIN, (Packet) { .login = { 14, "Steve" } });
+
 	initialize_terrain();
 	initialize_entities();
 	initialize_player();
@@ -30,7 +34,8 @@ int main() {
 
 		present();
 	}
+	
+	send_packet(PKT_DISCONNECT, (Packet) { .disconnect = { "disconnect.quitting" } });
 
-	// exit (everything frees automatically, so)
 	return 0;
 }

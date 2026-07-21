@@ -27,10 +27,19 @@ typedef struct {
 
 } PreLogin;
 
+// https://pixelbrush.dev/beta-wiki/networking/packets/255-disconnect
+#define PKT_DISCONNECT 0xFF
+typedef struct {
+
+    char reason[256];
+
+} Disconnect;
+
 typedef union {
 
     Login login;
     PreLogin pre_login;
+    Disconnect disconnect;
 
 } Packet;
 

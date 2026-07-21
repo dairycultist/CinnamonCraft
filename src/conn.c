@@ -8,7 +8,7 @@
 #include "main.h"
 #include "conn.h"
 
-static int sock; // close(sock);
+static int sock;
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define htonll(x) __builtin_bswap64(x)
@@ -76,6 +76,10 @@ void send_packet(packet_t type, Packet data) {
             send_string16(data.pre_login.string);
             break;
 
+        case PKT_DISCONNECT:
+            send_string16(data.disconnect.reason);
+            break;
+
         default:
             break;
     }
@@ -99,6 +103,10 @@ packet_t read_packet(Packet *out) {
 
         case PKT_PRE_LOGIN:
             read_string16(out->pre_login.string);
+            break;
+
+        case PKT_DISCONNECT:
+            read_string16(out->disconnect.reason);
             break;
 
         default:
@@ -126,14 +134,8 @@ void initialize_conn() {
         exit(1);
     }
 
-    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+    if (connect(sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
         perror("Could not connect to server");
         exit(1);
     }
-
-    // pre-login packet
-    send_packet(PKT_PRE_LOGIN, (Packet) { .pre_login = { "Steve" } });
-
-    // login packet
-    send_packet(PKT_LOGIN, (Packet) { .login = { 14, "Steve" } });
 }
