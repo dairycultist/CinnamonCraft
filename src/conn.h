@@ -83,13 +83,50 @@ typedef struct {
 } SpawnMob;
 
 // https://pixelbrush.dev/beta-wiki/networking/packets/028-entity-velocity
-#define PKT_ENTITY_VELOCITY 0x1c
+#define PKT_ENTITY_VELOCITY 0x1C
 typedef struct {
 
     int32_t entity_id;
     int16_t x_vel, y_vel, z_vel;
 
 } EntityVelocity;
+
+// https://pixelbrush.dev/beta-wiki/networking/packets/029-despawn-entity
+#define PKT_DESPAWN_ENTITY 0x1D
+typedef struct {
+
+    int32_t entity_id;
+
+} DespawnEntity;
+
+// https://pixelbrush.dev/beta-wiki/networking/packets/031-entity-position
+#define PKT_ENTITY_POSITION 0x1F
+typedef struct {
+
+    int32_t entity_id;
+    int8_t x, y, z;
+
+} EntityPosition;
+
+// https://pixelbrush.dev/beta-wiki/networking/packets/033-entity-position-and-rotation
+#define PKT_ENTITY_POSITION_AND_ROTATION 0x21
+typedef struct {
+
+    int32_t entity_id;
+    int8_t x, y, z;
+    int8_t yaw, pitch;
+
+} EntityPositionAndRotation;
+
+// https://pixelbrush.dev/beta-wiki/networking/packets/034-teleport-entity
+#define PKT_TELEPORT_ENTITY 0x22
+typedef struct {
+
+    int32_t entity_id;
+    int32_t x, y, z;
+    int8_t yaw, pitch;
+
+} TeleportEntity;
 
 // https://pixelbrush.dev/beta-wiki/networking/packets/050-set-chunk-visibility
 #define PKT_SET_CHUNK_VISIBILITY 0x32
@@ -140,6 +177,10 @@ typedef union {
     SpawnItem spawn_item;
     SpawnMob spawn_mob;
     EntityVelocity entity_velocity;
+    DespawnEntity despawn_entity;
+    EntityPosition entity_position;
+    EntityPositionAndRotation entity_position_and_rotation;
+    TeleportEntity teleport_entity;
     SetChunkVisibility set_chunk_visibility;
     SetSlot set_slot;
     FillContainer fill_container;

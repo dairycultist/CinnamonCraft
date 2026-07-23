@@ -96,12 +96,16 @@ void send_packet(packet_t type, Packet data) {
             SEND_I8(data.player_position_and_rotation.on_ground);
             break;
 
-        case PKT_SPAWN_ITEM: break;           // never sent by client
-        case PKT_SPAWN_MOB: break;            // never sent by client
-        case PKT_ENTITY_VELOCITY: break;      // never sent by client
-        case PKT_SET_CHUNK_VISIBILITY: break; // never sent by client
-        case PKT_SET_SLOT: break;             // never sent by client
-        case PKT_FILL_CONTAINER: break;       // never sent by client
+        case PKT_SPAWN_ITEM: break;                   // never sent by client
+        case PKT_SPAWN_MOB: break;                    // never sent by client
+        case PKT_ENTITY_VELOCITY: break;              // never sent by client
+        case PKT_DESPAWN_ENTITY: break;               // never sent by client
+        case PKT_ENTITY_POSITION: break;              // never sent by client
+        case PKT_ENTITY_POSITION_AND_ROTATION: break; // never sent by client
+        case PKT_TELEPORT_ENTITY: break;              // never sent by client
+        case PKT_SET_CHUNK_VISIBILITY: break;         // never sent by client
+        case PKT_SET_SLOT: break;                     // never sent by client
+        case PKT_FILL_CONTAINER: break;               // never sent by client
 
         case PKT_DISCONNECT:
             send_string16(data.disconnect.reason);
@@ -212,6 +216,35 @@ packet_t read_packet(Packet *out) {
             READ_I16(&out->entity_velocity.x_vel);
             READ_I16(&out->entity_velocity.y_vel);
             READ_I16(&out->entity_velocity.z_vel);
+            break;
+
+        case PKT_DESPAWN_ENTITY:
+            READ_I32(&out->despawn_entity.entity_id);
+            break;
+
+        case PKT_ENTITY_POSITION:
+            READ_I32(&out->entity_position.entity_id);
+            READ_I8(&out->entity_position.x);
+            READ_I8(&out->entity_position.y);
+            READ_I8(&out->entity_position.z);
+            break;
+
+        case PKT_ENTITY_POSITION_AND_ROTATION:
+            READ_I32(&out->entity_position_and_rotation.entity_id);
+            READ_I8(&out->entity_position_and_rotation.x);
+            READ_I8(&out->entity_position_and_rotation.y);
+            READ_I8(&out->entity_position_and_rotation.z);
+            READ_I8(&out->entity_position_and_rotation.yaw);
+            READ_I8(&out->entity_position_and_rotation.pitch);
+            break;
+
+        case PKT_TELEPORT_ENTITY:
+            READ_I32(&out->teleport_entity.entity_id);
+            READ_I32(&out->teleport_entity.x);
+            READ_I32(&out->teleport_entity.y);
+            READ_I32(&out->teleport_entity.z);
+            READ_I8(&out->teleport_entity.yaw);
+            READ_I8(&out->teleport_entity.pitch);
             break;
 
         case PKT_SET_CHUNK_VISIBILITY:
