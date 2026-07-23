@@ -78,7 +78,7 @@ typedef struct {
     int8_t mob_type;
     int32_t x, y, z;
     int8_t yaw, pitch;
-    // entity metadata
+    // TODO entity metadata
 
 } SpawnMob;
 
@@ -100,6 +100,28 @@ typedef struct {
 
 } SetChunkVisibility;
 
+// https://pixelbrush.dev/beta-wiki/networking/packets/103-set-slot
+#define PKT_SET_SLOT 0x67
+typedef struct {
+
+    int8_t window_id;
+    int16_t slot;
+    int16_t item_id;
+    int8_t item_amount;
+    int16_t item_metadata;
+
+} SetSlot;
+
+// https://pixelbrush.dev/beta-wiki/networking/packets/104-fill-container
+#define PKT_FILL_CONTAINER 0x68
+typedef struct {
+
+    int8_t window_id;
+    int16_t payload_size;
+    // TODO payload
+
+} FillContainer;
+
 // https://pixelbrush.dev/beta-wiki/networking/packets/255-disconnect
 #define PKT_DISCONNECT 0xFF
 typedef struct {
@@ -119,6 +141,8 @@ typedef union {
     SpawnMob spawn_mob;
     EntityVelocity entity_velocity;
     SetChunkVisibility set_chunk_visibility;
+    SetSlot set_slot;
+    FillContainer fill_container;
     Disconnect disconnect;
 
 } Packet;

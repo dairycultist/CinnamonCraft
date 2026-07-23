@@ -100,6 +100,8 @@ void send_packet(packet_t type, Packet data) {
         case PKT_SPAWN_MOB: break;            // never sent by client
         case PKT_ENTITY_VELOCITY: break;      // never sent by client
         case PKT_SET_CHUNK_VISIBILITY: break; // never sent by client
+        case PKT_SET_SLOT: break;             // never sent by client
+        case PKT_FILL_CONTAINER: break;       // never sent by client
 
         case PKT_DISCONNECT:
             send_string16(data.disconnect.reason);
@@ -216,6 +218,29 @@ packet_t read_packet(Packet *out) {
             READ_I32(&out->set_chunk_visibility.x);
             READ_I32(&out->set_chunk_visibility.z);
             READ_I8(&out->set_chunk_visibility.load);
+            break;
+
+        case PKT_SET_SLOT:
+            READ_I8(&out->set_slot.window_id);
+            READ_I16(&out->set_slot.slot);
+            READ_I16(&out->set_slot.item_id);
+            if (out->set_slot.item_id > 0) { // maybe > -1?
+                READ_I8(&out->set_slot.item_amount);
+                READ_I16(&out->set_slot.item_metadata);
+            }
+            break;
+
+        case PKT_FILL_CONTAINER:
+            READ_I8(&out->fill_container.window_id);
+            READ_I16(&out->fill_container.payload_size);
+            int16_t buf;
+            for (int i = 0; i < out->fill_container.payload_size; i++) {
+                READ_I16(&buf);
+                if (buf != -1) {
+                    READ_I8(&buf);
+                    READ_I16(&buf);
+                }
+            }
             break;
 
         case PKT_DISCONNECT:
