@@ -76,7 +76,11 @@ int main() {
 			
 			while (--limit > 0 && (type = read_packet(&packet)) != PKT_EOB) {
 				
-				printf("%d\n", type);
+				printf("Got packet: 0x%02x\n", type);
+
+				if (type == PKT_SET_CHUNK_VISIBILITY) {
+
+				}
 			}
 		}
 

@@ -24,10 +24,16 @@ static int sock;
 #define SEND_I32(value) { int32_t temp = htonl (value); send(sock, &temp, 4, 0); }
 #define SEND_I64(value) { int64_t temp = htonll(value); send(sock, &temp, 8, 0); }
 
+#define SEND_F32(value) { int32_t temp; memcpy(&temp, &(value), 4); temp = htonl (temp); send(sock, &temp, 4, 0); }
+#define SEND_F64(value) { int64_t temp; memcpy(&temp, &(value), 8); temp = htonll(temp); send(sock, &temp, 8, 0); }
+
 #define READ_I8(buffer)  { read(sock, (buffer), 1); }
 #define READ_I16(buffer) { read(sock, (buffer), 2); int16_t temp = ntohs (*((int16_t *) (buffer))); memcpy((buffer), &temp, 2); }
 #define READ_I32(buffer) { read(sock, (buffer), 4); int32_t temp = ntohl (*((int32_t *) (buffer))); memcpy((buffer), &temp, 4); }
 #define READ_I64(buffer) { read(sock, (buffer), 8); int64_t temp = ntohll(*((int64_t *) (buffer))); memcpy((buffer), &temp, 8); }
+
+#define READ_F32(buffer) READ_I32(buffer)
+#define READ_F64(buffer) READ_I64(buffer)
 
 static void send_string16(const char *string) {
 
@@ -77,11 +83,23 @@ void send_packet(packet_t type, Packet data) {
             send_string16(data.pre_login.string);
             break;
 
-        case PKT_SET_TIME: break;           // never sent by client
-        case PKT_SET_SPAWN_POSITION: break; // never sent by client
-        case PKT_SPAWN_ITEM: break;         // never sent by client
-        case PKT_SPAWN_MOB: break;          // never sent by client
-        case PKT_ENTITY_VELOCITY: break;    // never sent by client
+        case PKT_SET_TIME: break;             // never sent by client
+        case PKT_SET_SPAWN_POSITION: break;   // never sent by client
+
+        case PKT_PLAYER_POSITION_AND_ROTATION:
+            SEND_F64(data.player_position_and_rotation.x);
+            SEND_F64(data.player_position_and_rotation.camera_y);
+            SEND_F64(data.player_position_and_rotation.y);
+            SEND_F64(data.player_position_and_rotation.z);
+            SEND_F32(data.player_position_and_rotation.yaw);
+            SEND_F32(data.player_position_and_rotation.pitch);
+            SEND_I8(data.player_position_and_rotation.on_ground);
+            break;
+
+        case PKT_SPAWN_ITEM: break;           // never sent by client
+        case PKT_SPAWN_MOB: break;            // never sent by client
+        case PKT_ENTITY_VELOCITY: break;      // never sent by client
+        case PKT_SET_CHUNK_VISIBILITY: break; // never sent by client
 
         case PKT_DISCONNECT:
             send_string16(data.disconnect.reason);
@@ -134,6 +152,16 @@ packet_t read_packet(Packet *out) {
             READ_I32(&out->set_spawn_position.y);
             READ_I32(&out->set_spawn_position.z);
             break;
+        
+        case PKT_PLAYER_POSITION_AND_ROTATION:
+            READ_F64(&out->player_position_and_rotation.x);
+            READ_F64(&out->player_position_and_rotation.y);
+            READ_F64(&out->player_position_and_rotation.camera_y);
+            READ_F64(&out->player_position_and_rotation.z);
+            READ_F32(&out->player_position_and_rotation.yaw);
+            READ_F32(&out->player_position_and_rotation.pitch);
+            READ_I8(&out->player_position_and_rotation.on_ground);
+            break;
 
         case PKT_SPAWN_ITEM:
             READ_I32(&out->spawn_item.entity_id);
@@ -182,6 +210,12 @@ packet_t read_packet(Packet *out) {
             READ_I16(&out->entity_velocity.x_vel);
             READ_I16(&out->entity_velocity.y_vel);
             READ_I16(&out->entity_velocity.z_vel);
+            break;
+
+        case PKT_SET_CHUNK_VISIBILITY:
+            READ_I32(&out->set_chunk_visibility.x);
+            READ_I32(&out->set_chunk_visibility.z);
+            READ_I8(&out->set_chunk_visibility.load);
             break;
 
         case PKT_DISCONNECT:

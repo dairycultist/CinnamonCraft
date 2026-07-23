@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+typedef float  float32_t;
+typedef double float64_t;
+
 typedef unsigned char packet_t;
 
 // returned by read_packet when there are no more packets in the buffer
@@ -43,6 +46,17 @@ typedef struct {
 
 } SetSpawnPosition;
 
+// https://pixelbrush.dev/beta-wiki/networking/packets/013-player-position-and-rotation
+#define PKT_PLAYER_POSITION_AND_ROTATION 0x0D
+typedef struct {
+
+    float64_t x, y, z;
+    float64_t camera_y;
+    float32_t yaw, pitch;
+    int8_t on_ground;
+
+} PlayerPositionAndRotation;
+
 // https://pixelbrush.dev/beta-wiki/networking/packets/021-spawn-item
 #define PKT_SPAWN_ITEM 0x15
 typedef struct {
@@ -77,6 +91,15 @@ typedef struct {
 
 } EntityVelocity;
 
+// https://pixelbrush.dev/beta-wiki/networking/packets/050-set-chunk-visibility
+#define PKT_SET_CHUNK_VISIBILITY 0x32
+typedef struct {
+
+    int32_t x, z;
+    int8_t load;
+
+} SetChunkVisibility;
+
 // https://pixelbrush.dev/beta-wiki/networking/packets/255-disconnect
 #define PKT_DISCONNECT 0xFF
 typedef struct {
@@ -91,9 +114,11 @@ typedef union {
     PreLogin pre_login;
     SetTime set_time;
     SetSpawnPosition set_spawn_position;
+    PlayerPositionAndRotation player_position_and_rotation;
     SpawnItem spawn_item;
     SpawnMob spawn_mob;
     EntityVelocity entity_velocity;
+    SetChunkVisibility set_chunk_visibility;
     Disconnect disconnect;
 
 } Packet;
