@@ -7,60 +7,20 @@
 #include <stdio.h>
 #include <math.h>
 
-static void populator(int x, int y, int z) {
-
-	set_delay_remesh_block_at(
-		x, y, z,
-		sin(x * 0.1) * 16 + 16 < y ? 0 : (y < 20 ? 2 : 1)
-	);
-}
-
 int main() {
 
 	initialize_io();
+	initialize_terrain();
+	initialize_entities();
+	initialize_player();
 	initialize_conn();
 
     send_packet(PKT_PRE_LOGIN, (Packet) { .pre_login = { "Steve" } });
     send_packet(PKT_LOGIN, (Packet) { .login = { 14, "Steve" } });
 
-	initialize_terrain();
-
-	// initialize chunks
-	for (int chunk_x = 0; chunk_x < 4; chunk_x++) {
-		for (int chunk_z = 0; chunk_z < 4; chunk_z++) {
-
-			create_chunk_at(chunk_x, chunk_z);
-
-			for (int x = 0; x < 16; x++) {
-				for (int y = 0; y < 128; y++) {
-					for (int z = 0; z < 16; z++) {
-
-						populator(
-							x + chunk_x * 16,
-							y,
-							z + chunk_z * 16
-						);
-					}
-				}
-			}
-		}
-	}
-
-	// remesh every chunk at once (can't do right after populating because it needs
-	// its neighbor to be loaded to be able to remesh at its chunk boundary properly)
-	remesh_delayed_chunks();
-
-	initialize_entities();
-	initialize_player();
-
 	Input input = { 0 };
 
 	int frames_until_tick = 3;
-
-	// todo (for movement + chunk loading)
-	// - player pos and rot
-	// - set chunk vis
-	// - chunk
 
 	while (game_is_running()) {
 
@@ -80,8 +40,21 @@ int main() {
 
 				if (type == PKT_SET_CHUNK_VISIBILITY) {
 
+					create_chunk_at(packet.set_chunk_visibility.x, packet.set_chunk_visibility.z);
+
+				} else if (type == PKT_SET_BLOCK) {
+
+					set_block_at(packet.set_block.x, packet.set_block.y, packet.set_block.z, BLOCK_GRASS);
 				}
 			}
+
+			// send packets
+			float x, y, z, camera_y, yaw, pitch;
+			int grounded;
+
+			get_player_information(&x, &y, &z, &camera_y, &yaw, &pitch, &grounded);
+
+			send_packet(PKT_PLAYER_POSITION_AND_ROTATION, (Packet) { .player_position_and_rotation = { x, camera_y, y, z, yaw, pitch, grounded } });
 		}
 
 		populate_input(&input);

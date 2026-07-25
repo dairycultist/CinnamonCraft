@@ -17,10 +17,6 @@ unsigned int r_hash(unsigned int seed) {
 #define MASK_FULLBLOCK 0b00000001
 #define MASK_COLLIDABLE 0b00000010
 
-#define BLOCK_AIR 0
-#define BLOCK_GRASS 1
-#define BLOCK_STONE 2
-
 // block mesh types
 #define MESH_EMPTY 0
 #define MESH_TOP_AND_BOTTOM 1

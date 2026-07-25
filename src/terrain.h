@@ -7,6 +7,10 @@
 #include "io.h"
 #include "entities.h"
 
+#define BLOCK_AIR 0
+#define BLOCK_GRASS 1
+#define BLOCK_STONE 2
+
 // if this value is larger than the narrowest block collider, there will be significant gaps in AABB colliders
 // if this value is too small, it will impact performance
 #define AABB_COLLISION_DS 0.2
@@ -17,15 +21,16 @@ typedef unsigned char block_t;
 void initialize_terrain();
 void draw_chunks(const Transform *camera);
 
+// chunk creation/deletion
 void create_chunk_at(int chunk_x, int chunk_z);
 void destroy_chunk_at(int chunk_x, int chunk_z);
 
-// block manipulation
+// block info
 block_t get_block_at(int x, int y, int z);
-void set_block_at(int x, int y, int z, block_t block);
 unsigned short get_block_ticks_to_break(block_t block);
 
-// remeshing
+// block setting/remeshing
+void set_block_at(int x, int y, int z, block_t block);
 void set_delay_remesh_block_at(int x, int y, int z, block_t block);
 void remesh_delayed_chunks();
 

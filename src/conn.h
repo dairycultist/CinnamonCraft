@@ -128,6 +128,15 @@ typedef struct {
 
 } TeleportEntity;
 
+// https://pixelbrush.dev/beta-wiki/networking/packets/038-entity-event
+#define PKT_ENTITY_EVENT 0x26
+typedef struct {
+
+    int32_t entity_id;
+    int8_t action;
+
+} EntityEvent;
+
 // https://pixelbrush.dev/beta-wiki/networking/packets/050-set-chunk-visibility
 #define PKT_SET_CHUNK_VISIBILITY 0x32
 typedef struct {
@@ -136,6 +145,18 @@ typedef struct {
     int8_t load;
 
 } SetChunkVisibility;
+
+// https://pixelbrush.dev/beta-wiki/networking/packets/053-set-block
+#define PKT_SET_BLOCK 0x35
+typedef struct {
+
+    int32_t x;
+    int8_t y;
+    int32_t z;
+    int8_t type;
+    int8_t metadata;
+
+} SetBlock;
 
 // https://pixelbrush.dev/beta-wiki/networking/packets/103-set-slot
 #define PKT_SET_SLOT 0x67
@@ -181,7 +202,9 @@ typedef union {
     EntityPosition entity_position;
     EntityPositionAndRotation entity_position_and_rotation;
     TeleportEntity teleport_entity;
+    EntityEvent entity_event;
     SetChunkVisibility set_chunk_visibility;
+    SetBlock set_block;
     SetSlot set_slot;
     FillContainer fill_container;
     Disconnect disconnect;

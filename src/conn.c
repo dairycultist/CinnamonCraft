@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <zlib.h> // TODO https://refspecs.linuxbase.org/LSB_3.0.0/LSB-Core-generic/LSB-Core-generic/zlib-uncompress-1.html
 
 #include "main.h"
 #include "conn.h"
@@ -103,7 +104,9 @@ void send_packet(packet_t type, Packet data) {
         case PKT_ENTITY_POSITION: break;              // never sent by client
         case PKT_ENTITY_POSITION_AND_ROTATION: break; // never sent by client
         case PKT_TELEPORT_ENTITY: break;              // never sent by client
+        case PKT_ENTITY_EVENT: break;                 // never sent by client
         case PKT_SET_CHUNK_VISIBILITY: break;         // never sent by client
+        case PKT_SET_BLOCK: break;                    // never sent by client
         case PKT_SET_SLOT: break;                     // never sent by client
         case PKT_FILL_CONTAINER: break;               // never sent by client
 
@@ -247,10 +250,23 @@ packet_t read_packet(Packet *out) {
             READ_I8(&out->teleport_entity.pitch);
             break;
 
+        case PKT_ENTITY_EVENT:
+            READ_I32(&out->entity_event.entity_id);
+            READ_I8(&out->entity_event.action);
+            break;
+
         case PKT_SET_CHUNK_VISIBILITY:
             READ_I32(&out->set_chunk_visibility.x);
             READ_I32(&out->set_chunk_visibility.z);
             READ_I8(&out->set_chunk_visibility.load);
+            break;
+
+        case PKT_SET_BLOCK:
+            READ_I32(&out->set_block.x);
+            READ_I8(&out->set_block.y);
+            READ_I32(&out->set_block.z);
+            READ_I8(&out->set_block.type);
+            READ_I8(&out->set_block.metadata);
             break;
 
         case PKT_SET_SLOT:
@@ -281,7 +297,7 @@ packet_t read_packet(Packet *out) {
             break;
 
         default:
-            fprintf(stderr, "Received package 0x%02x which we don't know how to handle!", type);
+            fprintf(stderr, "Received package 0x%02x which we don't know how to handle!\n", type);
             exit(1);
     }
 

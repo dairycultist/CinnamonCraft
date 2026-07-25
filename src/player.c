@@ -13,6 +13,8 @@
 static Transform camera;
 static AABB aabb = { 0.0, 0.0, 0.0, PLAYER_RADIUS, PLAYER_HEIGHT };
 
+static int grounded;
+
 static float dsway;  // sway is the local left-right axis
 static float dsurge; // surge is the local forward-backward axis
 static float dheave; // heave is the local up-down axis
@@ -49,6 +51,17 @@ void initialize_player() {
 	sky_mesh = create_sky_mesh();
 }
 
+void get_player_information(float *x, float *y, float *z, float *camera_y, float *yaw, float *pitch, int *grounded_out) {
+
+	if (x) { *x = aabb.x; }
+	if (y) { *y = aabb.y; }
+	if (z) { *z = aabb.z; }
+	if (camera_y) { *camera_y = camera.y; }
+	if (yaw) { *yaw = camera.yaw; }
+	if (pitch) { *pitch = camera.pitch; }
+	if (grounded_out) { *grounded_out = grounded; }
+}
+
 void player_process_tick(Input *input) {
 
 	// player camera control
@@ -68,6 +81,8 @@ void player_process_tick(Input *input) {
 	dsway  = (dsway  * 4.0 + (input->right    - input->left)    * 0.1) / 5.0;
 	dsurge = (dsurge * 4.0 + (input->backward - input->forward) * 0.1) / 5.0;
 	
+	#ifndef DEBUG_NOCLIP
+
 	// when dsway/dsurge are really small, dsway/dsurge / 10.0 == 0.0, so we end up clipping ever-so-slightly into the wall
 	// so prevent them from being really small
 	
@@ -106,16 +121,23 @@ void player_process_tick(Input *input) {
 	// heave
 	aabb.y += dheave;
 
+	grounded = 0;
+
 	if (does_aabb_intersect_blocks(&aabb)) {
 
 		for (int i = 0; does_aabb_intersect_blocks(&aabb) && i <= 10; i++)
 			aabb.y -= dheave / 10.0;
 
-		// jump (only when grounded)
-		if (input->up && dheave < 0) {
-			dheave = 0.2;
-		} else {
-			dheave = -0.01;
+		if (dheave < 0) {
+
+			grounded = 1;
+
+			// jump (only when grounded)
+			if (input->up) {
+				dheave = 0.2;
+			} else {
+				dheave = -0.01;
+			}
 		}
 
 	} else {
@@ -123,6 +145,20 @@ void player_process_tick(Input *input) {
 		// gravity
 		dheave -= 0.01;
 	}
+
+	#else
+
+	dheave = (dheave * 4.0 + (input->up - input->down) * 0.1) / 5.0;
+
+	aabb.z += dsway * sin(camera.yaw);
+	aabb.x += dsway * cos(camera.yaw);
+
+	aabb.z += dsurge * cos(camera.yaw);
+	aabb.x -= dsurge * sin(camera.yaw);
+
+	aabb.y += dheave;
+
+	#endif
 
 	// update camera position
 	camera.x = aabb.x;
