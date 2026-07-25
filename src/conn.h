@@ -137,6 +137,15 @@ typedef struct {
 
 } EntityEvent;
 
+// https://pixelbrush.dev/beta-wiki/networking/packets/040-entity-metadata
+#define PKT_ENTITY_METADATA 0x28
+typedef struct {
+
+    int32_t entity_id;
+    // TODO metadata
+
+} EntityMetadata;
+
 // https://pixelbrush.dev/beta-wiki/networking/packets/050-set-chunk-visibility
 #define PKT_SET_CHUNK_VISIBILITY 0x32
 typedef struct {
@@ -203,6 +212,7 @@ typedef union {
     EntityPositionAndRotation entity_position_and_rotation;
     TeleportEntity teleport_entity;
     EntityEvent entity_event;
+    EntityMetadata entity_metadata;
     SetChunkVisibility set_chunk_visibility;
     SetBlock set_block;
     SetSlot set_slot;

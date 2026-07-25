@@ -65,6 +65,29 @@ static void read_string16(char *out) {
     out[len] = '\0';
 }
 
+static void read_entity_metadata() { // TODO an actual metadata datatype...
+
+    int8_t header;
+    READ_I8(&header);
+
+    int8_t unused_buf[256];
+    
+    while (header != 0x7F) {
+        
+        switch (header >> 5) {
+            case 0: READ_I8(unused_buf); break;
+            case 1: READ_I16(unused_buf); break;
+            case 2: READ_I32(unused_buf); break;
+            case 3: READ_I32(unused_buf); break; // technically float
+            case 4: read_string16(unused_buf); break;
+            case 5: READ_I16(unused_buf); READ_I8(unused_buf); READ_I16(unused_buf); break;
+            case 6: READ_I32(unused_buf); READ_I32(unused_buf); READ_I32(unused_buf); break;
+        }
+
+        READ_I8(&header);
+    }
+}
+
 void send_packet(packet_t type, Packet data) {
 
     // send packet type
@@ -105,6 +128,7 @@ void send_packet(packet_t type, Packet data) {
         case PKT_ENTITY_POSITION_AND_ROTATION: break; // never sent by client
         case PKT_TELEPORT_ENTITY: break;              // never sent by client
         case PKT_ENTITY_EVENT: break;                 // never sent by client
+        case PKT_ENTITY_METADATA: break;              // never sent by client
         case PKT_SET_CHUNK_VISIBILITY: break;         // never sent by client
         case PKT_SET_BLOCK: break;                    // never sent by client
         case PKT_SET_SLOT: break;                     // never sent by client
@@ -193,25 +217,7 @@ packet_t read_packet(Packet *out) {
             READ_I32(&out->spawn_mob.z);
             READ_I8(&out->spawn_mob.yaw);
             READ_I8(&out->spawn_mob.pitch);
-
-            // reading entity metadata is more annoying
-            int8_t header;
-            READ_I8(&header);
-            int8_t unused_buf[256];
-            while (header != 0x7F) {
-                
-                switch (header >> 5) {
-                    case 0: READ_I8(unused_buf); break;
-                    case 1: READ_I16(unused_buf); break;
-                    case 2: READ_I32(unused_buf); break;
-                    case 3: READ_I32(unused_buf); break; // technically float
-                    case 4: read_string16(unused_buf); break;
-                    case 5: READ_I16(unused_buf); READ_I8(unused_buf); READ_I16(unused_buf); break;
-                    case 6: READ_I32(unused_buf); READ_I32(unused_buf); READ_I32(unused_buf); break;
-                }
-
-                READ_I8(&header);
-            }
+            read_entity_metadata();
             break;
 
         case PKT_ENTITY_VELOCITY:
@@ -253,6 +259,11 @@ packet_t read_packet(Packet *out) {
         case PKT_ENTITY_EVENT:
             READ_I32(&out->entity_event.entity_id);
             READ_I8(&out->entity_event.action);
+            break;
+
+        case PKT_ENTITY_METADATA:
+            READ_I32(&out->entity_metadata.entity_id);
+            read_entity_metadata();
             break;
 
         case PKT_SET_CHUNK_VISIBILITY:
