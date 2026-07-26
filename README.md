@@ -6,10 +6,12 @@ Open source Minecraft beta 1.7.3 client written in C + OpenGL.
 
 Not actually implemented yet, but planned!
 
-- modify item entry
-- modify block entry
+- **modify item entry**: Modifies the item with the given ID (creating a new item if no such item exists). I'll figure out the specifics later, but it'll involve setting its name, metadata, block atlas index, etc.
+- **modify item atlas entry**: Modifies the 16x16 texture at the specified position in the item atlas.
+- **modify block entry**: Modifies the block with the given ID (creating a new block if no such block exists).
+- **modify block atlas entry**: Modifies the 16x16 texture at the specified position in the block atlas.
 
-both are packets that let you modify the texture, name, attributes, etc of items/blocks (or add new ones in unused IDs), for server-side modding
+These packets allow for server-side mods to automatically modify the client (without the client needing to manually mod their client).
 
 ## References
 
