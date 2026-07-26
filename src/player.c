@@ -7,7 +7,7 @@
 
 #define PLAYER_RADIUS 0.4
 #define PLAYER_HEIGHT 1.7
-#define PLAYER_CAM_H 1.5
+#define PLAYER_CAM_H 1.62
 
 // player (aabb determines position, camera just follows that; camera determines rotation)
 static Transform camera;
@@ -49,6 +49,19 @@ void initialize_player() {
 	crosshair_mesh = create_sprite_mesh(0.0f, 0.0f, 0.5f, 0.5f, 64, crosshair_textures[0]);
 
 	sky_mesh = create_sky_mesh();
+}
+
+void set_player_position(float x, float y, float z) {
+
+	aabb.x = x;
+	aabb.y = y;
+	aabb.z = z;
+}
+
+void set_player_rotation(float yaw, float pitch) {
+
+	camera.yaw = yaw;
+	camera.pitch = pitch;
 }
 
 void get_player_information(float *x, float *y, float *z, float *camera_y, float *yaw, float *pitch, int *grounded_out) {

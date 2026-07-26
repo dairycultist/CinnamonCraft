@@ -155,6 +155,21 @@ typedef struct {
 
 } SetChunkVisibility;
 
+// https://pixelbrush.dev/beta-wiki/networking/packets/051-chunk
+#define PKT_CHUNK 0x33
+typedef struct {
+
+} Chunk;
+// and that it's not flipped (if they mismatch Minecraft refuses to send chunks)
+// X	Integer	The X position of the chunk towards Negative X
+// Y	Short	The Y position of the chunk towards Negative Y
+// Z	Integer	The Z position of the chunk towards Negative Z
+// width	Byte	The width of the updated area towards Positive X, -1
+// height	Byte	The height of the updated area towards Positive Y, -1
+// length	Byte	The length of the updated area towards Positive Z, -1
+// compressed size	Integer	The size, in bytes, of the zlib compressed data
+// compressed data	Byte Array	The zlib compressed chunk data
+
 // https://pixelbrush.dev/beta-wiki/networking/packets/053-set-block
 #define PKT_SET_BLOCK 0x35
 typedef struct {
@@ -214,6 +229,7 @@ typedef union {
     EntityEvent entity_event;
     EntityMetadata entity_metadata;
     SetChunkVisibility set_chunk_visibility;
+    Chunk chunk;
     SetBlock set_block;
     SetSlot set_slot;
     FillContainer fill_container;

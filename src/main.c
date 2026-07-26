@@ -45,6 +45,11 @@ int main() {
 				} else if (type == PKT_SET_BLOCK) {
 
 					set_block_at(packet.set_block.x, packet.set_block.y, packet.set_block.z, BLOCK_GRASS);
+				
+				} else if (type == PKT_PLAYER_POSITION_AND_ROTATION) {
+
+					set_player_position(packet.player_position_and_rotation.x, packet.player_position_and_rotation.y, packet.player_position_and_rotation.z);
+					set_player_rotation(packet.player_position_and_rotation.yaw, packet.player_position_and_rotation.pitch);
 				}
 			}
 

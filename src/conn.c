@@ -71,7 +71,7 @@ static void read_entity_metadata() { // TODO an actual metadata datatype...
     READ_I8(&header);
 
     int8_t unused_buf[256];
-    
+
     while (header != 0x7F) {
         
         switch (header >> 5) {
@@ -130,6 +130,7 @@ void send_packet(packet_t type, Packet data) {
         case PKT_ENTITY_EVENT: break;                 // never sent by client
         case PKT_ENTITY_METADATA: break;              // never sent by client
         case PKT_SET_CHUNK_VISIBILITY: break;         // never sent by client
+        case PKT_CHUNK: break;                        // never sent by client
         case PKT_SET_BLOCK: break;                    // never sent by client
         case PKT_SET_SLOT: break;                     // never sent by client
         case PKT_FILL_CONTAINER: break;               // never sent by client
@@ -270,6 +271,10 @@ packet_t read_packet(Packet *out) {
             READ_I32(&out->set_chunk_visibility.x);
             READ_I32(&out->set_chunk_visibility.z);
             READ_I8(&out->set_chunk_visibility.load);
+            break;
+        
+        case PKT_CHUNK:
+            // TODO
             break;
 
         case PKT_SET_BLOCK:
