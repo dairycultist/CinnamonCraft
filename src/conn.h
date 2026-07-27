@@ -160,7 +160,7 @@ typedef struct {
 typedef struct {
 
 } Chunk;
-// and that it's not flipped (if they mismatch Minecraft refuses to send chunks)
+// TODO
 // X	Integer	The X position of the chunk towards Negative X
 // Y	Short	The Y position of the chunk towards Negative Y
 // Z	Integer	The Z position of the chunk towards Negative Z

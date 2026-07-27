@@ -7,7 +7,7 @@ static int entity_count = 0;
 void initialize_entities() {
 
     // create test entity
-    entities[0].meshes[0] = create_mesh_from_obj("res/miku.obj", load_texture("res/dirt.png"));
+    entities[0].meshes[0] = create_mesh_from_obj("res/biped.obj", load_texture("res/biped_jenny.png"));
     entities[0].aabb.x = 8;
     entities[0].aabb.y = 30;
     entities[0].aabb.z = 8;

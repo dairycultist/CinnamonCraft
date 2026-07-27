@@ -42,6 +42,12 @@ int main() {
 
 					create_chunk_at(packet.set_chunk_visibility.x, packet.set_chunk_visibility.z);
 
+				} else if (type == PKT_CHUNK) {
+
+					// TODO
+					// void set_delay_remesh_block_at(int x, int y, int z, block_t block);
+					// void remesh_delayed_chunks();
+				
 				} else if (type == PKT_SET_BLOCK) {
 
 					set_block_at(packet.set_block.x, packet.set_block.y, packet.set_block.z, BLOCK_GRASS);
