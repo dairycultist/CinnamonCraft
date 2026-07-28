@@ -38,6 +38,16 @@ typedef struct {
 
 } SetTime;
 
+// https://pixelbrush.dev/beta-wiki/networking/packets/005-set-equipment
+#define PKT_SET_EQUIPMENT 0x05
+typedef struct {
+
+    int32_t entity_id;
+    int16_t slot;
+    int16_t item, item_metadata;
+
+} SetEquipment;
+
 // https://pixelbrush.dev/beta-wiki/networking/packets/006-set-spawn-position
 #define PKT_SET_SPAWN_POSITION 0x06
 typedef struct {
@@ -56,6 +66,18 @@ typedef struct {
     int8_t on_ground;
 
 } PlayerPositionAndRotation;
+
+// https://pixelbrush.dev/beta-wiki/networking/packets/020-spawn-player
+#define PKT_SPAWN_PLAYER 0x14
+typedef struct {
+
+    int32_t entity_id;
+    char username[17]; // max of 16 characters!!
+    int32_t x, y, z;
+    int8_t yaw, pitch;
+    int16_t held_item;
+
+} SpawnPlayer;
 
 // https://pixelbrush.dev/beta-wiki/networking/packets/021-spawn-item
 #define PKT_SPAWN_ITEM 0x15
@@ -239,8 +261,10 @@ typedef union {
     Login login;
     PreLogin pre_login;
     SetTime set_time;
+    SetEquipment set_equipment;
     SetSpawnPosition set_spawn_position;
     PlayerPositionAndRotation player_position_and_rotation;
+    SpawnPlayer spawn_player;
     SpawnItem spawn_item;
     SpawnMob spawn_mob;
     EntityVelocity entity_velocity;

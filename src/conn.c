@@ -109,6 +109,7 @@ void send_packet(packet_t type, Packet data) {
             break;
 
         case PKT_SET_TIME: break;             // never sent by client
+        case PKT_SET_EQUIPMENT: break;        // never sent by client
         case PKT_SET_SPAWN_POSITION: break;   // never sent by client
 
         case PKT_PLAYER_POSITION_AND_ROTATION:
@@ -120,7 +121,8 @@ void send_packet(packet_t type, Packet data) {
             SEND_F32(data.player_position_and_rotation.pitch);
             SEND_I8(data.player_position_and_rotation.on_ground);
             break;
-
+        
+        case PKT_SPAWN_PLAYER: break;                 // never sent by client
         case PKT_SPAWN_ITEM: break;                   // never sent by client
         case PKT_SPAWN_MOB: break;                    // never sent by client
         case PKT_ENTITY_VELOCITY: break;              // never sent by client
@@ -184,6 +186,13 @@ packet_t read_packet(Packet *out) {
             READ_I64(&out->set_time.time);
             break;
 
+        case PKT_SET_EQUIPMENT:
+            READ_I32(&out->set_equipment.entity_id);
+            READ_I16(&out->set_equipment.slot);
+            READ_I16(&out->set_equipment.item);
+            READ_I16(&out->set_equipment.item_metadata);
+            break;
+
         case PKT_SET_SPAWN_POSITION:
             READ_I32(&out->set_spawn_position.x);
             READ_I32(&out->set_spawn_position.y);
@@ -198,6 +207,17 @@ packet_t read_packet(Packet *out) {
             READ_F32(&out->player_position_and_rotation.yaw);
             READ_F32(&out->player_position_and_rotation.pitch);
             READ_I8(&out->player_position_and_rotation.on_ground);
+            break;
+
+        case PKT_SPAWN_PLAYER:
+            READ_I32(&out->spawn_player.entity_id);
+            read_string16(out->spawn_player.username);
+            READ_I32(&out->spawn_player.x);
+            READ_I32(&out->spawn_player.y);
+            READ_I32(&out->spawn_player.z);
+            READ_I8(&out->spawn_player.yaw);
+            READ_I8(&out->spawn_player.pitch);
+            READ_I16(&out->spawn_player.held_item);
             break;
 
         case PKT_SPAWN_ITEM:
