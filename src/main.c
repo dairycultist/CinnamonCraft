@@ -15,6 +15,11 @@ int main() {
 	initialize_player();
 	initialize_conn();
 
+	create_chunk_at(0, 0);
+	create_chunk_at(-1, 0);
+	create_chunk_at(0, -1);
+	create_chunk_at(-1, -1);
+
     send_packet(PKT_PRE_LOGIN, (Packet) { .pre_login = { "Steve" } });
     send_packet(PKT_LOGIN, (Packet) { .login = { 14, "Steve" } });
 
@@ -40,7 +45,7 @@ int main() {
 
 				if (type == PKT_SET_CHUNK_VISIBILITY) {
 
-					create_chunk_at(packet.set_chunk_visibility.x, packet.set_chunk_visibility.z);
+					// create_chunk_at(packet.set_chunk_visibility.x, packet.set_chunk_visibility.z);
 
 				} else if (type == PKT_CHUNK) {
 
@@ -48,6 +53,10 @@ int main() {
 					// void set_delay_remesh_block_at(int x, int y, int z, block_t block);
 					// void remesh_delayed_chunks();
 				
+				} else if (type == PKT_SET_MULTIPLE_BLOCKS) {
+
+					// TODO
+
 				} else if (type == PKT_SET_BLOCK) {
 
 					set_block_at(packet.set_block.x, packet.set_block.y, packet.set_block.z, BLOCK_GRASS);

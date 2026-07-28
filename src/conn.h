@@ -159,16 +159,30 @@ typedef struct {
 #define PKT_CHUNK 0x33
 typedef struct {
 
+    int32_t x;
+    int16_t y;
+    int32_t z;
+    int8_t w, h, l; // technically w-1, h-1, l-1
+
+    // compressed_size and compressed_data are what's sent over the network, but we're abstracting compression away
+    int8_t *blocks;
+    int8_t *block_datas;
+    int8_t *block_lights;
+    int8_t *sky_lights;
+
 } Chunk;
-// TODO
-// X	Integer	The X position of the chunk towards Negative X
-// Y	Short	The Y position of the chunk towards Negative Y
-// Z	Integer	The Z position of the chunk towards Negative Z
-// width	Byte	The width of the updated area towards Positive X, -1
-// height	Byte	The height of the updated area towards Positive Y, -1
-// length	Byte	The length of the updated area towards Positive Z, -1
-// compressed size	Integer	The size, in bytes, of the zlib compressed data
-// compressed data	Byte Array	The zlib compressed chunk data
+
+// https://pixelbrush.dev/beta-wiki/networking/packets/052-set-multiple-blocks
+#define PKT_SET_MULTIPLE_BLOCKS 0x34
+typedef struct {
+
+    int32_t x, z;
+    int16_t block_count;
+    int16_t *block_positions;
+    int8_t *blocks;
+    int8_t *block_metadatas;
+
+} SetMultipleBlocks;
 
 // https://pixelbrush.dev/beta-wiki/networking/packets/053-set-block
 #define PKT_SET_BLOCK 0x35
@@ -230,6 +244,7 @@ typedef union {
     EntityMetadata entity_metadata;
     SetChunkVisibility set_chunk_visibility;
     Chunk chunk;
+    SetMultipleBlocks set_multiple_blocks;
     SetBlock set_block;
     SetSlot set_slot;
     FillContainer fill_container;

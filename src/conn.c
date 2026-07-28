@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
-#include <zlib.h> // TODO https://refspecs.linuxbase.org/LSB_3.0.0/LSB-Core-generic/LSB-Core-generic/zlib-uncompress-1.html
+#include <zlib.h>
 
 #include "main.h"
 #include "conn.h"
@@ -131,6 +131,7 @@ void send_packet(packet_t type, Packet data) {
         case PKT_ENTITY_METADATA: break;              // never sent by client
         case PKT_SET_CHUNK_VISIBILITY: break;         // never sent by client
         case PKT_CHUNK: break;                        // never sent by client
+        case PKT_SET_MULTIPLE_BLOCKS: break;          // never sent by client
         case PKT_SET_BLOCK: break;                    // never sent by client
         case PKT_SET_SLOT: break;                     // never sent by client
         case PKT_FILL_CONTAINER: break;               // never sent by client
@@ -274,7 +275,49 @@ packet_t read_packet(Packet *out) {
             break;
         
         case PKT_CHUNK:
-            // TODO
+            // TODO https://refspecs.linuxbase.org/LSB_3.0.0/LSB-Core-generic/LSB-Core-generic/zlib-uncompress-1.html
+
+            READ_I32(&out->chunk.x);
+            READ_I16(&out->chunk.y);
+            READ_I32(&out->chunk.z);
+            READ_I8(&out->chunk.w);
+            READ_I8(&out->chunk.h);
+            READ_I8(&out->chunk.l);
+
+            int32_t compressed_size;
+            READ_I32(&compressed_size);
+
+            int8_t *compressed_data = malloc(compressed_size);
+
+            for (int i = 0; i < compressed_size; i++)
+                READ_I8(compressed_data + i);
+
+            // Blocks	Byte	The block ID values of the chunk	32768
+            // Data	Nibble	The block data values of the chunk	16384
+            // BlockLight	Nibble	The block light values of the chunk	16384
+            // SkyLight	Nibble	The sky light values of the chunk	16384
+
+            // int8_t *blocks;
+            // int8_t *block_datas;
+            // int8_t *block_lights;
+            // int8_t *sky_lights;
+
+            break;
+
+        case PKT_SET_MULTIPLE_BLOCKS:
+            READ_I32(&out->set_multiple_blocks.x);
+            READ_I32(&out->set_multiple_blocks.z);
+            READ_I16(&out->set_multiple_blocks.block_count);
+
+            for (int i = 0; i < out->set_multiple_blocks.block_count; i++)
+                READ_I16(&out->set_multiple_blocks.block_positions + i);
+
+            for (int i = 0; i < out->set_multiple_blocks.block_count; i++)
+                READ_I8(&out->set_multiple_blocks.blocks + i);
+
+            for (int i = 0; i < out->set_multiple_blocks.block_count; i++)
+                READ_I8(&out->set_multiple_blocks.block_metadatas + i);
+
             break;
 
         case PKT_SET_BLOCK:
@@ -289,7 +332,7 @@ packet_t read_packet(Packet *out) {
             READ_I8(&out->set_slot.window_id);
             READ_I16(&out->set_slot.slot);
             READ_I16(&out->set_slot.item_id);
-            if (out->set_slot.item_id > 0) { // maybe > -1?
+            if (out->set_slot.item_id > -1) {
                 READ_I8(&out->set_slot.item_amount);
                 READ_I16(&out->set_slot.item_metadata);
             }

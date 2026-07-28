@@ -14,6 +14,8 @@ unsigned int r_hash(unsigned int seed) {
     return seed;
 }
 
+#define SAFEMOD(a, b) ((((a) % (b)) + b) % b)
+
 #define MASK_FULLBLOCK 0b00000001
 #define MASK_COLLIDABLE 0b00000010
 
@@ -94,9 +96,9 @@ static inline unsigned char get_block_mesh_data(block_t block, int i) {
 //                                                                                              [ -x, +x, -z, +z, -y (bottom), +y (top) ]
 static void helper_append_fullblock(EZArray *mesh_data, int *vertex_count, int x, int y, int z, unsigned char faces[6]) {
 
-	int local_x = x % 16;
+	int local_x = SAFEMOD(x, 16);
 	int local_y = y;
-	int local_z = z % 16;
+	int local_z = SAFEMOD(z, 16);
 
 	float u_sml, v_sml, u_big, v_big;
 
@@ -349,7 +351,7 @@ block_t get_block_at(int x, int y, int z) {
 	if (!chunk)
 		return 0;
 	
-	return chunk->blocks[x % 16][y][z % 16];
+	return chunk->blocks[SAFEMOD(x, 16)][y][SAFEMOD(z, 16)];
 }
 
 void set_block_at(int x, int y, int z, block_t block) {
@@ -359,27 +361,26 @@ void set_block_at(int x, int y, int z, block_t block) {
 	if (!chunk)
 		return;
 
-	chunk->blocks[x % 16][y][z % 16] = block;
+	chunk->blocks[SAFEMOD(x, 16)][y][SAFEMOD(z, 16)] = block;
 
 	remesh_chunk(chunk);
 
 	// if block was at the edge of a chunk, also remesh the adjacent chunk(s)
-	if (x % 16 == 0) {
+	if (SAFEMOD(x, 16) == 0) {
 		chunk = get_chunk_of_block(x - 1, y, z);
 		if (chunk)
 			remesh_chunk(chunk);
-	}
-	if (x % 16 == 15) {
+	} else if (SAFEMOD(x, 16) == 15) {
 		chunk = get_chunk_of_block(x + 1, y, z);
 		if (chunk)
 			remesh_chunk(chunk);
 	}
-	if (z % 16 == 0) {
+
+	if (SAFEMOD(z, 16) == 0) {
 		chunk = get_chunk_of_block(x, y, z - 1);
 		if (chunk)
 			remesh_chunk(chunk);
-	}
-	if (z % 16 == 15) {
+	} else if (SAFEMOD(z, 16) == 15) {
 		chunk = get_chunk_of_block(x, y, z + 1);
 		if (chunk)
 			remesh_chunk(chunk);
@@ -398,7 +399,7 @@ void set_delay_remesh_block_at(int x, int y, int z, block_t block) {
 	if (!chunk)
 		return;
 
-	chunk->blocks[x % 16][y][z % 16] = block;
+	chunk->blocks[SAFEMOD(x, 16)][y][SAFEMOD(z, 16)] = block;
 
 	// save chunk for delayed remeshing if it's not already saved
 	if (index_of_ezarray(&delayed_remesh_chunks, &chunk, sizeof(Chunk *)) == -1)
