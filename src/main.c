@@ -5,6 +5,7 @@
 #include "player.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
 int main() {
@@ -14,11 +15,6 @@ int main() {
 	initialize_entities();
 	initialize_player();
 	initialize_conn();
-
-	create_chunk_at(0, 0);
-	create_chunk_at(-1, 0);
-	create_chunk_at(0, -1);
-	create_chunk_at(-1, -1);
 
     send_packet(PKT_PRE_LOGIN, (Packet) { .pre_login = { "Steve" } });
     send_packet(PKT_LOGIN, (Packet) { .login = { 14, "Steve" } });
@@ -41,11 +37,14 @@ int main() {
 			
 			while (--limit > 0 && (type = read_packet(&packet)) != PKT_EOB) {
 				
-				printf("Got packet: 0x%02x\n", type);
+				// printf("Got packet: 0x%02x\n", type);
 
 				if (type == PKT_SET_CHUNK_VISIBILITY) {
 
-					// create_chunk_at(packet.set_chunk_visibility.x, packet.set_chunk_visibility.z);
+					if (packet.set_chunk_visibility.load)
+						create_chunk_at(packet.set_chunk_visibility.x, packet.set_chunk_visibility.z);
+					else
+						destroy_chunk_at(packet.set_chunk_visibility.x, packet.set_chunk_visibility.z);
 
 				} else if (type == PKT_CHUNK) {
 
@@ -55,7 +54,23 @@ int main() {
 				
 				} else if (type == PKT_SET_MULTIPLE_BLOCKS) {
 
-					// TODO
+					printf("Got packet: 0x%02x\n", type);
+
+					for (int i = 0; i < packet.set_multiple_blocks.block_count; i++) {
+
+						set_delay_remesh_block_at(
+							((packet.set_multiple_blocks.block_positions[i] >> 12) & 0x0F) + 16 * packet.set_multiple_blocks.x,
+							((packet.set_multiple_blocks.block_positions[i]      ) & 0xFF) + 16 * packet.set_multiple_blocks.z,
+							((packet.set_multiple_blocks.block_positions[i] >>  8) & 0x0F),
+							BLOCK_GRASS
+						);
+					}
+
+					remesh_delayed_chunks();
+
+					free(packet.set_multiple_blocks.block_positions);
+					free(packet.set_multiple_blocks.blocks);
+					free(packet.set_multiple_blocks.block_metadatas);
 
 				} else if (type == PKT_SET_BLOCK) {
 

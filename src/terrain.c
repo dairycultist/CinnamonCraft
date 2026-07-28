@@ -305,7 +305,7 @@ void create_chunk_at(int chunk_x, int chunk_z) {
 	if (i != -1)
 		return; // chunk already exists at that position
 
-	Chunk *chunk = malloc(sizeof(Chunk));
+	Chunk *chunk = calloc(1, sizeof(Chunk));
 	chunk->mesh = create_mesh(NULL, 0, 0, blockmap_texture);
 	chunk->chunk_x = chunk_x;
 	chunk->chunk_z = chunk_z;

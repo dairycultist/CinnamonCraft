@@ -309,6 +309,10 @@ packet_t read_packet(Packet *out) {
             READ_I32(&out->set_multiple_blocks.z);
             READ_I16(&out->set_multiple_blocks.block_count);
 
+            out->set_multiple_blocks.block_positions = malloc(out->set_multiple_blocks.block_count * sizeof(int16_t));
+            out->set_multiple_blocks.blocks          = malloc(out->set_multiple_blocks.block_count * sizeof(int8_t));
+            out->set_multiple_blocks.block_metadatas = malloc(out->set_multiple_blocks.block_count * sizeof(int8_t));
+
             for (int i = 0; i < out->set_multiple_blocks.block_count; i++)
                 READ_I16(&out->set_multiple_blocks.block_positions + i);
 

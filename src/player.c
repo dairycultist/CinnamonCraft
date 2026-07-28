@@ -77,8 +77,6 @@ void get_player_information(float *x, float *y, float *z, float *camera_y, float
 
 void player_process_tick(Input *input) {
 
-	set_block_at((int) aabb.x, (int) aabb.y - 3, (int) aabb.z, BLOCK_GRASS);
-
 	// player camera control
 	camera.pitch += input->camera_dy * 0.01;
 	camera.yaw += input->camera_dx * 0.01;
