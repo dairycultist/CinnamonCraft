@@ -6,6 +6,7 @@
 #include <string.h>
 #include <errno.h>
 #include <zlib.h>
+#include <math.h>
 
 #include "main.h"
 #include "conn.h"
@@ -133,6 +134,7 @@ void send_packet(packet_t type, Packet data) {
         case PKT_CHUNK: break;                        // never sent by client
         case PKT_SET_MULTIPLE_BLOCKS: break;          // never sent by client
         case PKT_SET_BLOCK: break;                    // never sent by client
+        case PKT_GAME_EVENT: break;                   // never sent by client
         case PKT_SET_SLOT: break;                     // never sent by client
         case PKT_FILL_CONTAINER: break;               // never sent by client
 
@@ -275,8 +277,6 @@ packet_t read_packet(Packet *out) {
             break;
         
         case PKT_CHUNK:
-            // TODO https://refspecs.linuxbase.org/LSB_3.0.0/LSB-Core-generic/LSB-Core-generic/zlib-uncompress-1.html
-
             READ_I32(&out->chunk.x);
             READ_I16(&out->chunk.y);
             READ_I32(&out->chunk.z);
@@ -292,16 +292,37 @@ packet_t read_packet(Packet *out) {
             for (int i = 0; i < compressed_size; i++)
                 READ_I8(compressed_data + i);
 
-            // Blocks	Byte	The block ID values of the chunk	32768
-            // Data	Nibble	The block data values of the chunk	16384
-            // BlockLight	Nibble	The block light values of the chunk	16384
-            // SkyLight	Nibble	The sky light values of the chunk	16384
+            // decompress https://refspecs.linuxbase.org/LSB_3.0.0/LSB-Core-generic/LSB-Core-generic/zlib-uncompress-1.html
+            int total_blocks = (out->chunk.w + 1) * (out->chunk.h + 1) * (out->chunk.l + 1);
+            long decompressed_size = (long) ceil(total_blocks * 2.5);
+            int8_t *decompressed_data = malloc(decompressed_size);
 
-            // int8_t *blocks;
-            // int8_t *block_datas;
-            // int8_t *block_lights;
-            // int8_t *sky_lights;
+            if (uncompress(decompressed_data, &decompressed_size, compressed_data, compressed_size) != Z_OK) {
+                fprintf(stderr, "Error during chunk decompression!\n");
+                exit(1);
+            }
 
+            // parse decompressed data
+            out->chunk.blocks       = malloc(total_blocks * sizeof(int8_t));
+            out->chunk.block_datas  = malloc(total_blocks * sizeof(int8_t));
+            out->chunk.block_lights = malloc(total_blocks * sizeof(int8_t));
+            out->chunk.sky_lights   = malloc(total_blocks * sizeof(int8_t));
+            memcpy(out->chunk.blocks, decompressed_data, total_blocks * sizeof(int8_t));
+            int nibble_i = total_blocks * 2;
+            for (int i = 0; i < total_blocks; i++) { // less-significant nibble is first, more-significant is second
+                out->chunk.block_datas[i]  = nibble_i % 2 == 0 ? (decompressed_data[nibble_i / 2] & 0x0F) : (decompressed_data[nibble_i / 2] >> 4);
+                nibble_i++;
+            }
+            for (int i = 0; i < total_blocks; i++) {
+                out->chunk.block_lights[i] = nibble_i % 2 == 0 ? (decompressed_data[nibble_i / 2] & 0x0F) : (decompressed_data[nibble_i / 2] >> 4);
+                nibble_i++;
+            }
+            for (int i = 0; i < total_blocks; i++) {
+                out->chunk.sky_lights[i]   = nibble_i % 2 == 0 ? (decompressed_data[nibble_i / 2] & 0x0F) : (decompressed_data[nibble_i / 2] >> 4);
+                nibble_i++;
+            }
+            free(compressed_data);
+            free(decompressed_data);
             break;
 
         case PKT_SET_MULTIPLE_BLOCKS:
@@ -314,14 +335,11 @@ packet_t read_packet(Packet *out) {
             out->set_multiple_blocks.block_metadatas = malloc(out->set_multiple_blocks.block_count * sizeof(int8_t));
 
             for (int i = 0; i < out->set_multiple_blocks.block_count; i++)
-                READ_I16(&out->set_multiple_blocks.block_positions + i);
-
+                READ_I16(out->set_multiple_blocks.block_positions + i);
             for (int i = 0; i < out->set_multiple_blocks.block_count; i++)
-                READ_I8(&out->set_multiple_blocks.blocks + i);
-
+                READ_I8(out->set_multiple_blocks.blocks + i);
             for (int i = 0; i < out->set_multiple_blocks.block_count; i++)
-                READ_I8(&out->set_multiple_blocks.block_metadatas + i);
-
+                READ_I8(out->set_multiple_blocks.block_metadatas + i);
             break;
 
         case PKT_SET_BLOCK:
@@ -330,6 +348,10 @@ packet_t read_packet(Packet *out) {
             READ_I32(&out->set_block.z);
             READ_I8(&out->set_block.type);
             READ_I8(&out->set_block.metadata);
+            break;
+
+        case PKT_GAME_EVENT:
+            READ_I8(&out->game_event.type);
             break;
 
         case PKT_SET_SLOT:

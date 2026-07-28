@@ -1,9 +1,9 @@
 UNAME := $(shell uname)
 
 ifeq ($(UNAME), Darwin) # macOS
-	GCCFLAGS = -lGLEW -framework OpenGL
+	GCCFLAGS = -lGLEW -lz -framework OpenGL
 else ifeq ($(UNAME), Linux)
-	GCCFLAGS = -lGLEW -lGL -lm
+	GCCFLAGS = -lGLEW -lz -lGL -lm
 else
 	$(error Unsupported OS: $(UNAME))
 endif

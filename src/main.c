@@ -37,7 +37,7 @@ int main() {
 			
 			while (--limit > 0 && (type = read_packet(&packet)) != PKT_EOB) {
 				
-				// printf("Got packet: 0x%02x\n", type);
+				printf("Got packet: 0x%02x\n", type);
 
 				if (type == PKT_SET_CHUNK_VISIBILITY) {
 
@@ -48,23 +48,34 @@ int main() {
 
 				} else if (type == PKT_CHUNK) {
 
-					// TODO
-					// void set_delay_remesh_block_at(int x, int y, int z, block_t block);
-					// void remesh_delayed_chunks();
+					for (int x = 0; x <= packet.chunk.w; x++) {
+					for (int z = 0; z <= packet.chunk.l; z++) {
+					for (int y = 0; y <= packet.chunk.h; y++) {
+
+						if (packet.chunk.blocks[y + (z + x * packet.chunk.l) * packet.chunk.h])
+							set_delay_remesh_block_at(
+								x + packet.chunk.x,
+								y + packet.chunk.y,
+								z + packet.chunk.z,
+								BLOCK_GRASS
+							);
+					}}}
+					remesh_delayed_chunks();
 				
+					free(packet.chunk.blocks);
+					free(packet.chunk.block_datas);
+					free(packet.chunk.block_lights);
+					free(packet.chunk.sky_lights);
+
 				} else if (type == PKT_SET_MULTIPLE_BLOCKS) {
 
-					printf("Got packet: 0x%02x\n", type);
-
-					for (int i = 0; i < packet.set_multiple_blocks.block_count; i++) {
-
+					for (int i = 0; i < packet.set_multiple_blocks.block_count; i++)
 						set_delay_remesh_block_at(
 							((packet.set_multiple_blocks.block_positions[i] >> 12) & 0x0F) + 16 * packet.set_multiple_blocks.x,
 							((packet.set_multiple_blocks.block_positions[i]      ) & 0xFF) + 16 * packet.set_multiple_blocks.z,
 							((packet.set_multiple_blocks.block_positions[i] >>  8) & 0x0F),
 							BLOCK_GRASS
 						);
-					}
 
 					remesh_delayed_chunks();
 

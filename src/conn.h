@@ -196,6 +196,14 @@ typedef struct {
 
 } SetBlock;
 
+// https://pixelbrush.dev/beta-wiki/networking/packets/070-game-event
+#define PKT_GAME_EVENT 0x46
+typedef struct {
+
+    int8_t type;
+
+} GameEvent;
+
 // https://pixelbrush.dev/beta-wiki/networking/packets/103-set-slot
 #define PKT_SET_SLOT 0x67
 typedef struct {
@@ -246,6 +254,7 @@ typedef union {
     Chunk chunk;
     SetMultipleBlocks set_multiple_blocks;
     SetBlock set_block;
+    GameEvent game_event;
     SetSlot set_slot;
     FillContainer fill_container;
     Disconnect disconnect;
