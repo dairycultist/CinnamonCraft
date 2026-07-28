@@ -91,6 +91,38 @@ int main() {
 
 					set_player_position(packet.player_position_and_rotation.x, packet.player_position_and_rotation.y, packet.player_position_and_rotation.z);
 					set_player_rotation(packet.player_position_and_rotation.yaw, packet.player_position_and_rotation.pitch);
+				
+				} else if (type == PKT_SPAWN_PLAYER) {
+
+					Entity *entity = create_entity_with_id(packet.spawn_player.entity_id);
+
+					if (entity) {
+
+						entity->meshes[0] = create_mesh_from_obj("res/biped.obj", load_texture("res/biped_jenny.png"));
+						entity->aabb.x = ((float) packet.spawn_player.x) / 16.0;
+						entity->aabb.y = ((float) packet.spawn_player.y) / 16.0;
+						entity->aabb.z = ((float) packet.spawn_player.z) / 16.0;
+
+					} else {
+
+						printf("Entity limit exceeded!\n");
+					}
+					
+				} else if (type == PKT_SPAWN_MOB) {
+
+					Entity *entity = create_entity_with_id(packet.spawn_mob.entity_id);
+
+					if (entity) {
+
+						entity->meshes[0] = create_mesh_from_obj("res/biped.obj", load_texture("res/biped_jenny.png"));
+						entity->aabb.x = ((float) packet.spawn_mob.x) / 16.0;
+						entity->aabb.y = ((float) packet.spawn_mob.y) / 16.0;
+						entity->aabb.z = ((float) packet.spawn_mob.z) / 16.0;
+
+					} else {
+
+						printf("Entity limit exceeded!\n");
+					}
 				}
 			}
 
